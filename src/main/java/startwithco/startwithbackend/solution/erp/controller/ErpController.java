@@ -21,10 +21,9 @@ import startwithco.startwithbackend.exception.conflict.ConflictExceptionHandler;
 import startwithco.startwithbackend.exception.server.ServerExceptionHandler;
 import startwithco.startwithbackend.solution.erp.service.ErpService;
 
-import java.util.Map;
-
 import static org.apache.http.util.TextUtils.isBlank;
 import static startwithco.startwithbackend.solution.erp.controller.request.ErpRequest.*;
+import static startwithco.startwithbackend.solution.erp.controller.response.ErpResponse.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -33,11 +32,11 @@ public class ErpController {
     private final ErpService erpService;
 
     @PostMapping(
-            name = "솔루션 생성",
+            name = "ERP 솔루션 생성",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @Operation(summary = "솔루션 생성 API")
+    @Operation(summary = "ERP 솔루션 생성 API")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "200 SUCCESS", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "S500", description = "500 INTERNAL SERVER EXCEPTION", content = @Content(schema = @Schema(implementation = ServerExceptionHandler.ErrorResponse.class))),
@@ -45,11 +44,11 @@ public class ErpController {
             @ApiResponse(responseCode = "IRCE002", description = "409 IDEMPOTENT REQUEST CONFLICT EXCEPTION", content = @Content(schema = @Schema(implementation = ConflictExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "NFE002", description = "404 VENDOR NOT FOUND EXCEPTION", content = @Content(schema = @Schema(implementation = ConflictExceptionHandler.ErrorResponse.class))),
     })
-    ResponseEntity<BaseResponse<Map<String, Object>>> saveErpEntity(
+    ResponseEntity<BaseResponse<SaveErpEntityResponse>> saveErpEntity(
             @Valid
             @RequestPart(value = "representImageUrl", required = false) MultipartFile representImageUrl,
             @RequestPart(value = "descriptionPdfUrl", required = false) MultipartFile descriptionPdfUrl,
-            @RequestPart ErpEntityRequest request
+            @RequestPart SaveErpEntityRequest request
     ) {
         if (request.vendorSeq() == null ||
                 isBlank(request.solutionName()) ||
@@ -68,9 +67,8 @@ public class ErpController {
             throw new BadRequestException(BadRequestErrorResult.BAD_REQUEST_EXCEPTION);
         }
 
-        Long solutionSeq = erpService.saveErpEntity(request, representImageUrl, descriptionPdfUrl);
+        SaveErpEntityResponse response = erpService.saveErpEntity(request, representImageUrl, descriptionPdfUrl);
 
-        Map<String, Object> response = Map.of("solutionSeq", solutionSeq);
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
     }
 }
