@@ -1,6 +1,5 @@
 package startwithco.startwithbackend.solution.erp.controller;
 
-import groovy.util.logging.Slf4j;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,21 +21,22 @@ import startwithco.startwithbackend.exception.conflict.ConflictExceptionHandler;
 import startwithco.startwithbackend.exception.server.ServerExceptionHandler;
 import startwithco.startwithbackend.solution.erp.service.ErpService;
 
-import java.io.IOException;
 import java.util.Map;
 
 import static org.apache.http.util.TextUtils.isBlank;
 import static startwithco.startwithbackend.solution.erp.controller.request.ErpRequest.*;
 
-@lombok.extern.slf4j.Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/solution-service/solution/erp")
-@Slf4j
 public class ErpController {
     private final ErpService erpService;
 
-    @PostMapping(name = "솔루션 생성", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(
+            name = "솔루션 생성",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @Operation(summary = "솔루션 생성 API")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "200 SUCCESS", useReturnTypeSchema = true),
@@ -50,7 +50,7 @@ public class ErpController {
             @RequestPart(value = "representImageUrl", required = false) MultipartFile representImageUrl,
             @RequestPart(value = "descriptionPdfUrl", required = false) MultipartFile descriptionPdfUrl,
             @RequestPart ErpEntityRequest request
-    ) throws IOException {
+    ) {
         if (request.vendorSeq() == null ||
                 isBlank(request.solutionName()) ||
                 isBlank(request.solutionDetail()) ||
