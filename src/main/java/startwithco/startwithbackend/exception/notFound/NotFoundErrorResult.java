@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum NotFoundErrorResult {
     NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND.value(), "NOT FOUND EXCEPTION", "NFE001"),
-    VENDOR_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND.value(), "VENDOR NOT FOUND EXCEPTION", "NFE002"),
+    VENDOR_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND.value(), "VENDOR NOT FOUND EXCEPTION", "VNFE002"),
     SOLUTION_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND.value(), "SOLUTION NOT FOUND EXCEPTION", "SNFE003"),
     ;
 
