@@ -10,18 +10,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import startwithco.startwithbackend.base.BaseResponse;
-import startwithco.startwithbackend.exception.badRequest.BadRequestErrorResult;
-import startwithco.startwithbackend.exception.badRequest.BadRequestException;
 import startwithco.startwithbackend.exception.badRequest.BadRequestExceptionHandler;
 import startwithco.startwithbackend.exception.conflict.ConflictExceptionHandler;
 import startwithco.startwithbackend.exception.server.ServerExceptionHandler;
 import startwithco.startwithbackend.solution.erp.service.ErpService;
 
-import static org.apache.http.util.TextUtils.isBlank;
 import static startwithco.startwithbackend.solution.erp.controller.request.ErpRequest.*;
 import static startwithco.startwithbackend.solution.erp.controller.response.ErpResponse.*;
 
@@ -46,26 +42,11 @@ public class ErpController {
     })
     ResponseEntity<BaseResponse<SaveErpEntityResponse>> saveErpEntity(
             @Valid
-            @RequestPart(value = "representImageUrl", required = false) MultipartFile representImageUrl,
-            @RequestPart(value = "descriptionPdfUrl", required = false) MultipartFile descriptionPdfUrl,
+            @RequestPart(value = "representImageUrl", required = true) MultipartFile representImageUrl,
+            @RequestPart(value = "descriptionPdfUrl", required = true) MultipartFile descriptionPdfUrl,
             @RequestPart SaveErpEntityRequest request
     ) {
-        if (request.vendorSeq() == null ||
-                isBlank(request.solutionName()) ||
-                isBlank(request.solutionDetail()) ||
-                request.category() == null ||
-                isBlank(request.industry()) ||
-                isBlank(request.recommendedCompanySize()) ||
-                isBlank(request.solutionImplementationType()) ||
-                isBlank(request.specialist()) ||
-                request.amount() == null ||
-                request.sellType() == null ||
-                request.duration() == null ||
-                representImageUrl == null ||
-                descriptionPdfUrl == null ||
-                CollectionUtils.isEmpty(request.keyword())) {
-            throw new BadRequestException(BadRequestErrorResult.BAD_REQUEST_EXCEPTION);
-        }
+        request.validate(representImageUrl, descriptionPdfUrl);
 
         SaveErpEntityResponse response = erpService.saveErpEntity(request, representImageUrl, descriptionPdfUrl);
 
