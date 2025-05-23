@@ -21,15 +21,13 @@ jobs:
       # YML 파일 생성
       - name: Set YML
         run: |
-          mkdir -p presentation/src/main/resources
+          mkdir -p src/main/resources
           echo "${{ secrets.APPLICATION_YML }}" | base64 --decode > src/main/resources/application.yml
-          find presentation/src
 
       - name: Set YML TEST
         run: |
-          mkdir -p presentation/src/main/resources
+          mkdir -p src/main/resources
           echo "${{ secrets.APPLICATION_PRODUCTION_YML }}" | base64 --decode > src/main/resources/application-test.yml
-          find presentation/src
 
       # Gradle Build
       - name: Grant execute permission for gradlew
