@@ -2,12 +2,9 @@ package startwithco.startwithbackend.b2b.stat.domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
 import startwithco.startwithbackend.util.STAT_TYPE;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.base.BaseTimeEntity;
@@ -16,8 +13,6 @@ import startwithco.startwithbackend.base.BaseTimeEntity;
 @Table(name = "STAT_ENTITY")
 @AllArgsConstructor
 @NoArgsConstructor
-@DynamicInsert
-@DynamicUpdate
 @Getter
 @SuperBuilder
 public class StatEntity extends BaseTimeEntity {

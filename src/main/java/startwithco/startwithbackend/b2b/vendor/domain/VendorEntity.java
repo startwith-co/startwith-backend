@@ -2,12 +2,9 @@ package startwithco.startwithbackend.b2b.vendor.domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
 import startwithco.startwithbackend.base.BaseTimeEntity;
 
 import java.time.LocalTime;
@@ -16,8 +13,6 @@ import java.time.LocalTime;
 @Table(name = "VENDOR_ENTITY")
 @AllArgsConstructor
 @NoArgsConstructor
-@DynamicInsert
-@DynamicUpdate
 @Getter
 @SuperBuilder
 public class VendorEntity extends BaseTimeEntity {

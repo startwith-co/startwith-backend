@@ -2,12 +2,9 @@ package startwithco.startwithbackend.payment.ledger.domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
 import startwithco.startwithbackend.base.BaseTimeEntity;
 import startwithco.startwithbackend.util.ENTRY_TYPE;
 
@@ -15,8 +12,6 @@ import startwithco.startwithbackend.util.ENTRY_TYPE;
 @Table(name = "LEDGER_ENTITY")
 @AllArgsConstructor
 @NoArgsConstructor
-@DynamicInsert
-@DynamicUpdate
 @Getter
 @SuperBuilder
 public class LedgerEntity extends BaseTimeEntity {

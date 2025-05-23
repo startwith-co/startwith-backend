@@ -1,14 +1,14 @@
-package startwithco.startwithbackend.solution.domain;
+package startwithco.startwithbackend.solution.effect.domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import startwithco.startwithbackend.base.BaseTimeEntity;
+import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 import startwithco.startwithbackend.util.DIRECTION;
 
 @Entity

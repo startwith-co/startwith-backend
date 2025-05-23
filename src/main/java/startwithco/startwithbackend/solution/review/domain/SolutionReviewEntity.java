@@ -2,7 +2,6 @@ package startwithco.startwithbackend.solution.review.domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -10,14 +9,12 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
 import startwithco.startwithbackend.base.BaseTimeEntity;
-import startwithco.startwithbackend.solution.domain.SolutionEntity;
+import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 
 @Entity
 @Table(name = "SOLUTION_REVIEW_ENTITY")
 @AllArgsConstructor
 @NoArgsConstructor
-@DynamicInsert
-@DynamicUpdate
 @Getter
 @SuperBuilder
 public class SolutionReviewEntity extends BaseTimeEntity {

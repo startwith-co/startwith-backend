@@ -2,12 +2,9 @@ package startwithco.startwithbackend.payment.status.domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
 import startwithco.startwithbackend.base.BaseTimeEntity;
 import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
 import startwithco.startwithbackend.util.CONSUMER_STATUS;
@@ -19,8 +16,6 @@ import java.time.LocalDateTime;
 @Table(name = "STATUS_ENTITY")
 @AllArgsConstructor
 @NoArgsConstructor
-@DynamicInsert
-@DynamicUpdate
 @Getter
 @SuperBuilder
 public class StatusEntity extends BaseTimeEntity {

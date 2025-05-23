@@ -2,20 +2,15 @@ package startwithco.startwithbackend.b2b.consumer.domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
 import startwithco.startwithbackend.base.BaseTimeEntity;
 
 @Entity
 @Table(name = "CONSUMER_ENTITY")
 @AllArgsConstructor
 @NoArgsConstructor
-@DynamicInsert
-@DynamicUpdate
 @Getter
 @SuperBuilder
 public class ConsumerEntity extends BaseTimeEntity {
