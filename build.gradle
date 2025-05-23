@@ -1,7 +1,7 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.4.5'
-    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.springframework.boot' version '3.2.7'
+    id 'io.spring.dependency-management' version '1.1.5'
 }
 
 group = 'startwith-co'
@@ -53,8 +53,18 @@ dependencies {
     // modelmapper 라이브러리
     implementation group: 'org.modelmapper', name: 'modelmapper', version: '2.3.8'
 
-    // AWS
-    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+    /** AWS S3 관련 */
+    // https://mvnrepository.com/artifact/io.awspring.cloud/spring-cloud-starter-aws
+    implementation 'io.awspring.cloud:spring-cloud-starter-aws:2.4.4'
+
+    /** 파일 업로드 */
+    // https://mvnrepository.com/artifact/commons-io/commons-io
+    implementation 'commons-io:commons-io:2.14.0'// https://mvnrepository.com/artifact/commons-fileupload/commons-fileupload
+    implementation 'commons-fileupload:commons-fileupload:1.5'
+
+    /** 파일 형식 체크를 위한 라이브러러 */
+    // https://mvnrepository.com/artifact/org.apache.tika/tika-core
+    implementation 'org.apache.tika:tika-core:2.9.1'
 
     // H2 DB
     runtimeOnly 'com.h2database:h2'
@@ -93,9 +103,6 @@ dependencies {
 
     // aop
     implementation 'org.springframework.boot:spring-boot-starter-aop'
-
-    //oauth
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
     // WebClient
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
