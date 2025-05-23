@@ -28,6 +28,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     implementation('org.springframework.boot:spring-boot-starter-web')
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version: '3.1.6'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     // Dev Tools
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
@@ -53,17 +54,14 @@ dependencies {
     // modelmapper 라이브러리
     implementation group: 'org.modelmapper', name: 'modelmapper', version: '2.3.8'
 
-    /** AWS S3 관련 */
-    // https://mvnrepository.com/artifact/io.awspring.cloud/spring-cloud-starter-aws
+    // AWS S3 관련
     implementation 'io.awspring.cloud:spring-cloud-starter-aws:2.4.4'
 
-    /** 파일 업로드 */
-    // https://mvnrepository.com/artifact/commons-io/commons-io
-    implementation 'commons-io:commons-io:2.14.0'// https://mvnrepository.com/artifact/commons-fileupload/commons-fileupload
+    // 파일 업로드
+    implementation 'commons-io:commons-io:2.14.0'
     implementation 'commons-fileupload:commons-fileupload:1.5'
 
-    /** 파일 형식 체크를 위한 라이브러러 */
-    // https://mvnrepository.com/artifact/org.apache.tika/tika-core
+    // 파일 형식 체크를 위한 라이브러러
     implementation 'org.apache.tika:tika-core:2.9.1'
 
     // H2 DB
