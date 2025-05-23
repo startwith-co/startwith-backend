@@ -14,11 +14,11 @@ import startwithco.startwithbackend.exception.server.ServerErrorResult;
 import startwithco.startwithbackend.exception.server.ServerException;
 import startwithco.startwithbackend.solution.effect.domain.SolutionEffectEntity;
 import startwithco.startwithbackend.solution.effect.repository.SolutionEffectEntityRepository;
+import startwithco.startwithbackend.solution.erp.controller.response.ErpResponse;
 import startwithco.startwithbackend.solution.erp.domain.ErpEntity;
 import startwithco.startwithbackend.solution.keyword.domain.SolutionKeywordEntity;
 import startwithco.startwithbackend.solution.keyword.repository.SolutionKeywordEntityRepository;
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
-import startwithco.startwithbackend.solution.erp.repository.ErpEntityRepository;
 import startwithco.startwithbackend.solution.solution.repository.SolutionEntityRepository;
 import startwithco.startwithbackend.util.S3Util;
 
@@ -27,13 +27,13 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static startwithco.startwithbackend.solution.erp.controller.request.ErpRequest.*;
+import static startwithco.startwithbackend.solution.erp.controller.response.ErpResponse.*;
 
 @lombok.extern.slf4j.Slf4j
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ErpService {
-    private final ErpEntityRepository erpEntityRepository;
     private final VendorEntityRepository vendorEntityRepository;
     private final SolutionEntityRepository solutionEntityRepository;
     private final SolutionEffectEntityRepository solutionEffectEntityRepository;
@@ -42,7 +42,7 @@ public class ErpService {
     private final S3Util s3Util;
 
     @Transactional
-    public Long saveErpEntity(ErpEntityRequest request, MultipartFile representImageUrl, MultipartFile descriptionPdfUrl) {
+    public SaveErpEntityResponse saveErpEntity(SaveErpEntityRequest request, MultipartFile representImageUrl, MultipartFile descriptionPdfUrl) {
         /*
          * [예외 처리]
          * 1. vendor 유효성 검사
@@ -98,7 +98,7 @@ public class ErpService {
 
             solutionKeywordEntityRepository.saveAllSolutionKeywordEntities(solutionKeywordEntities);
 
-            return solutionEntity.getSolutionSeq();
+            return new SaveErpEntityResponse(solutionEntity.getSolutionSeq());
 
         } catch (DataIntegrityViolationException e) {
             log.error("Solution Service saveSolutionEntity Method DataIntegrityViolationException");

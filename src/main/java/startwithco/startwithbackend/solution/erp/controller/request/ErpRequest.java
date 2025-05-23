@@ -7,7 +7,7 @@ import startwithco.startwithbackend.util.SELL_TYPE;
 import java.util.List;
 
 public class ErpRequest {
-    public record ErpEntityRequest(
+    public record SaveErpEntityRequest(
             Long vendorSeq,
             String solutionName,
             String solutionDetail,
