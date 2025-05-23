@@ -102,6 +102,9 @@ dependencies {
     // aop
     implementation 'org.springframework.boot:spring-boot-starter-aop'
 
+    // Security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
     // WebClient
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 }
