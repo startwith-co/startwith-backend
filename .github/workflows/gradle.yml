@@ -27,7 +27,7 @@ jobs:
       - name: Set YML TEST
         run: |
           mkdir -p src/main/resources
-          echo "${{ secrets.APPLICATION_PRODUCTION_YML }}" | base64 --decode > src/main/resources/application-test.yml
+          echo "${{ secrets.APPLICATION_TEST_YML }}" | base64 --decode > src/main/resources/application-test.yml
 
       # Gradle Build
       - name: Grant execute permission for gradlew
