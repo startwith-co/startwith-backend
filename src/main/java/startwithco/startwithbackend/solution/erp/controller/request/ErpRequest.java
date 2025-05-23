@@ -1,11 +1,19 @@
 package startwithco.startwithbackend.solution.erp.controller.request;
 
+import groovy.util.logging.Slf4j;
+import org.springframework.web.multipart.MultipartFile;
+import startwithco.startwithbackend.exception.badRequest.BadRequestErrorResult;
+import startwithco.startwithbackend.exception.badRequest.BadRequestException;
 import startwithco.startwithbackend.util.CATEGORY;
 import startwithco.startwithbackend.util.DIRECTION;
 import startwithco.startwithbackend.util.SELL_TYPE;
 
 import java.util.List;
 
+import static io.micrometer.common.util.StringUtils.isBlank;
+
+@lombok.extern.slf4j.Slf4j
+@Slf4j
 public class ErpRequest {
     public record SaveErpEntityRequest(
             Long vendorSeq,
@@ -22,7 +30,25 @@ public class ErpRequest {
             List<SolutionEffectEntityRequest> solutionEffect,
             List<String> keyword
     ) {
+        public void validate(MultipartFile representImageUrl, MultipartFile descriptionPdfUrl) {
+            if (vendorSeq == null ||
+                    isBlank(solutionName) ||
+                    isBlank(solutionDetail) ||
+                    category == null ||
+                    isBlank(industry) ||
+                    isBlank(recommendedCompanySize) ||
+                    isBlank(solutionImplementationType) ||
+                    isBlank(specialist) ||
+                    amount == null ||
+                    sellType == null ||
+                    duration == null ||
+                    representImageUrl == null ||
+                    descriptionPdfUrl == null) {
+                log.error("SaveErpEntityRequest Validation Failed");
 
+                throw new BadRequestException(BadRequestErrorResult.BAD_REQUEST_EXCEPTION);
+            }
+        }
     }
 
     public record SolutionEffectEntityRequest(
