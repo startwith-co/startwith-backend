@@ -1,5 +1,6 @@
 package startwithco.startwithbackend.config;
 
+import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
@@ -21,10 +22,12 @@ public class S3Configuration {
 
 	@Bean
 	public AmazonS3Client amazonS3Client() {
-		BasicAWSCredentials basicAWSCredentials = new BasicAWSCredentials(accessKey, secretKey);
-		return (AmazonS3Client)AmazonS3ClientBuilder.standard()
-			.withRegion(region)
-			.withCredentials(new AWSStaticCredentialsProvider(basicAWSCredentials))
-			.build();
+		AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
+
+		return (AmazonS3Client)AmazonS3ClientBuilder
+				.standard()
+				.withCredentials(new AWSStaticCredentialsProvider(credentials))
+				.withRegion(region)
+				.build();
 	}
 }

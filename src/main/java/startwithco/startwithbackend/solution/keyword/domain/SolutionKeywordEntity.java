@@ -1,21 +1,19 @@
-package startwithco.startwithbackend.solution.domain;
+package startwithco.startwithbackend.solution.keyword.domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import startwithco.startwithbackend.base.BaseTimeEntity;
+import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 
 @Entity
 @Table(name = "SOLUTION_KEYWORD_ENTITY")
 @AllArgsConstructor
 @NoArgsConstructor
-@DynamicInsert
-@DynamicUpdate
 @Getter
 @SuperBuilder
 public class SolutionKeywordEntity extends BaseTimeEntity {
