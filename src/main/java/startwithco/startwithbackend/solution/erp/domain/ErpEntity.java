@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
+import startwithco.startwithbackend.util.SELL_TYPE;
 
 @Entity
 @Table(name = "ERP_ENTITY")
@@ -33,4 +34,29 @@ public class ErpEntity extends SolutionEntity {
 
     @Column(name = "description_pdf_url", nullable = false)
     private String descriptionPdfUrl;
+
+    public ErpEntity updateErpEntity(String solutionName,
+                                String solutionDetail,
+                                String industry,
+                                String recommendedCompanySize,
+                                String solutionImplementationType,
+                                Long amount,
+                                SELL_TYPE sellType,
+                                Long duration,
+                                String specialist,
+                                String representImageUrl,
+                                String descriptionPdfUrl) {
+
+        super.updateBaseFields(
+                solutionName, solutionDetail, industry,
+                recommendedCompanySize, solutionImplementationType,
+                amount, sellType, duration
+        );
+
+        this.specialist = specialist;
+        this.representImageUrl = representImageUrl;
+        this.descriptionPdfUrl = descriptionPdfUrl;
+
+        return this;
+    }
 }

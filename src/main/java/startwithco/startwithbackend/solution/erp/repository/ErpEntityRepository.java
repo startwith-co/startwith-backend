@@ -1,7 +1,10 @@
 package startwithco.startwithbackend.solution.erp.repository;
 
 import startwithco.startwithbackend.solution.erp.domain.ErpEntity;
+import startwithco.startwithbackend.util.CATEGORY;
+
+import java.util.Optional;
 
 public interface ErpEntityRepository {
-    ErpEntity saveErpEntity(ErpEntity erpEntity);
+    Optional<ErpEntity> findByVendorSeqAndCategory(Long vendorSeq, CATEGORY category);
 }

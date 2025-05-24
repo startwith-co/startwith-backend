@@ -1,6 +1,7 @@
 package startwithco.startwithbackend.solution.erp.controller.request;
 
-import groovy.util.logging.Slf4j;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 import startwithco.startwithbackend.exception.badRequest.BadRequestErrorResult;
 import startwithco.startwithbackend.exception.badRequest.BadRequestException;
@@ -12,7 +13,6 @@ import java.util.List;
 
 import static io.micrometer.common.util.StringUtils.isBlank;
 
-@lombok.extern.slf4j.Slf4j
 @Slf4j
 public class ErpRequest {
     public record SaveErpEntityRequest(
@@ -43,9 +43,8 @@ public class ErpRequest {
                     sellType == null ||
                     duration == null ||
                     representImageUrl == null ||
-                    descriptionPdfUrl == null) {
-                log.error("SaveErpEntityRequest Validation Failed");
-
+                    descriptionPdfUrl == null ||
+                    CollectionUtils.isEmpty(keyword)) {
                 throw new BadRequestException(BadRequestErrorResult.BAD_REQUEST_EXCEPTION);
             }
         }

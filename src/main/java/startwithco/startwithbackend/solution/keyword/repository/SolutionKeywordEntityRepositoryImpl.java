@@ -11,7 +11,12 @@ import java.util.List;
 public class SolutionKeywordEntityRepositoryImpl implements SolutionKeywordEntityRepository {
     private final SolutionKeywordEntityJpaRepository repository;
 
-    public List<SolutionKeywordEntity> saveAllSolutionKeywordEntities(List<SolutionKeywordEntity> solutionKeywordEntities) {
+    public List<SolutionKeywordEntity> saveAll(List<SolutionKeywordEntity> solutionKeywordEntities) {
         return repository.saveAll(solutionKeywordEntities);
+    }
+
+    @Override
+    public void deleteAllBySolutionSeq(Long solutionSeq) {
+        repository.deleteAllBySolutionSeq(solutionSeq);
     }
 }

@@ -5,5 +5,7 @@ import startwithco.startwithbackend.solution.effect.domain.SolutionEffectEntity;
 import java.util.List;
 
 public interface SolutionEffectEntityRepository {
-    List<SolutionEffectEntity> saveAllSolutionEffectEntities(List<SolutionEffectEntity> solutionEffectEntities);
+    List<SolutionEffectEntity> saveAll(List<SolutionEffectEntity> solutionEffectEntities);
+
+    void deleteAllBySolutionSeq(Long solutionSeq);
 }
