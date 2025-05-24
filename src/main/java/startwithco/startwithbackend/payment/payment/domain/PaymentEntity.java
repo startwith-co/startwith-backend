@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import startwithco.startwithbackend.base.BaseTimeEntity;
 import startwithco.startwithbackend.payment.paymentEvent.domain.PaymentEventEntity;
-import startwithco.startwithbackend.util.STATUS;
+import startwithco.startwithbackend.common.util.STATUS;
 
 @Entity
 @Table(name = "PAYMENT_ENTITY")

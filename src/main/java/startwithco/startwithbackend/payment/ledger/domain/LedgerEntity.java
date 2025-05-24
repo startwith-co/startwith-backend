@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import startwithco.startwithbackend.base.BaseTimeEntity;
-import startwithco.startwithbackend.util.ENTRY_TYPE;
+import startwithco.startwithbackend.common.util.ENTRY_TYPE;
 
 @Entity
 @Table(name = "LEDGER_ENTITY")

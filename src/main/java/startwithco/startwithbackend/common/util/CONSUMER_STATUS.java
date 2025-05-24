@@ -1,4 +1,4 @@
-package startwithco.startwithbackend.util;
+package startwithco.startwithbackend.common.util;
 
 public enum CONSUMER_STATUS {
     DEVELOPING,       // 개발 진행 중 (결제 완료 시)

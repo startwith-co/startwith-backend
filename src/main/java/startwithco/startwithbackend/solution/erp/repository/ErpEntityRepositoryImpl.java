@@ -3,7 +3,7 @@ package startwithco.startwithbackend.solution.erp.repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import startwithco.startwithbackend.solution.erp.domain.ErpEntity;
-import startwithco.startwithbackend.util.CATEGORY;
+import startwithco.startwithbackend.common.util.CATEGORY;
 
 import java.util.Optional;
 

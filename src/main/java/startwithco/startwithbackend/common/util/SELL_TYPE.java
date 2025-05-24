@@ -1,4 +1,4 @@
-package startwithco.startwithbackend.util;
+package startwithco.startwithbackend.common.util;
 
 public enum SELL_TYPE {
     SINGLE,
