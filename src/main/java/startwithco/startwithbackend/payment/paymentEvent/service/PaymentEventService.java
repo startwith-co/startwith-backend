@@ -96,6 +96,7 @@ public class PaymentEventService {
         Long amount = paymentEventEntity.getAmount();
         SELL_TYPE sellType = paymentEventEntity.getSellType();
         Long duration = paymentEventEntity.getDuration();
+        PAYMENT_EVENT_STATUS paymentEventStatus = paymentEventEntity.getPaymentEventStatus();
 
         // 상태에 따른 조건 필드
         Long actualDuration = null;
@@ -120,6 +121,7 @@ public class PaymentEventService {
                 amount,
                 sellType,
                 duration,
+                paymentEventStatus,
                 actualDuration,
                 paymentCompletedAt,
                 developmentCompletedAt,
@@ -137,6 +139,23 @@ public class PaymentEventService {
                 .orElseThrow(() -> new NotFoundException(NotFoundErrorResult.PAYMENT_EVENT_NOT_FOUND_EXCEPTION));
 
         PaymentEventEntity updatedPaymentEventEntity = paymentEventEntity.updateDevelopmentCompletedAt();
+        paymentEventEntityRepository.savePaymentEventEntity(updatedPaymentEventEntity);
+    }
+
+    @Transactional
+    public void deletePaymentEventEntity(DeletePaymentEventRequest request) {
+        /*
+         * [예외 처리]
+         * 1. paymentEvent 유효성
+         * 2. REQUESTED가 아닌 경우 예외
+         * */
+        PaymentEventEntity paymentEventEntity = paymentEventEntityRepository.findByPaymentEventSeq(request.paymentEventSeq())
+                .orElseThrow(() -> new NotFoundException(NotFoundErrorResult.PAYMENT_EVENT_NOT_FOUND_EXCEPTION));
+        if (paymentEventEntity.getPaymentEventStatus() != PAYMENT_EVENT_STATUS.REQUESTED) {
+            throw new ConflictException(ConflictErrorResult.INVALID_PAYMENT_EVENT_STATUS_CONFLICT_EXCEPTION);
+        }
+
+        PaymentEventEntity updatedPaymentEventEntity = paymentEventEntity.updatePaymentEventStatus(PAYMENT_EVENT_STATUS.CANCELED);
         paymentEventEntityRepository.savePaymentEventEntity(updatedPaymentEventEntity);
     }
 }

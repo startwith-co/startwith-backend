@@ -1,6 +1,7 @@
 package startwithco.startwithbackend.payment.paymentEvent.controller.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import startwithco.startwithbackend.payment.paymentEvent.util.PAYMENT_EVENT_STATUS;
 import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 import startwithco.startwithbackend.solution.solution.util.SELL_TYPE;
 
@@ -21,6 +22,7 @@ public class PaymentEventResponse {
             Long amount,
             SELL_TYPE sellType,
             Long duration,
+            PAYMENT_EVENT_STATUS paymentEventStatus,
 
             // 아래는 상태에 따라 null일 수 있음
             Long actualDuration,

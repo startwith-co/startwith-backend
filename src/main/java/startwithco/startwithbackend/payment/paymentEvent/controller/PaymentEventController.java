@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,6 +49,7 @@ public class PaymentEventController {
             @ApiResponse(responseCode = "CNFE004", description = "404 CONSUMER NOT FOUND EXCEPTION", content = @Content(schema = @Schema(implementation = NotFoundExceptionHandler.ErrorResponse.class))),
     })
     public ResponseEntity<BaseResponse<SavePaymentEventEntityResponse>> savePaymentEventEntity(
+            @Valid
             @RequestBody SavePaymentEventRequest request
     ) {
         request.validate();
@@ -66,6 +68,7 @@ public class PaymentEventController {
                     1. 결제 요청, 결제 요청 취소, 개발 완료 -> 상태에 따라 Response 되지 않을 수 있습니다. (actualDuration, paymentCompletedAt, developmentCompletedAt, autoConfirmScheduledAt)\n
                     2. SELL_TYPE: SINGLE, SUBSCRIBE\n
                     3. CATEGORY: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY\n
+                    4. PAYMENT_EVENT_STATUS: REQUESTED, CANCELED, DEVELOPING, DEVELOPED, CONFIRMED
                     """
     )
     @ApiResponses(value = {
@@ -75,6 +78,7 @@ public class PaymentEventController {
             @ApiResponse(responseCode = "PENFE005", description = "404 PAYMENT EVENT NOT FOUND EXCEPTION", content = @Content(schema = @Schema(implementation = NotFoundExceptionHandler.ErrorResponse.class))),
     })
     public ResponseEntity<BaseResponse<GetPaymentEventEntityResponse>> getPaymentEventEntity(
+            @Valid
             @RequestParam(name = "paymentEventSeq") Long paymentEventSeq
     ) {
         if (paymentEventSeq == null) {
@@ -98,12 +102,37 @@ public class PaymentEventController {
             @ApiResponse(responseCode = "B001", description = "400 BAD REQUEST EXCEPTION", content = @Content(schema = @Schema(implementation = BadRequestExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "PENFE005", description = "404 PAYMENT EVENT NOT FOUND EXCEPTION", content = @Content(schema = @Schema(implementation = NotFoundExceptionHandler.ErrorResponse.class))),
     })
-    public ResponseEntity<BaseResponse<String>> modifyPaymentEventStatus(
+    public ResponseEntity<BaseResponse<String>> modifyDevelopmentCompletedAt(
+            @Valid
             @RequestBody ModifyDevelopmentCompletedAt request
     ) {
         request.validate();
 
         paymentEventService.modifyDevelopmentCompletedAt(request);
+
+        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SUCCESS"));
+    }
+
+    @DeleteMapping(
+            name = "결제 요청 취소"
+    )
+    @Operation(
+            summary = "결제 요청 취소 API"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "200 SUCCESS", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "S500", description = "500 INTERNAL SERVER EXCEPTION", content = @Content(schema = @Schema(implementation = ServerExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "B001", description = "400 BAD REQUEST EXCEPTION", content = @Content(schema = @Schema(implementation = BadRequestExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "PENFE005", description = "404 PAYMENT EVENT NOT FOUND EXCEPTION", content = @Content(schema = @Schema(implementation = NotFoundExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "IPESCE007", description = "409 INVALID PAYMENT EVENT STATUS CONFLICT EXCEPTION", content = @Content(schema = @Schema(implementation = ConflictExceptionHandler.ErrorResponse.class))),
+    })
+    public ResponseEntity<BaseResponse<String>> deletePaymentEventEntity(
+            @Valid
+            @RequestBody DeletePaymentEventRequest request
+    ) {
+        request.validate();
+
+        paymentEventService.deletePaymentEventEntity(request);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SUCCESS"));
     }

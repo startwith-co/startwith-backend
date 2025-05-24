@@ -44,4 +44,14 @@ public class PaymentEventRequest {
             }
         }
     }
+
+    public record DeletePaymentEventRequest(
+            Long paymentEventSeq
+    ) {
+        public void validate() {
+            if (paymentEventSeq == null) {
+                throw new BadRequestException(BadRequestErrorResult.BAD_REQUEST_EXCEPTION);
+            }
+        }
+    }
 }

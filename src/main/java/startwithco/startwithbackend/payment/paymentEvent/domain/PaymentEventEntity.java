@@ -78,4 +78,10 @@ public class PaymentEventEntity extends BaseTimeEntity {
 
         return this;
     }
+
+    public PaymentEventEntity updatePaymentEventStatus(PAYMENT_EVENT_STATUS paymentEventStatus) {
+        this.paymentEventStatus = paymentEventStatus;
+
+        return this;
+    }
 }
