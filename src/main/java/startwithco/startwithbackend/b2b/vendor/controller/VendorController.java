@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,7 @@ import static startwithco.startwithbackend.b2b.vendor.controller.request.VendorR
 @RestController
 @RequestMapping("/api/b2b-service/vendor")
 @RequiredArgsConstructor
+@Tag(name = "벤더 기업")
 public class VendorController {
     private final VendorService vendorService;
 
@@ -37,7 +39,8 @@ public class VendorController {
             name = "벤더 기업 생성 솔루션 카테고리 API"
     )
     @Operation(
-            summary = "벤더 기업 생성 솔루션 카테고리 API 담당자(박종훈)"
+            summary = "벤더 기업 생성 솔루션 카테고리 API 담당자(박종훈)",
+            description = "1. CATEGORY: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY"
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "200 SUCCESS", useReturnTypeSchema = true),
