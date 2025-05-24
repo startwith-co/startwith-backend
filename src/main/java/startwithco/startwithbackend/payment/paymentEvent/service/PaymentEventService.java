@@ -134,6 +134,7 @@ public class PaymentEventService {
         /*
          * [예외 처리]
          * 1. paymentEvent 유효성
+         * * 2. DEVELOPING 아닌 경우 예외
          * */
         PaymentEventEntity paymentEventEntity = paymentEventEntityRepository.findByPaymentEventSeq(request.paymentEventSeq())
                 .orElseThrow(() -> new NotFoundException(NotFoundErrorResult.PAYMENT_EVENT_NOT_FOUND_EXCEPTION));
