@@ -1,0 +1,72 @@
+package startwithco.startwithbackend.b2b.consumer.controller;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest;
+import startwithco.startwithbackend.b2b.consumer.service.ConsumerService;
+import startwithco.startwithbackend.base.BaseResponse;
+import startwithco.startwithbackend.exception.badRequest.BadRequestExceptionHandler;
+import startwithco.startwithbackend.exception.conflict.ConflictExceptionHandler;
+import startwithco.startwithbackend.exception.server.ServerExceptionHandler;
+
+import static startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest.*;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/b2b-service/consumer")
+public class ConsumerController {
+
+
+    private final ConsumerService consumerService;
+
+
+    @PostMapping(name = "수요 기업 가입")
+    @Operation(summary = "join Consumer API", description = "수요 기업 가입 API")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "요청에 성공하였습니다.",
+                    useReturnTypeSchema = true),
+            @ApiResponse(
+                    responseCode = "S500",
+                    description = "500 SERVER_ERROR",
+                    content = @Content(
+                            schema = @Schema(
+                                    implementation = ServerExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "DB002",
+                    description = "400 Invalid DTO Parameter errors",
+                    content = @Content(
+                            schema = @Schema(
+                                    implementation = BadRequestExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "CNDCE002",
+                    description = "409 CONSUMER_NAME_DUPLICATION_CONFLICT_EXCEPTION",
+                    content = @Content(
+                            schema = @Schema(
+                                    implementation = ConflictExceptionHandler.ErrorResponse.class)))
+    })
+    public ResponseEntity<BaseResponse<String>> saveConsumer(@Valid @RequestBody SaveConsumerRequest request) {
+
+        // DTO 유효성 검사
+        request.validateSaveConsumerRequest(request);
+
+        // 저장
+        consumerService.saveConsumer(request);
+
+
+        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SUCCESS"));
+    }
+
+}
