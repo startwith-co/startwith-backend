@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 import startwithco.startwithbackend.solution.erp.domain.ErpEntity;
 import startwithco.startwithbackend.common.util.CATEGORY;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -15,5 +16,10 @@ public class ErpEntityRepositoryImpl implements ErpEntityRepository {
     @Override
     public Optional<ErpEntity> findByVendorSeqAndCategory(Long vendorSeq, CATEGORY category) {
         return repository.findByVendorSeqAndCategory(vendorSeq, category);
+    }
+
+    @Override
+    public List<ErpEntity> findAllByVendorSeq(Long vendorSeq) {
+        return repository.findAllByVendorSeq(vendorSeq);
     }
 }
