@@ -38,17 +38,13 @@ public class ErpController {
     @Operation(
             summary = "ERP 솔루션 생성 API 담당자(박종훈)",
             description = """
-                          1. NULL 가능 데이터: solutionEffect\n
-                          2. 중복 가능한 데이터의 경우 ','로 이어서 String으로 보내주세요\n
-                          3. 중복 가능 데이터:\n
-                          - industry(도입 가능 산업군)\n
-                          - recommendedCompanySize(도입 가능 기업 규모)\n
-                          - solutionImplementationType(솔루션 구축 형태)\n
-                          - specialist(기능 특화)\n
-                          
-                          EX) recommendedCompanySize(도입 가능 기능 규모):\n
-                          중소상공인,스타트업,소기업\n
-                          """
+                    1. NULL 가능 데이터: solutionEffect\n
+                    2. 중복 가능한 데이터의 경우 ','로 이어서 String으로 보내주세요\n
+                    3. 중복 가능 데이터: industry(도입 가능 산업군), recommendedCompanySize(도입 가능 기업 규모), solutionImplementationType(솔루션 구축 형태), specialist(기능 특화)\n
+                    4. CATEGORY: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY\n
+                    5. SELL_TYPE: SINGLE, SUBSCRIBE\n
+                    6. DIRECTION: INCREASE, DECREASE\n
+                    """
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "200 SUCCESS", useReturnTypeSchema = true),
@@ -65,6 +61,11 @@ public class ErpController {
             @RequestPart SaveErpEntityRequest request
     ) {
         request.validate(representImageUrl, descriptionPdfUrl);
+        request.getParsedCategory();
+        request.getParsedSellType();
+        if (request.solutionEffect() != null) {
+            request.solutionEffect().forEach(SaveErpEntityRequest.SolutionEffectEntityRequest::getParsedDirection);
+        }
 
         SaveErpEntityResponse response = erpService.saveErpEntity(request, representImageUrl, descriptionPdfUrl);
 
@@ -79,17 +80,13 @@ public class ErpController {
     @Operation(
             summary = "ERP 솔루션 수정 API 담당자(박종훈)",
             description = """
-                          1. NULL 가능 데이터: solutionEffect\n
-                          2. 중복 가능한 데이터의 경우 ','로 이어서 String으로 보내주세요\n
-                          3. 중복 가능 데이터:\n
-                          - industry(도입 가능 산업군)\n
-                          - recommendedCompanySize(도입 가능 기업 규모)\n
-                          - solutionImplementationType(솔루션 구축 형태)\n
-                          - specialist(기능 특화)\n
-                          
-                          EX) recommendedCompanySize(도입 가능 기능 규모):\n
-                          중소상공인,스타트업,소기업\n
-                          """
+                    1. NULL 가능 데이터: solutionEffect\n
+                    2. 중복 가능한 데이터의 경우 ','로 이어서 String으로 보내주세요\n
+                    3. 중복 가능 데이터: industry(도입 가능 산업군), recommendedCompanySize(도입 가능 기업 규모), solutionImplementationType(솔루션 구축 형태), specialist(기능 특화)\n
+                    4. CATEGORY: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY\n
+                    5. SELL_TYPE: SINGLE, SUBSCRIBE\n
+                    6. DIRECTION: INCREASE, DECREASE\n
+                    """
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "200 SUCCESS", useReturnTypeSchema = true),
@@ -106,6 +103,11 @@ public class ErpController {
             @RequestPart SaveErpEntityRequest request
     ) {
         request.validate(representImageUrl, descriptionPdfUrl);
+        request.getParsedCategory();
+        request.getParsedSellType();
+        if (request.solutionEffect() != null) {
+            request.solutionEffect().forEach(SaveErpEntityRequest.SolutionEffectEntityRequest::getParsedDirection);
+        }
 
         erpService.modifyErpEntity(request, representImageUrl, descriptionPdfUrl);
 

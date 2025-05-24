@@ -17,17 +17,31 @@ public class ErpRequest {
             Long vendorSeq,
             String solutionName,
             String solutionDetail,
-            CATEGORY category,
+            String category,
             String industry,
             String recommendedCompanySize,
             String solutionImplementationType,
             String specialist,
             Long amount,
-            SELL_TYPE sellType,
+            String sellType,
             Long duration,
             List<SolutionEffectEntityRequest> solutionEffect,
             List<String> keyword
     ) {
+        public record SolutionEffectEntityRequest(
+                String effectName,
+                Long percent,
+                String direction
+        ) {
+            public void getParsedDirection() {
+                try {
+                    DIRECTION.valueOf(direction.toUpperCase());
+                } catch (Exception e) {
+                    throw new BadRequestException(BadRequestErrorResult.BAD_REQUEST_EXCEPTION);
+                }
+            }
+        }
+
         public void validate(MultipartFile representImageUrl, MultipartFile descriptionPdfUrl) {
             if (vendorSeq == null ||
                     isBlank(solutionName) ||
@@ -47,12 +61,20 @@ public class ErpRequest {
             }
         }
 
-        public record SolutionEffectEntityRequest(
-                String effectName,
-                Long percent,
-                DIRECTION direction
-        ) {
+        public void getParsedCategory() {
+            try {
+                CATEGORY.valueOf(category.toUpperCase());
+            } catch (Exception e) {
+                throw new BadRequestException(BadRequestErrorResult.BAD_REQUEST_EXCEPTION);
+            }
+        }
 
+        public void getParsedSellType() {
+            try {
+                SELL_TYPE.valueOf(sellType.toUpperCase());
+            } catch (Exception e) {
+                throw new BadRequestException(BadRequestErrorResult.BAD_REQUEST_EXCEPTION);
+            }
         }
     }
 }

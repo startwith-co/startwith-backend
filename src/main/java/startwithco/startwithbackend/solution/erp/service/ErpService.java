@@ -8,6 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.b2b.vendor.repository.VendorEntityRepository;
+import startwithco.startwithbackend.common.util.CATEGORY;
+import startwithco.startwithbackend.common.util.DIRECTION;
+import startwithco.startwithbackend.common.util.SELL_TYPE;
 import startwithco.startwithbackend.exception.conflict.ConflictErrorResult;
 import startwithco.startwithbackend.exception.conflict.ConflictException;
 import startwithco.startwithbackend.exception.notFound.NotFoundErrorResult;
@@ -54,7 +57,7 @@ public class ErpService {
          * */
         VendorEntity vendorEntity = vendorEntityRepository.findByVendorSeq(request.vendorSeq())
                 .orElseThrow(() -> new NotFoundException(NotFoundErrorResult.VENDOR_NOT_FOUND_EXCEPTION));
-        erpEntityRepository.findByVendorSeqAndCategory(request.vendorSeq(), request.category())
+        erpEntityRepository.findByVendorSeqAndCategory(request.vendorSeq(), CATEGORY.valueOf(request.category()))
                 .ifPresent(solutionEntity -> {
                     throw new ConflictException(ConflictErrorResult.SOLUTION_CONFLICT_EXCEPTION);
                 });
@@ -68,12 +71,12 @@ public class ErpService {
                     .vendorEntity(vendorEntity)
                     .solutionName(request.solutionName())
                     .solutionDetail(request.solutionDetail())
-                    .category(request.category())
+                    .category(CATEGORY.valueOf(request.category()))
                     .industry(request.industry())
                     .recommendedCompanySize(request.recommendedCompanySize())
                     .solutionImplementationType(request.solutionImplementationType())
                     .amount(request.amount())
-                    .sellType(request.sellType())
+                    .sellType(SELL_TYPE.valueOf(request.sellType()))
                     .duration(request.duration())
                     .specialist(request.specialist())
                     .representImageUrl(S3RepresentImageUrl)
@@ -90,7 +93,7 @@ public class ErpService {
                             .solutionEntity(solutionEntity)
                             .effectName(e.effectName())
                             .percent(e.percent())
-                            .direction(e.direction())
+                            .direction(DIRECTION.valueOf(e.direction()))
                             .build())
                     .collect(Collectors.toList());
 
@@ -130,7 +133,7 @@ public class ErpService {
          * */
         vendorEntityRepository.findByVendorSeq(request.vendorSeq())
                 .orElseThrow(() -> new NotFoundException(NotFoundErrorResult.VENDOR_NOT_FOUND_EXCEPTION));
-        ErpEntity erpEntity = erpEntityRepository.findByVendorSeqAndCategory(request.vendorSeq(), request.category())
+        ErpEntity erpEntity = erpEntityRepository.findByVendorSeqAndCategory(request.vendorSeq(), CATEGORY.valueOf(request.category()))
                 .orElseThrow(() -> new NotFoundException(NotFoundErrorResult.SOLUTION_NOT_FOUND_EXCEPTION));
 
         try {
@@ -145,7 +148,7 @@ public class ErpService {
                     request.recommendedCompanySize(),
                     request.solutionImplementationType(),
                     request.amount(),
-                    request.sellType(),
+                    SELL_TYPE.valueOf(request.sellType()),
                     request.duration(),
                     request.specialist(),
                     S3RepresentImageUrl,
@@ -163,7 +166,7 @@ public class ErpService {
                             .solutionEntity(solutionEntity)
                             .effectName(e.effectName())
                             .percent(e.percent())
-                            .direction(e.direction())
+                            .direction(DIRECTION.valueOf(e.direction()))
                             .build())
                     .collect(Collectors.toList());
 
