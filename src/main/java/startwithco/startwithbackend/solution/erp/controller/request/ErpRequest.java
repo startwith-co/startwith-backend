@@ -1,6 +1,5 @@
 package startwithco.startwithbackend.solution.erp.controller.request;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 import startwithco.startwithbackend.exception.badRequest.BadRequestErrorResult;
@@ -13,7 +12,6 @@ import java.util.List;
 
 import static io.micrometer.common.util.StringUtils.isBlank;
 
-@Slf4j
 public class ErpRequest {
     public record SaveErpEntityRequest(
             Long vendorSeq,
@@ -48,13 +46,13 @@ public class ErpRequest {
                 throw new BadRequestException(BadRequestErrorResult.BAD_REQUEST_EXCEPTION);
             }
         }
-    }
 
-    public record SolutionEffectEntityRequest(
-            String effectName,
-            Long percent,
-            DIRECTION direction
-    ) {
+        public record SolutionEffectEntityRequest(
+                String effectName,
+                Long percent,
+                DIRECTION direction
+        ) {
 
+        }
     }
 }
