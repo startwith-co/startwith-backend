@@ -9,9 +9,15 @@ import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.base.BaseTimeEntity;
 import startwithco.startwithbackend.common.util.SELL_TYPE;
+import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 
 @Entity
-@Table(name = "PAYMENT_EVENT_ENTITY")
+@Table(
+        name = "PAYMENT_EVENT_ENTITY",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"vendor_seq", "consumer_seq", "solution_seq"})
+        }
+)
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -30,11 +36,12 @@ public class PaymentEventEntity extends BaseTimeEntity {
     @JoinColumn(name = "consumer_seq", nullable = false)
     private ConsumerEntity customerEntity;
 
-    @Column(name = "solution_seq", nullable = false)
-    private Long solutionSeq;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "solution_seq", nullable = false)
+    private SolutionEntity solutionEntity;
 
-    @Column(name = "solution_name", nullable = false)
-    private String solutionName;
+    @Column(name = "payment_event_name", nullable = false)
+    private String paymentEventName;
 
     @Column(name = "amount", nullable = false)
     private Long amount;

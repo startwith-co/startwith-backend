@@ -9,4 +9,6 @@ public interface ConsumerRepository {
     Optional<ConsumerEntity> findByEmail(String email);
 
     void save(ConsumerEntity consumerEntity);
+
+    Optional<ConsumerEntity> findByConsumerSeq(Long solutionSeq);
 }
