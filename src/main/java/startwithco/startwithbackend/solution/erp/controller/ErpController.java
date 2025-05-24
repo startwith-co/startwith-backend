@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
+import jdk.jfr.Description;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -34,7 +35,21 @@ public class ErpController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @Operation(summary = "ERP 솔루션 생성 API")
+    @Operation(
+            summary = "ERP 솔루션 생성 API 담당자(박종훈)",
+            description = """
+                          1. NULL 가능 데이터: solutionEffect\n
+                          2. 중복 가능한 데이터의 경우 ','로 이어서 String으로 보내주세요\n
+                          3. 중복 가능 데이터:\n
+                          - industry(도입 가능 산업군)\n
+                          - recommendedCompanySize(도입 가능 기업 규모)\n
+                          - solutionImplementationType(솔루션 구축 형태)\n
+                          - specialist(기능 특화)\n
+                          
+                          EX) recommendedCompanySize(도입 가능 기능 규모):\n
+                          중소상공인,스타트업,소기업\n
+                          """
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "200 SUCCESS", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "S500", description = "500 INTERNAL SERVER EXCEPTION", content = @Content(schema = @Schema(implementation = ServerExceptionHandler.ErrorResponse.class))),
@@ -61,7 +76,21 @@ public class ErpController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @Operation(summary = "ERP 솔루션 수정 API")
+    @Operation(
+            summary = "ERP 솔루션 수정 API 담당자(박종훈)",
+            description = """
+                          1. NULL 가능 데이터: solutionEffect\n
+                          2. 중복 가능한 데이터의 경우 ','로 이어서 String으로 보내주세요\n
+                          3. 중복 가능 데이터:\n
+                          - industry(도입 가능 산업군)\n
+                          - recommendedCompanySize(도입 가능 기업 규모)\n
+                          - solutionImplementationType(솔루션 구축 형태)\n
+                          - specialist(기능 특화)\n
+                          
+                          EX) recommendedCompanySize(도입 가능 기능 규모):\n
+                          중소상공인,스타트업,소기업\n
+                          """
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "200 SUCCESS", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "S500", description = "500 INTERNAL SERVER EXCEPTION", content = @Content(schema = @Schema(implementation = ServerExceptionHandler.ErrorResponse.class))),
