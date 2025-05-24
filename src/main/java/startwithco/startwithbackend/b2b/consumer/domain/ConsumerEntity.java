@@ -9,7 +9,7 @@ import startwithco.startwithbackend.base.BaseTimeEntity;
 
 @Entity
 @Table(name = "consumer", uniqueConstraints = {
-        @UniqueConstraint(columnNames = "consumer_name")
+        @UniqueConstraint(columnNames = "email")
 })
 @AllArgsConstructor
 @NoArgsConstructor

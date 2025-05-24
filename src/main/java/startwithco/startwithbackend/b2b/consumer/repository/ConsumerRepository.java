@@ -6,7 +6,7 @@ import java.util.Optional;
 
 public interface ConsumerRepository {
 
-    Optional<ConsumerEntity> isDuplicatedConsumerName(String consumerName);
+    Optional<ConsumerEntity> findByEmail(String email);
 
     void save(ConsumerEntity consumerEntity);
 }

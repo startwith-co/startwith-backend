@@ -5,14 +5,6 @@ import startwithco.startwithbackend.exception.badRequest.BadRequestException;
 
 public class ConsumerRequest {
 
-    public record SaveVendorRequest(
-            String vendorName,
-            String password,
-            String phoneNum,
-            String email
-    ) {
-    }
-
     public record SaveConsumerRequest(
             String consumerName,
             String password,

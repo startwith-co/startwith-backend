@@ -14,4 +14,6 @@ public interface VendorEntityJpaRepository extends JpaRepository<VendorEntity, L
             WHERE v.vendorSeq = :vendorSeq
             """)
     Optional<VendorEntity> findByVendorSeq(Long vendorSeq);
+
+    Optional<VendorEntity> findByEmail(String email);
 }

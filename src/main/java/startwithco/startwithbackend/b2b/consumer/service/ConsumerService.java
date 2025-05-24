@@ -25,10 +25,10 @@ public class ConsumerService {
     public void saveConsumer(ConsumerRequest.SaveConsumerRequest request) {
 
         // 유효성 검사
-        consumerRepository.isDuplicatedConsumerName(request.consumerName())
+        consumerRepository.findByEmail(request.email())
                 .ifPresent(entity -> {
-            throw new ConflictException(ConflictErrorResult.CONSUMER_NAME_DUPLICATION_CONFLICT_EXCEPTION);
-        });;
+            throw new ConflictException(ConflictErrorResult.CONSUMER_EMAIL_DUPLICATION_CONFLICT_EXCEPTION);
+        });
 
         try {
             ConsumerEntity consumerEntity = ConsumerEntity.builder()

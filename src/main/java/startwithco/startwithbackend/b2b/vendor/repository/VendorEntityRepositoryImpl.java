@@ -14,4 +14,14 @@ public class VendorEntityRepositoryImpl implements VendorEntityRepository {
     public Optional<VendorEntity> findByVendorSeq(Long vendorSeq) {
         return repository.findByVendorSeq(vendorSeq);
     }
+
+    @Override
+    public Optional<VendorEntity> findByEmail(String email) {
+        return repository.findByEmail(email);
+    }
+
+    @Override
+    public void save(VendorEntity vendorEntity) {
+        repository.save(vendorEntity);
+    }
 }
