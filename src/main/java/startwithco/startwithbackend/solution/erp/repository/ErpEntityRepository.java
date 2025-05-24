@@ -1,7 +1,7 @@
 package startwithco.startwithbackend.solution.erp.repository;
 
 import startwithco.startwithbackend.solution.erp.domain.ErpEntity;
-import startwithco.startwithbackend.common.util.CATEGORY;
+import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 
 import java.util.List;
 import java.util.Optional;

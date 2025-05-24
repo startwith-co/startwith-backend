@@ -1,6 +1,6 @@
 package startwithco.startwithbackend.payment.paymentEvent.controller.request;
 
-import startwithco.startwithbackend.common.util.SELL_TYPE;
+import startwithco.startwithbackend.solution.solution.util.SELL_TYPE;
 import startwithco.startwithbackend.exception.badRequest.BadRequestErrorResult;
 import startwithco.startwithbackend.exception.badRequest.BadRequestException;
 
@@ -30,6 +30,16 @@ public class PaymentEventRequest {
             try {
                 SELL_TYPE.valueOf(sellType.toUpperCase());
             } catch (Exception e) {
+                throw new BadRequestException(BadRequestErrorResult.BAD_REQUEST_EXCEPTION);
+            }
+        }
+    }
+
+    public record ModifyDevelopmentCompletedAt(
+            Long paymentEventSeq
+    ) {
+        public void validate() {
+            if (paymentEventSeq == null) {
                 throw new BadRequestException(BadRequestErrorResult.BAD_REQUEST_EXCEPTION);
             }
         }

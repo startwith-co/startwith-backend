@@ -4,9 +4,9 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 import startwithco.startwithbackend.exception.badRequest.BadRequestErrorResult;
 import startwithco.startwithbackend.exception.badRequest.BadRequestException;
-import startwithco.startwithbackend.common.util.CATEGORY;
-import startwithco.startwithbackend.common.util.DIRECTION;
-import startwithco.startwithbackend.common.util.SELL_TYPE;
+import startwithco.startwithbackend.solution.solution.util.CATEGORY;
+import startwithco.startwithbackend.solution.effect.util.DIRECTION;
+import startwithco.startwithbackend.solution.solution.util.SELL_TYPE;
 
 import java.util.List;
 

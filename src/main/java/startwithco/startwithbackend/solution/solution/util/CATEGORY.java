@@ -1,4 +1,4 @@
-package startwithco.startwithbackend.common.util;
+package startwithco.startwithbackend.solution.solution.util;
 
 public enum CATEGORY {
     BI,

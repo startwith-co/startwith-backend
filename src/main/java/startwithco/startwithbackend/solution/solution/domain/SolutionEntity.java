@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.base.BaseTimeEntity;
-import startwithco.startwithbackend.common.util.CATEGORY;
-import startwithco.startwithbackend.common.util.SELL_TYPE;
+import startwithco.startwithbackend.solution.solution.util.CATEGORY;
+import startwithco.startwithbackend.solution.solution.util.SELL_TYPE;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
