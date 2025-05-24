@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
-import startwithco.startwithbackend.common.util.SELL_TYPE;
+import startwithco.startwithbackend.solution.solution.util.SELL_TYPE;
 
 @Entity
 @Table(name = "ERP_ENTITY")

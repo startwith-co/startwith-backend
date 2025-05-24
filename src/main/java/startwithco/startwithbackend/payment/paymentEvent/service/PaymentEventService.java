@@ -9,7 +9,9 @@ import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
 import startwithco.startwithbackend.b2b.consumer.repository.ConsumerRepository;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.b2b.vendor.repository.VendorEntityRepository;
-import startwithco.startwithbackend.common.util.SELL_TYPE;
+import startwithco.startwithbackend.payment.paymentEvent.util.PAYMENT_EVENT_STATUS;
+import startwithco.startwithbackend.solution.solution.util.CATEGORY;
+import startwithco.startwithbackend.solution.solution.util.SELL_TYPE;
 import startwithco.startwithbackend.exception.conflict.ConflictErrorResult;
 import startwithco.startwithbackend.exception.conflict.ConflictException;
 import startwithco.startwithbackend.exception.notFound.NotFoundErrorResult;
@@ -20,6 +22,9 @@ import startwithco.startwithbackend.payment.paymentEvent.domain.PaymentEventEnti
 import startwithco.startwithbackend.payment.paymentEvent.repository.PaymentEventEntityRepository;
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 import startwithco.startwithbackend.solution.solution.repository.SolutionEntityRepository;
+
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 import static startwithco.startwithbackend.payment.paymentEvent.controller.request.PaymentEventRequest.*;
 import static startwithco.startwithbackend.payment.paymentEvent.controller.response.PaymentEventResponse.*;
@@ -59,6 +64,7 @@ public class PaymentEventService {
                     .amount(request.amount())
                     .sellType(SELL_TYPE.valueOf(request.sellType()))
                     .duration(request.duration())
+                    .paymentEventStatus(PAYMENT_EVENT_STATUS.REQUESTED)
                     .build();
 
             PaymentEventEntity savedPaymentEventEntity = paymentEventEntityRepository.savePaymentEventEntity(paymentEventEntity);
@@ -73,5 +79,87 @@ public class PaymentEventService {
 
             throw new ServerException(ServerErrorResult.INTERNAL_SERVER_EXCEPTION);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public GetPaymentEventEntityResponse getPaymentEventEntity(Long paymentEventSeq) {
+        /*
+         * [예외 처리]
+         * 1. paymentEvent 유효성
+         * */
+        PaymentEventEntity paymentEventEntity = paymentEventEntityRepository.findByPaymentEventSeq(paymentEventSeq)
+                .orElseThrow(() -> new NotFoundException(NotFoundErrorResult.PAYMENT_EVENT_NOT_FOUND_EXCEPTION));
+
+        // 공통 필드
+        String paymentEventName = paymentEventEntity.getPaymentEventName();
+        CATEGORY category = paymentEventEntity.getSolutionEntity().getCategory();
+        Long amount = paymentEventEntity.getAmount();
+        SELL_TYPE sellType = paymentEventEntity.getSellType();
+        Long duration = paymentEventEntity.getDuration();
+        PAYMENT_EVENT_STATUS paymentEventStatus = paymentEventEntity.getPaymentEventStatus();
+
+        // 상태에 따른 조건 필드
+        Long actualDuration = null;
+        LocalDateTime paymentCompletedAt = null;
+        LocalDateTime developmentCompletedAt = null;
+        LocalDateTime autoConfirmScheduledAt = null;
+
+        if (paymentEventEntity.getPaymentEventStatus() == PAYMENT_EVENT_STATUS.DEVELOPED ||
+                paymentEventEntity.getPaymentEventStatus() == PAYMENT_EVENT_STATUS.CONFIRMED) {
+
+            // 조건부 필드 값 설정
+            paymentCompletedAt = paymentEventEntity.getPaymentCompletedAt();
+            developmentCompletedAt = paymentEventEntity.getDevelopmentCompletedAt();
+            actualDuration = ChronoUnit.DAYS.between(paymentCompletedAt.toLocalDate(), developmentCompletedAt.toLocalDate());
+            autoConfirmScheduledAt = paymentEventEntity.getAutoConfirmScheduledAt();
+        }
+
+        return new GetPaymentEventEntityResponse(
+                paymentEventSeq,
+                paymentEventName,
+                category,
+                amount,
+                sellType,
+                duration,
+                paymentEventStatus,
+                actualDuration,
+                paymentCompletedAt,
+                developmentCompletedAt,
+                autoConfirmScheduledAt
+        );
+    }
+
+    @Transactional
+    public void modifyDevelopmentCompletedAt(ModifyDevelopmentCompletedAt request) {
+        /*
+         * [예외 처리]
+         * 1. paymentEvent 유효성
+         * * 2. DEVELOPING 아닌 경우 예외
+         * */
+        PaymentEventEntity paymentEventEntity = paymentEventEntityRepository.findByPaymentEventSeq(request.paymentEventSeq())
+                .orElseThrow(() -> new NotFoundException(NotFoundErrorResult.PAYMENT_EVENT_NOT_FOUND_EXCEPTION));
+        if(paymentEventEntity.getPaymentEventStatus() != PAYMENT_EVENT_STATUS.DEVELOPING) {
+            throw new ConflictException(ConflictErrorResult.INVALID_PAYMENT_EVENT_STATUS_CONFLICT_EXCEPTION);
+        }
+
+        PaymentEventEntity updatedPaymentEventEntity = paymentEventEntity.updateDevelopmentCompletedAt();
+        paymentEventEntityRepository.savePaymentEventEntity(updatedPaymentEventEntity);
+    }
+
+    @Transactional
+    public void deletePaymentEventEntity(DeletePaymentEventRequest request) {
+        /*
+         * [예외 처리]
+         * 1. paymentEvent 유효성
+         * 2. REQUESTED가 아닌 경우 예외
+         * */
+        PaymentEventEntity paymentEventEntity = paymentEventEntityRepository.findByPaymentEventSeq(request.paymentEventSeq())
+                .orElseThrow(() -> new NotFoundException(NotFoundErrorResult.PAYMENT_EVENT_NOT_FOUND_EXCEPTION));
+        if (paymentEventEntity.getPaymentEventStatus() != PAYMENT_EVENT_STATUS.REQUESTED) {
+            throw new ConflictException(ConflictErrorResult.INVALID_PAYMENT_EVENT_STATUS_CONFLICT_EXCEPTION);
+        }
+
+        PaymentEventEntity updatedPaymentEventEntity = paymentEventEntity.updatePaymentEventStatus(PAYMENT_EVENT_STATUS.CANCELED);
+        paymentEventEntityRepository.savePaymentEventEntity(updatedPaymentEventEntity);
     }
 }
