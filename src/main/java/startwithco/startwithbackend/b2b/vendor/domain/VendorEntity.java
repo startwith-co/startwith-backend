@@ -107,4 +107,15 @@ public class VendorEntity extends BaseTimeEntity {
 
     @Column(name = "holiday_end_time")
     private LocalTime holidayEndTime;
+
+    /*
+     * [총 거래 건수 및 총 기업 고객 수 설정]
+     * 1. 총 거래 건수
+     * 2. 총 기업 고객 수
+     * */
+    @Column(name = "order_count", nullable = true)
+    private Long orderCount;
+
+    @Column(name = "client_count", nullable = true)
+    private Long clientCount;
 }
