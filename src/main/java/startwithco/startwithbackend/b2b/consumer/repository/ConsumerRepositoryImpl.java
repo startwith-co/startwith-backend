@@ -23,4 +23,9 @@ public class ConsumerRepositoryImpl implements ConsumerRepository{
     public void save(ConsumerEntity consumerEntity) {
         consumerJpaRepository.save(consumerEntity);
     }
+
+    @Override
+    public Optional<ConsumerEntity> findByConsumerSeq(Long solutionSeq) {
+        return consumerJpaRepository.findByConsumerSeq(solutionSeq);
+    }
 }

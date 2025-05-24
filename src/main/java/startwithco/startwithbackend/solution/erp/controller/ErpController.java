@@ -26,7 +26,7 @@ import static startwithco.startwithbackend.solution.erp.controller.response.ErpR
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/solution-service/solution/erp")
-@Tag(name = "ERP 솔루션")
+@Tag(name = "ERP 솔루션", description = "담당자(송인준)")
 public class ErpController {
     private final ErpService erpService;
 
@@ -36,7 +36,7 @@ public class ErpController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @Operation(
-            summary = "ERP 솔루션 생성 API 담당자(박종훈)",
+            summary = "ERP 솔루션 생성 / 담당자(박종훈)",
             description = """
                     1. NULL 가능 데이터: solutionEffect\n
                     2. 중복 가능한 데이터의 경우 ','로 이어서 String으로 보내주세요\n
@@ -78,7 +78,7 @@ public class ErpController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @Operation(
-            summary = "ERP 솔루션 수정 API 담당자(박종훈)",
+            summary = "ERP 솔루션 수정 / 담당자(박종훈)",
             description = """
                     1. NULL 가능 데이터: solutionEffect\n
                     2. 중복 가능한 데이터의 경우 ','로 이어서 String으로 보내주세요\n

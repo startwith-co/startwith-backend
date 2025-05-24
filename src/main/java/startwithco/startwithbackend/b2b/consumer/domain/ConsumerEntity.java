@@ -8,9 +8,11 @@ import lombok.experimental.SuperBuilder;
 import startwithco.startwithbackend.base.BaseTimeEntity;
 
 @Entity
-@Table(name = "consumer", uniqueConstraints = {
-        @UniqueConstraint(columnNames = "email")
-})
+@Table(
+        name = "CONSUMER_ENTITY",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = "email")}
+)
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter

@@ -5,9 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
 import startwithco.startwithbackend.b2b.vendor.controller.request.VendorRequest;
+import startwithco.startwithbackend.b2b.vendor.controller.response.VendorResponse;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.b2b.vendor.repository.VendorEntityRepository;
 import startwithco.startwithbackend.common.service.CommonService;
@@ -24,6 +26,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static startwithco.startwithbackend.b2b.vendor.controller.response.VendorResponse.*;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -33,7 +37,8 @@ public class VendorService {
     private final CommonService commonService;
     private final BCryptPasswordEncoder encoder;
 
-    public List<CATEGORY> getVendorSolutionCategory(Long vendorSeq) {
+    @Transactional(readOnly = true)
+    public List<GetVendorSolutionCategory> getVendorSolutionCategory(Long vendorSeq) {
         /*
          * [예외 처리]
          * 1. vendor 유효성 검사
@@ -42,16 +47,16 @@ public class VendorService {
                 .orElseThrow(() -> new NotFoundException(NotFoundErrorResult.VENDOR_NOT_FOUND_EXCEPTION));
         List<ErpEntity> erpEntities = erpEntityRepository.findAllByVendorSeq(vendorSeq);
 
-        List<CATEGORY> categories = new ArrayList<>();
+        List<GetVendorSolutionCategory> response = new ArrayList<>();
         for (ErpEntity erpEntity : erpEntities) {
-            categories.add(erpEntity.getCategory());
+            response.add(new GetVendorSolutionCategory(erpEntity.getCategory(), erpEntity.getSolutionSeq()));
         }
 
-        return categories;
+        return response;
     }
 
+    @Transactional
     public void saveVendor(VendorRequest.SaveVendorRequest request, MultipartFile businessLicense) {
-
         vendorEntityRepository.findByEmail(request.email())
                 .ifPresent(entity -> {
                     throw new ConflictException(ConflictErrorResult.VENDOR_EMAIL_DUPLICATION_CONFLICT_EXCEPTION);
@@ -75,13 +80,13 @@ public class VendorService {
 
 
         } catch (DataIntegrityViolationException e) {
-            log.error("Solution Service saveSolutionEntity Method DataIntegrityViolationException-> {}", e.getMessage());
+            log.error("Vendor Service saveVendor Method DataIntegrityViolationException-> {}", e.getMessage());
+
             throw new ConflictException(ConflictErrorResult.IDEMPOTENT_REQUEST_CONFLICT_EXCEPTION);
         } catch (IOException e) {
+            log.error("Vendor Service saveVendor Method IOException-> {}", e.getMessage());
 
-            log.error("Solution Service saveSolutionEntity Method DataIntegrityViolationException-> {}", e.getMessage());
             throw new ConflictException(ConflictErrorResult.IDEMPOTENT_REQUEST_CONFLICT_EXCEPTION);
         }
-
     }
 }

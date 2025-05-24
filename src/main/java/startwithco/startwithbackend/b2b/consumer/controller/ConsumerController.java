@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,7 @@ import static startwithco.startwithbackend.b2b.consumer.controller.request.Consu
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/b2b-service/consumer")
+@Tag(name = "수요 기업", description = "담당자(송인준)")
 public class ConsumerController {
 
 
