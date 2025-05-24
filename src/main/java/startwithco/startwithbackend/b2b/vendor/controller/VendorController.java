@@ -32,7 +32,8 @@ public class VendorController {
             name = "벤더 기업 생성 솔루션 카테고리 API"
     )
     @Operation(
-            summary = "벤더 기업 생성 솔루션 카테고리 API 담당자(박종훈)"
+            summary = "벤더 기업 생성 솔루션 카테고리 API 담당자(박종훈)",
+            description = "1. CATEGORY: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY"
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "200 SUCCESS", useReturnTypeSchema = true),
