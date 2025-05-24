@@ -5,8 +5,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jdk.jfr.Description;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -16,7 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 import startwithco.startwithbackend.base.BaseResponse;
 import startwithco.startwithbackend.exception.badRequest.BadRequestExceptionHandler;
 import startwithco.startwithbackend.exception.conflict.ConflictExceptionHandler;
-import startwithco.startwithbackend.exception.notFound.NotFoundException;
 import startwithco.startwithbackend.exception.notFound.NotFoundExceptionHandler;
 import startwithco.startwithbackend.exception.server.ServerExceptionHandler;
 import startwithco.startwithbackend.solution.erp.service.ErpService;
@@ -27,6 +26,7 @@ import static startwithco.startwithbackend.solution.erp.controller.response.ErpR
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/solution-service/solution/erp")
+@Tag(name = "ERP 솔루션")
 public class ErpController {
     private final ErpService erpService;
 
