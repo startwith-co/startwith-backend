@@ -15,8 +15,8 @@ public class ConsumerRepositoryImpl implements ConsumerRepository{
     private final ConsumerJpaRepository consumerJpaRepository;
 
     @Override
-    public Optional<ConsumerEntity> isDuplicatedConsumerName(String consumerName) {
-        return consumerJpaRepository.findByConsumerName(consumerName);
+    public Optional<ConsumerEntity> findByEmail(String email) {
+        return consumerJpaRepository.findByEmail(email);
     }
 
     @Override

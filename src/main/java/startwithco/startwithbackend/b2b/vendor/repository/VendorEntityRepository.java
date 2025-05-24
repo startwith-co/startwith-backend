@@ -6,4 +6,8 @@ import java.util.Optional;
 
 public interface VendorEntityRepository {
     Optional<VendorEntity> findByVendorSeq(Long vendorSeq);
+
+    Optional<VendorEntity> findByEmail(String email);
+
+    void save(VendorEntity vendorEntity);
 }

@@ -51,8 +51,8 @@ public class ConsumerController {
                             schema = @Schema(
                                     implementation = BadRequestExceptionHandler.ErrorResponse.class))),
             @ApiResponse(
-                    responseCode = "CNDCE002",
-                    description = "409 CONSUMER_NAME_DUPLICATION_CONFLICT_EXCEPTION",
+                    responseCode = "CEDCE002",
+                    description = "409 CONSUMER_EMAIL_DUPLICATION_CONFLICT_EXCEPTION",
                     content = @Content(
                             schema = @Schema(
                                     implementation = ConflictExceptionHandler.ErrorResponse.class)))

@@ -12,5 +12,6 @@ import java.util.Optional;
 public interface ConsumerJpaRepository extends JpaRepository<ConsumerEntity, Long> {
 
     Optional<ConsumerEntity> findByConsumerName(String consumerName);
+    Optional<ConsumerEntity> findByEmail(String email);
 
 }
