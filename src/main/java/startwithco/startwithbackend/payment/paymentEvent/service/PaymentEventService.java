@@ -137,6 +137,9 @@ public class PaymentEventService {
          * */
         PaymentEventEntity paymentEventEntity = paymentEventEntityRepository.findByPaymentEventSeq(request.paymentEventSeq())
                 .orElseThrow(() -> new NotFoundException(NotFoundErrorResult.PAYMENT_EVENT_NOT_FOUND_EXCEPTION));
+        if(paymentEventEntity.getPaymentEventStatus() != PAYMENT_EVENT_STATUS.DEVELOPING) {
+            throw new ConflictException(ConflictErrorResult.INVALID_PAYMENT_EVENT_STATUS_CONFLICT_EXCEPTION);
+        }
 
         PaymentEventEntity updatedPaymentEventEntity = paymentEventEntity.updateDevelopmentCompletedAt();
         paymentEventEntityRepository.savePaymentEventEntity(updatedPaymentEventEntity);
