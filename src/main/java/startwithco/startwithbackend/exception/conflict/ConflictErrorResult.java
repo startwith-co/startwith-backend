@@ -10,9 +10,6 @@ public enum ConflictErrorResult {
     CONFLICT_EXCEPTION(HttpStatus.CONFLICT.value(), "CONFLICT EXCEPTION", "CE001"),
     IDEMPOTENT_REQUEST_CONFLICT_EXCEPTION(HttpStatus.CONFLICT.value(), "IDEMPOTENT REQUEST CONFLICT EXCEPTION", "IRCE002"),
     SOLUTION_CONFLICT_EXCEPTION(HttpStatus.CONFLICT.value(), "SOLUTION CONFLICT EXCEPTION", "SCE003"),
-    VENDOR_NAME_DUPLICATION_CONFLICT_EXCEPTION(HttpStatus.CONFLICT.value(), "Vendor Name Duplication Conflict Exception", "VNDCE004"),
-    CONSUMER_NAME_DUPLICATION_CONFLICT_EXCEPTION(HttpStatus.CONFLICT.value(), "Consumer Name Duplication Conflict Exception", "CNDCE005");
-
     ;
 
     private final int httpStatus;
