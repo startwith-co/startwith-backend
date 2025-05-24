@@ -8,7 +8,9 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum ConflictErrorResult {
     CONFLICT_EXCEPTION(HttpStatus.CONFLICT.value(), "CONFLICT EXCEPTION", "CE001"),
-    IDEMPOTENT_REQUEST_CONFLICT_EXCEPTION(HttpStatus.CONFLICT.value(), "IDEMPOTENT REQUEST CONFLICT EXCEPTION", "IRCE002");;
+    IDEMPOTENT_REQUEST_CONFLICT_EXCEPTION(HttpStatus.CONFLICT.value(), "IDEMPOTENT REQUEST CONFLICT EXCEPTION", "IRCE002"),
+    SOLUTION_CONFLICT_EXCEPTION(HttpStatus.CONFLICT.value(), "SOLUTION CONFLICT EXCEPTION", "SCE003"),
+    ;
 
     private final int httpStatus;
     private final String message;

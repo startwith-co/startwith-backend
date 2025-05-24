@@ -5,5 +5,7 @@ import startwithco.startwithbackend.solution.keyword.domain.SolutionKeywordEntit
 import java.util.List;
 
 public interface SolutionKeywordEntityRepository {
-    List<SolutionKeywordEntity> saveAllSolutionKeywordEntities(List<SolutionKeywordEntity> solutionKeywordEntities);
+    List<SolutionKeywordEntity> saveAll(List<SolutionKeywordEntity> solutionKeywordEntities);
+
+    void deleteAllBySolutionSeq(Long solutionSeq);
 }

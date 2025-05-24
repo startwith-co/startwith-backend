@@ -77,4 +77,22 @@ public class SolutionEntity extends BaseTimeEntity {
 
     @Column(name = "duration", nullable = false)
     private Long duration;
+
+    protected void updateBaseFields(String solutionName,
+                                    String solutionDetail,
+                                    String industry,
+                                    String recommendedCompanySize,
+                                    String solutionImplementationType,
+                                    Long amount,
+                                    SELL_TYPE sellType,
+                                    Long duration) {
+        this.solutionName = solutionName;
+        this.solutionDetail = solutionDetail;
+        this.industry = industry;
+        this.recommendedCompanySize = recommendedCompanySize;
+        this.solutionImplementationType = solutionImplementationType;
+        this.amount = amount;
+        this.sellType = sellType;
+        this.duration = duration;
+    }
 }
