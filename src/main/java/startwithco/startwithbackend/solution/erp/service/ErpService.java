@@ -41,7 +41,7 @@ public class ErpService {
     private final SolutionEffectEntityRepository solutionEffectEntityRepository;
     private final SolutionKeywordEntityRepository solutionKeywordEntityRepository;
 
-    private final CommonService s3Util;
+    private final CommonService commonService;
 
     @Transactional
     public SaveErpEntityResponse saveErpEntity(SaveErpEntityRequest request, MultipartFile representImageUrl, MultipartFile descriptionPdfUrl) {
@@ -61,8 +61,8 @@ public class ErpService {
 
         try {
             // 1. ErpEntity -> SolutionEntity 저장
-            String S3RepresentImageUrl = s3Util.uploadJPGFile(representImageUrl);
-            String S3DescriptionPdfUrl = s3Util.uploadPDFFile(descriptionPdfUrl);
+            String S3RepresentImageUrl = commonService.uploadJPGFile(representImageUrl);
+            String S3DescriptionPdfUrl = commonService.uploadPDFFile(descriptionPdfUrl);
 
             ErpEntity erpEntity = ErpEntity.builder()
                     .vendorEntity(vendorEntity)
@@ -135,8 +135,8 @@ public class ErpService {
 
         try {
             // 1. ErpEntity -> SolutionEntity 업데이트
-            String S3RepresentImageUrl = s3Util.uploadJPGFile(representImageUrl);
-            String S3DescriptionPdfUrl = s3Util.uploadPDFFile(descriptionPdfUrl);
+            String S3RepresentImageUrl = commonService.uploadJPGFile(representImageUrl);
+            String S3DescriptionPdfUrl = commonService.uploadPDFFile(descriptionPdfUrl);
 
             ErpEntity updatedErpEntity = erpEntity.updateErpEntity(
                     request.solutionName(),
