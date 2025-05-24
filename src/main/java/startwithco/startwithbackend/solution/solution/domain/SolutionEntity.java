@@ -2,14 +2,13 @@ package startwithco.startwithbackend.solution.solution.domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.base.BaseTimeEntity;
-import startwithco.startwithbackend.util.CATEGORY;
-import startwithco.startwithbackend.util.SELL_TYPE;
+import startwithco.startwithbackend.common.util.CATEGORY;
+import startwithco.startwithbackend.common.util.SELL_TYPE;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)

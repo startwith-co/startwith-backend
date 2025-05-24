@@ -9,7 +9,7 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import startwithco.startwithbackend.base.BaseTimeEntity;
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
-import startwithco.startwithbackend.util.DIRECTION;
+import startwithco.startwithbackend.common.util.DIRECTION;
 
 @Entity
 @Table(name = "SOLUTION_EFFECT_ENTITY")

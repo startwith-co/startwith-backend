@@ -1,4 +1,4 @@
-package startwithco.startwithbackend.util;
+package startwithco.startwithbackend.common.util;
 
 public enum VENDOR_STATUS {
     WAITING_CHAT,     // 실시간 상담 대기

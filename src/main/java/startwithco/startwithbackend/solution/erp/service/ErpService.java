@@ -22,7 +22,7 @@ import startwithco.startwithbackend.solution.keyword.domain.SolutionKeywordEntit
 import startwithco.startwithbackend.solution.keyword.repository.SolutionKeywordEntityRepository;
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 import startwithco.startwithbackend.solution.solution.repository.SolutionEntityRepository;
-import startwithco.startwithbackend.util.S3Util;
+import startwithco.startwithbackend.common.service.CommonService;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,7 +41,7 @@ public class ErpService {
     private final SolutionEffectEntityRepository solutionEffectEntityRepository;
     private final SolutionKeywordEntityRepository solutionKeywordEntityRepository;
 
-    private final S3Util s3Util;
+    private final CommonService s3Util;
 
     @Transactional
     public SaveErpEntityResponse saveErpEntity(SaveErpEntityRequest request, MultipartFile representImageUrl, MultipartFile descriptionPdfUrl) {

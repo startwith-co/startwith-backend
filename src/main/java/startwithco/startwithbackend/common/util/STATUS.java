@@ -1,4 +1,4 @@
-package startwithco.startwithbackend.util;
+package startwithco.startwithbackend.common.util;
 
 public enum STATUS {
     READY,        // 결제 준비

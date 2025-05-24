@@ -8,7 +8,7 @@ import lombok.experimental.SuperBuilder;
 import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.base.BaseTimeEntity;
-import startwithco.startwithbackend.util.SELL_TYPE;
+import startwithco.startwithbackend.common.util.SELL_TYPE;
 
 @Entity
 @Table(name = "PAYMENT_EVENT_ENTITY")

@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import startwithco.startwithbackend.base.BaseTimeEntity;
 import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
-import startwithco.startwithbackend.util.CONSUMER_STATUS;
-import startwithco.startwithbackend.util.VENDOR_STATUS;
+import startwithco.startwithbackend.common.util.CONSUMER_STATUS;
+import startwithco.startwithbackend.common.util.VENDOR_STATUS;
 
 import java.time.LocalDateTime;
 
