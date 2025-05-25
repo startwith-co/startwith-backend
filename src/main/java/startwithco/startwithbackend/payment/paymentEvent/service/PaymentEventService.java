@@ -138,7 +138,7 @@ public class PaymentEventService {
          * */
         PaymentEventEntity paymentEventEntity = paymentEventEntityRepository.findByPaymentEventSeq(request.paymentEventSeq())
                 .orElseThrow(() -> new NotFoundException(NotFoundErrorResult.PAYMENT_EVENT_NOT_FOUND_EXCEPTION));
-        if(paymentEventEntity.getPaymentEventStatus() != PAYMENT_EVENT_STATUS.DEVELOPING) {
+        if (paymentEventEntity.getPaymentEventStatus() != PAYMENT_EVENT_STATUS.DEVELOPING) {
             throw new ConflictException(ConflictErrorResult.INVALID_PAYMENT_EVENT_STATUS_CONFLICT_EXCEPTION);
         }
 
@@ -161,5 +161,36 @@ public class PaymentEventService {
 
         PaymentEventEntity updatedPaymentEventEntity = paymentEventEntity.updatePaymentEventStatus(PAYMENT_EVENT_STATUS.CANCELED);
         paymentEventEntityRepository.savePaymentEventEntity(updatedPaymentEventEntity);
+    }
+
+    @Transactional(readOnly = true)
+    public GetPaymentEventEntityOrderResponse getPaymentEventEntityOrder(Long paymentEventSeq) {
+        /*
+         * [예외 처리]
+         * 1. paymentEvent 유효성
+         * 2. REQUESTED가 아닌 경우 예외
+         * */
+        PaymentEventEntity paymentEventEntity = paymentEventEntityRepository.findByPaymentEventSeq(paymentEventSeq)
+                .orElseThrow(() -> new NotFoundException(NotFoundErrorResult.PAYMENT_EVENT_NOT_FOUND_EXCEPTION));
+        if (paymentEventEntity.getPaymentEventStatus() != PAYMENT_EVENT_STATUS.REQUESTED) {
+            throw new ConflictException(ConflictErrorResult.INVALID_PAYMENT_EVENT_STATUS_CONFLICT_EXCEPTION);
+        }
+
+        SolutionEntity solutionEntity = paymentEventEntity.getSolutionEntity();
+        VendorEntity vendorEntity = solutionEntity.getVendorEntity();
+
+        Long amount = paymentEventEntity.getAmount();
+        Long actualAmount = (long) (amount + amount * 0.1);
+
+        return new GetPaymentEventEntityOrderResponse(
+                solutionEntity.getRepresentImageUrl(),
+                paymentEventEntity.getPaymentEventName(),
+                vendorEntity.getVendorBannerImageUrl(),
+                vendorEntity.getVendorName(),
+                solutionEntity.getCategory(),
+                solutionEntity.getDuration(),
+                amount,
+                actualAmount
+        );
     }
 }

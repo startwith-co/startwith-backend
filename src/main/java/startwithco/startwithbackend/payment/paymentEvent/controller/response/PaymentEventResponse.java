@@ -32,4 +32,18 @@ public class PaymentEventResponse {
     ) {
 
     }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record GetPaymentEventEntityOrderResponse(
+            String representImageUrl,
+            String paymentEventName,
+            String vendorBannerImageUrl,
+            String vendorName,
+            CATEGORY category,
+            Long duration,
+            Long amount,
+            Long actualAmount
+    ) {
+
+    }
 }

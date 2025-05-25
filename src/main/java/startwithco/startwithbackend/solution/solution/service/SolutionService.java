@@ -1,4 +1,4 @@
-package startwithco.startwithbackend.solution.erp.service;
+package startwithco.startwithbackend.solution.solution.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,8 +19,6 @@ import startwithco.startwithbackend.exception.server.ServerErrorResult;
 import startwithco.startwithbackend.exception.server.ServerException;
 import startwithco.startwithbackend.solution.effect.domain.SolutionEffectEntity;
 import startwithco.startwithbackend.solution.effect.repository.SolutionEffectEntityRepository;
-import startwithco.startwithbackend.solution.erp.domain.ErpEntity;
-import startwithco.startwithbackend.solution.erp.repository.ErpEntityRepository;
 import startwithco.startwithbackend.solution.keyword.domain.SolutionKeywordEntity;
 import startwithco.startwithbackend.solution.keyword.repository.SolutionKeywordEntityRepository;
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
@@ -31,15 +29,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static startwithco.startwithbackend.solution.erp.controller.request.ErpRequest.*;
-import static startwithco.startwithbackend.solution.erp.controller.response.ErpResponse.*;
+import static startwithco.startwithbackend.solution.solution.controller.request.SolutionRequest.*;
+import static startwithco.startwithbackend.solution.solution.controller.response.SolutionResponse.*;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ErpService {
+public class SolutionService {
     private final VendorEntityRepository vendorEntityRepository;
-    private final ErpEntityRepository erpEntityRepository;
     private final SolutionEntityRepository solutionEntityRepository;
     private final SolutionEffectEntityRepository solutionEffectEntityRepository;
     private final SolutionKeywordEntityRepository solutionKeywordEntityRepository;
@@ -47,7 +44,7 @@ public class ErpService {
     private final CommonService commonService;
 
     @Transactional
-    public SaveErpEntityResponse saveErpEntity(SaveErpEntityRequest request, MultipartFile representImageUrl, MultipartFile descriptionPdfUrl) {
+    public SaveSolutionEntityResponse saveSolutionEntity(SaveSolutionEntityRequest request, MultipartFile representImageUrl, MultipartFile descriptionPdfUrl) {
         /*
          * [예외 처리]
          * 1. vendor 유효성 검사
@@ -57,17 +54,17 @@ public class ErpService {
          * */
         VendorEntity vendorEntity = vendorEntityRepository.findByVendorSeq(request.vendorSeq())
                 .orElseThrow(() -> new NotFoundException(NotFoundErrorResult.VENDOR_NOT_FOUND_EXCEPTION));
-        erpEntityRepository.findByVendorSeqAndCategory(request.vendorSeq(), CATEGORY.valueOf(request.category()))
+        solutionEntityRepository.findByVendorSeqAndCategory(request.vendorSeq(), CATEGORY.valueOf(request.category()))
                 .ifPresent(solutionEntity -> {
                     throw new ConflictException(ConflictErrorResult.SOLUTION_CONFLICT_EXCEPTION);
                 });
 
         try {
-            // 1. ErpEntity -> SolutionEntity 저장
+            // 1. SolutionEntity 저장
             String S3RepresentImageUrl = commonService.uploadJPGFile(representImageUrl);
             String S3DescriptionPdfUrl = commonService.uploadPDFFile(descriptionPdfUrl);
 
-            ErpEntity erpEntity = ErpEntity.builder()
+            SolutionEntity erpEntity = SolutionEntity.builder()
                     .vendorEntity(vendorEntity)
                     .solutionName(request.solutionName())
                     .solutionDetail(request.solutionDetail())
@@ -109,7 +106,7 @@ public class ErpService {
 
             solutionKeywordEntityRepository.saveAll(solutionKeywordEntities);
 
-            return new SaveErpEntityResponse(solutionEntity.getSolutionSeq());
+            return new SaveSolutionEntityResponse(solutionEntity.getSolutionSeq());
 
         } catch (DataIntegrityViolationException e) {
             log.error("Solution Service saveSolutionEntity Method DataIntegrityViolationException-> {}", e.getMessage());
@@ -123,7 +120,7 @@ public class ErpService {
     }
 
     @Transactional
-    public void modifyErpEntity(SaveErpEntityRequest request, MultipartFile representImageUrl, MultipartFile descriptionPdfUrl) {
+    public void modifySolutionEntity(SaveSolutionEntityRequest request, MultipartFile representImageUrl, MultipartFile descriptionPdfUrl) {
         /*
          * [예외 처리]
          * 1. vendor 유효성 검사
@@ -133,15 +130,15 @@ public class ErpService {
          * */
         vendorEntityRepository.findByVendorSeq(request.vendorSeq())
                 .orElseThrow(() -> new NotFoundException(NotFoundErrorResult.VENDOR_NOT_FOUND_EXCEPTION));
-        ErpEntity erpEntity = erpEntityRepository.findByVendorSeqAndCategory(request.vendorSeq(), CATEGORY.valueOf(request.category()))
+        SolutionEntity solutionEntity = solutionEntityRepository.findByVendorSeqAndCategory(request.vendorSeq(), CATEGORY.valueOf(request.category()))
                 .orElseThrow(() -> new NotFoundException(NotFoundErrorResult.SOLUTION_NOT_FOUND_EXCEPTION));
 
         try {
-            // 1. ErpEntity -> SolutionEntity 업데이트
+            // 1. SolutionEntity 업데이트
             String S3RepresentImageUrl = commonService.uploadJPGFile(representImageUrl);
             String S3DescriptionPdfUrl = commonService.uploadPDFFile(descriptionPdfUrl);
 
-            ErpEntity updatedErpEntity = erpEntity.updateErpEntity(
+            SolutionEntity updatedSolutionEntity = solutionEntity.updateSolutionEntity(
                     request.solutionName(),
                     request.solutionDetail(),
                     request.industry(),
@@ -155,7 +152,7 @@ public class ErpService {
                     S3DescriptionPdfUrl
             );
 
-            SolutionEntity solutionEntity = solutionEntityRepository.saveSolutionEntity(updatedErpEntity);
+            solutionEntityRepository.saveSolutionEntity(updatedSolutionEntity);
 
             // 2. SolutionEffectEntity 삭제 후 저장
             solutionEffectEntityRepository.deleteAllBySolutionSeq(solutionEntity.getSolutionSeq());

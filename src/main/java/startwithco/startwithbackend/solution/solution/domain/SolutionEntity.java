@@ -77,14 +77,35 @@ public class SolutionEntity extends BaseTimeEntity {
     @Column(name = "duration", nullable = false)
     private Long duration;
 
-    protected void updateBaseFields(String solutionName,
+    /*
+     * [솔루션 상세 정보 입력]
+     * 1. 대표 이미지
+     * 2. 솔루션 상세 설명 PDF
+     * */
+    @Column(name = "represent_image_url", nullable = false)
+    private String representImageUrl;
+
+    @Column(name = "description_pdf_url", nullable = false)
+    private String descriptionPdfUrl;
+
+    /*
+     * [솔루션 기본 정보 입력]
+     * 1. 기능 특화
+     */
+    @Column(name = "specialist", nullable = false)
+    private String specialist;
+
+    public SolutionEntity updateSolutionEntity(String solutionName,
                                     String solutionDetail,
                                     String industry,
                                     String recommendedCompanySize,
                                     String solutionImplementationType,
                                     Long amount,
                                     SELL_TYPE sellType,
-                                    Long duration) {
+                                    Long duration,
+                                    String specialist,
+                                    String representImageUrl,
+                                    String descriptionPdfUrl) {
         this.solutionName = solutionName;
         this.solutionDetail = solutionDetail;
         this.industry = industry;
@@ -93,5 +114,10 @@ public class SolutionEntity extends BaseTimeEntity {
         this.amount = amount;
         this.sellType = sellType;
         this.duration = duration;
+        this.specialist = specialist;
+        this.representImageUrl = representImageUrl;
+        this.descriptionPdfUrl = descriptionPdfUrl;
+
+        return this;
     }
 }
