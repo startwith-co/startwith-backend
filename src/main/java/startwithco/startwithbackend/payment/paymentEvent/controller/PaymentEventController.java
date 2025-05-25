@@ -137,4 +137,31 @@ public class PaymentEventController {
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SUCCESS"));
     }
+
+    @GetMapping(
+            value = "/order",
+            name = "결제하기 후 주문내역"
+    )
+    @Operation(
+            summary = "결제하기 후 주문내역 API"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "200 SUCCESS", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "S500", description = "500 INTERNAL SERVER EXCEPTION", content = @Content(schema = @Schema(implementation = ServerExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "B001", description = "400 BAD REQUEST EXCEPTION", content = @Content(schema = @Schema(implementation = BadRequestExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "PENFE005", description = "404 PAYMENT EVENT NOT FOUND EXCEPTION", content = @Content(schema = @Schema(implementation = NotFoundExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "IPESCE007", description = "409 INVALID PAYMENT EVENT STATUS CONFLICT EXCEPTION", content = @Content(schema = @Schema(implementation = ConflictExceptionHandler.ErrorResponse.class))),
+    })
+    public ResponseEntity<BaseResponse<GetPaymentEventEntityOrderResponse>> getPaymentEventEntityOrder(
+            @Valid
+            @RequestParam(name = "paymentEventSeq") Long paymentEventSeq
+    ) {
+        if (paymentEventSeq == null) {
+            throw new BadRequestException(BadRequestErrorResult.BAD_REQUEST_EXCEPTION);
+        }
+
+        GetPaymentEventEntityOrderResponse response = paymentEventService.getPaymentEventEntityOrder(paymentEventSeq);
+
+        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
+    }
 }

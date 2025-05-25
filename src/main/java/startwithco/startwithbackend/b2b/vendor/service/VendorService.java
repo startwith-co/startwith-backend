@@ -15,8 +15,8 @@ import startwithco.startwithbackend.exception.conflict.ConflictErrorResult;
 import startwithco.startwithbackend.exception.conflict.ConflictException;
 import startwithco.startwithbackend.exception.notFound.NotFoundErrorResult;
 import startwithco.startwithbackend.exception.notFound.NotFoundException;
-import startwithco.startwithbackend.solution.erp.domain.ErpEntity;
-import startwithco.startwithbackend.solution.erp.repository.ErpEntityRepository;
+import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
+import startwithco.startwithbackend.solution.solution.repository.SolutionEntityRepository;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,7 +29,7 @@ import static startwithco.startwithbackend.b2b.vendor.controller.response.Vendor
 @RequiredArgsConstructor
 public class VendorService {
     private final VendorEntityRepository vendorEntityRepository;
-    private final ErpEntityRepository erpEntityRepository;
+    private final SolutionEntityRepository solutionEntityRepository;
     private final CommonService commonService;
     private final BCryptPasswordEncoder encoder;
 
@@ -41,11 +41,11 @@ public class VendorService {
          * */
         vendorEntityRepository.findByVendorSeq(vendorSeq)
                 .orElseThrow(() -> new NotFoundException(NotFoundErrorResult.VENDOR_NOT_FOUND_EXCEPTION));
-        List<ErpEntity> erpEntities = erpEntityRepository.findAllByVendorSeq(vendorSeq);
+        List<SolutionEntity> solutionEntities = solutionEntityRepository.findAllByVendorSeq(vendorSeq);
 
         List<GetVendorSolutionCategory> response = new ArrayList<>();
-        for (ErpEntity erpEntity : erpEntities) {
-            response.add(new GetVendorSolutionCategory(erpEntity.getCategory(), erpEntity.getSolutionSeq()));
+        for (SolutionEntity solutionEntity : solutionEntities) {
+            response.add(new GetVendorSolutionCategory(solutionEntity.getCategory(), solutionEntity.getSolutionSeq()));
         }
 
         return response;

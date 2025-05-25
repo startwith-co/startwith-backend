@@ -1,4 +1,4 @@
-package startwithco.startwithbackend.solution.erp.controller;
+package startwithco.startwithbackend.solution.solution.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,25 +18,25 @@ import startwithco.startwithbackend.exception.badRequest.BadRequestExceptionHand
 import startwithco.startwithbackend.exception.conflict.ConflictExceptionHandler;
 import startwithco.startwithbackend.exception.notFound.NotFoundExceptionHandler;
 import startwithco.startwithbackend.exception.server.ServerExceptionHandler;
-import startwithco.startwithbackend.solution.erp.service.ErpService;
+import startwithco.startwithbackend.solution.solution.service.SolutionService;
 
-import static startwithco.startwithbackend.solution.erp.controller.request.ErpRequest.*;
-import static startwithco.startwithbackend.solution.erp.controller.response.ErpResponse.*;
+import static startwithco.startwithbackend.solution.solution.controller.request.SolutionRequest.SaveSolutionEntityRequest;
+import static startwithco.startwithbackend.solution.solution.controller.response.SolutionResponse.SaveSolutionEntityResponse;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/solution-service/solution/erp")
-@Tag(name = "ERP 솔루션", description = "담당자(송인준)")
-public class ErpController {
-    private final ErpService erpService;
+@RequestMapping("/api/solution-service/solution")
+@Tag(name = "솔루션", description = "담당자(송인준)")
+public class SolutionController {
+    private final SolutionService solutionService;
 
     @PostMapping(
-            name = "ERP 솔루션 생성",
+            name = "솔루션 생성",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @Operation(
-            summary = "ERP 솔루션 생성 / 담당자(박종훈)",
+            summary = "솔루션 생성 / 담당자(박종훈)",
             description = """
                     1. NULL 가능 데이터: solutionEffect\n
                     2. 중복 가능한 데이터의 경우 ','로 이어서 String으로 보내주세요\n
@@ -54,31 +54,26 @@ public class ErpController {
             @ApiResponse(responseCode = "VNFE002", description = "404 VENDOR NOT FOUND EXCEPTION", content = @Content(schema = @Schema(implementation = NotFoundExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "SCE003", description = "409 SOLUTION CONFLICT EXCEPTION", content = @Content(schema = @Schema(implementation = ConflictExceptionHandler.ErrorResponse.class))),
     })
-    ResponseEntity<BaseResponse<SaveErpEntityResponse>> saveErpEntity(
+    ResponseEntity<BaseResponse<SaveSolutionEntityResponse>> saveSolutionEntity(
             @Valid
             @RequestPart(value = "representImageUrl", required = true) MultipartFile representImageUrl,
             @RequestPart(value = "descriptionPdfUrl", required = true) MultipartFile descriptionPdfUrl,
-            @RequestPart SaveErpEntityRequest request
+            @RequestPart SaveSolutionEntityRequest request
     ) {
         request.validate(representImageUrl, descriptionPdfUrl);
-        request.getParsedCategory();
-        request.getParsedSellType();
-        if (request.solutionEffect() != null) {
-            request.solutionEffect().forEach(SaveErpEntityRequest.SolutionEffectEntityRequest::getParsedDirection);
-        }
 
-        SaveErpEntityResponse response = erpService.saveErpEntity(request, representImageUrl, descriptionPdfUrl);
+        SaveSolutionEntityResponse response = solutionService.saveSolutionEntity(request, representImageUrl, descriptionPdfUrl);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
     }
 
     @PutMapping(
-            name = "ERP 솔루션 수정",
+            name = "솔루션 수정",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @Operation(
-            summary = "ERP 솔루션 수정 / 담당자(박종훈)",
+            summary = "솔루션 수정 / 담당자(박종훈)",
             description = """
                     1. NULL 가능 데이터: solutionEffect\n
                     2. 중복 가능한 데이터의 경우 ','로 이어서 String으로 보내주세요\n
@@ -96,20 +91,15 @@ public class ErpController {
             @ApiResponse(responseCode = "VNFE002", description = "404 VENDOR NOT FOUND EXCEPTION", content = @Content(schema = @Schema(implementation = NotFoundExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "SNFE003", description = "404 SOLUTION NOT FOUND EXCEPTION", content = @Content(schema = @Schema(implementation = NotFoundExceptionHandler.ErrorResponse.class))),
     })
-    ResponseEntity<BaseResponse<String>> modifyErpEntity(
+    ResponseEntity<BaseResponse<String>> modifySolutionEntity(
             @Valid
             @RequestPart(value = "representImageUrl", required = true) MultipartFile representImageUrl,
             @RequestPart(value = "descriptionPdfUrl", required = true) MultipartFile descriptionPdfUrl,
-            @RequestPart SaveErpEntityRequest request
+            @RequestPart SaveSolutionEntityRequest request
     ) {
         request.validate(representImageUrl, descriptionPdfUrl);
-        request.getParsedCategory();
-        request.getParsedSellType();
-        if (request.solutionEffect() != null) {
-            request.solutionEffect().forEach(SaveErpEntityRequest.SolutionEffectEntityRequest::getParsedDirection);
-        }
 
-        erpService.modifyErpEntity(request, representImageUrl, descriptionPdfUrl);
+        solutionService.modifySolutionEntity(request, representImageUrl, descriptionPdfUrl);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SUCCESS"));
     }

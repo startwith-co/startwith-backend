@@ -1,4 +1,4 @@
-package startwithco.startwithbackend.solution.erp.controller.request;
+package startwithco.startwithbackend.solution.solution.controller.request;
 
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,8 +12,8 @@ import java.util.List;
 
 import static io.micrometer.common.util.StringUtils.isBlank;
 
-public class ErpRequest {
-    public record SaveErpEntityRequest(
+public class SolutionRequest {
+    public record SaveSolutionEntityRequest(
             Long vendorSeq,
             String solutionName,
             String solutionDetail,
@@ -33,13 +33,7 @@ public class ErpRequest {
                 Long percent,
                 String direction
         ) {
-            public void getParsedDirection() {
-                try {
-                    DIRECTION.valueOf(direction.toUpperCase());
-                } catch (Exception e) {
-                    throw new BadRequestException(BadRequestErrorResult.BAD_REQUEST_EXCEPTION);
-                }
-            }
+
         }
 
         public void validate(MultipartFile representImageUrl, MultipartFile descriptionPdfUrl) {
@@ -59,19 +53,16 @@ public class ErpRequest {
                     CollectionUtils.isEmpty(keyword)) {
                 throw new BadRequestException(BadRequestErrorResult.BAD_REQUEST_EXCEPTION);
             }
-        }
 
-        public void getParsedCategory() {
             try {
                 CATEGORY.valueOf(category.toUpperCase());
-            } catch (Exception e) {
-                throw new BadRequestException(BadRequestErrorResult.BAD_REQUEST_EXCEPTION);
-            }
-        }
-
-        public void getParsedSellType() {
-            try {
                 SELL_TYPE.valueOf(sellType.toUpperCase());
+
+                if (!CollectionUtils.isEmpty(solutionEffect)) {
+                    for (SolutionEffectEntityRequest effect : solutionEffect) {
+                        DIRECTION.valueOf(effect.direction().toUpperCase());
+                    }
+                }
             } catch (Exception e) {
                 throw new BadRequestException(BadRequestErrorResult.BAD_REQUEST_EXCEPTION);
             }
