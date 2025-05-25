@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>결제 시작</title>
+    <script src="https://js.tosspayments.com/v1/payment"></script>
+</head>
+<body>
+<h2>PG사 결제 테스트 (TossPayments)</h2>
+<button id="pay">결제하기</button>
+
+<script>
+    const clientKey = "test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq";
+    const tossPayments = TossPayments(clientKey);
+
+    document.getElementById("pay").addEventListener("click", async () => {
+        const orderId = crypto.randomUUID();
+        const amount = 10000;
+        const paymentEventSeq = 1; // 고정값
+
+        tossPayments.requestPayment("카드", {
+            amount,
+            orderId,
+            orderName: "테스트",
+            customerName: "김토스",
+            successUrl: window.location.origin + `/success.html`,
+            failUrl: window.location.origin + "/fail.html"
+        }).catch(e => alert("결제 실패: " + e.message));
+    });
+</script>
+</body>
+</html>
