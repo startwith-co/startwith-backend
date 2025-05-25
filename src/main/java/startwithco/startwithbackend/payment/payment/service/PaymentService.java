@@ -118,9 +118,14 @@ public class PaymentService {
 
             try {
                 PaymentEntity failedPayment = paymentEntityRepository.findByOrderId(request.orderId()).orElse(null);
+
                 if (failedPayment != null) {
                     failedPayment.updateStatus(STATUS.FAILURE);
                     paymentEntityRepository.savePaymentEntity(failedPayment);
+
+                    PaymentEventEntity failedPaymentEventEntity = failedPayment.getPaymentEventEntity();
+                    failedPaymentEventEntity.updatePaymentEventStatus(PAYMENT_EVENT_STATUS.REQUESTED);
+                    paymentEventEntityRepository.savePaymentEventEntity(failedPaymentEventEntity);
                 }
             } catch (Exception ex) {
                 return Mono.error(new ServerException(ServerErrorResult.INTERNAL_SERVER_EXCEPTION));

@@ -27,7 +27,7 @@
 
     document.getElementById("approve").addEventListener("click", async () => {
         try {
-            const response = await fetch("/api/b2b-service/payment/order", {
+            const response = await fetch("/api/b2b-service/payment", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

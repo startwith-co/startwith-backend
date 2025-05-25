@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,11 +27,11 @@ import static startwithco.startwithbackend.payment.payment.controller.response.P
 @RequestMapping("/api/b2b-service/payment")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "토스페이먼츠 PG사", description = "담당자(박종훈)")
 public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping(
-            value = "/order",
             name = "토스페이먼츠 PG사 연동 결제하기"
     )
     @Operation(
