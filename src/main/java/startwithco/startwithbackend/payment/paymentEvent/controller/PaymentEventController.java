@@ -24,7 +24,7 @@ import static startwithco.startwithbackend.payment.paymentEvent.controller.reque
 import static startwithco.startwithbackend.payment.paymentEvent.controller.response.PaymentEventResponse.*;
 
 @RestController
-@RequestMapping("/api/payment-service/payment")
+@RequestMapping("/api/payment-service/payment-event")
 @RequiredArgsConstructor
 @Tag(name = "결제", description = "담당자(박종훈)")
 public class PaymentEventController {

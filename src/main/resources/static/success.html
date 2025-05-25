@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>결제 성공</title>
+</head>
+<body>
+<h2>✅ 결제 성공 - 결제 승인 요청</h2>
+
+<p><strong>paymentKey:</strong> <span id="paymentKey"></span></p>
+<p><strong>orderId:</strong> <span id="orderId"></span></p>
+<p><strong>amount:</strong> <span id="amount"></span></p>
+
+<button id="approve">/order API로 승인 요청</button>
+<pre id="result"></pre>
+
+<script>
+    const query = new URLSearchParams(window.location.search);
+    const paymentKey = query.get("paymentKey");
+    const orderId = query.get("orderId");
+    const amount = query.get("amount");
+    const paymentEventSeq = 1; // ✅ 고정값 1로 설정
+
+    document.getElementById("paymentKey").innerText = paymentKey;
+    document.getElementById("orderId").innerText = orderId;
+    document.getElementById("amount").innerText = amount;
+
+    document.getElementById("approve").addEventListener("click", async () => {
+        try {
+            const response = await fetch("/api/b2b-service/payment", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    paymentKey,
+                    orderId,
+                    amount: Number(amount),
+                    paymentEventSeq: paymentEventSeq // ✅ 함께 전송
+                })
+            });
+
+            const result = await response.text();
+            document.getElementById("result").innerText = result;
+        } catch (e) {
+            document.getElementById("result").innerText = "❌ 요청 실패: " + e.message;
+        }
+    });
+</script>
+</body>
+</html>

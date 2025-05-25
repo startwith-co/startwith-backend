@@ -88,6 +88,8 @@ dependencies {
     // Jackson
     implementation 'javax.xml.bind:jaxb-api:2.3.1'
     implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.1'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.17.0'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.17.0'
 
     // Thymeleaf
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
