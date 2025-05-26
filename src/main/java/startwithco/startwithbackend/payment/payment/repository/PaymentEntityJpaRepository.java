@@ -12,4 +12,7 @@ import java.util.Optional;
 public interface PaymentEntityJpaRepository extends JpaRepository<PaymentEntity, Long> {
     @Query("SELECT pe FROM PaymentEntity pe WHERE pe.orderId = :orderId")
     Optional<PaymentEntity> findByOrderId(@Param("orderId") String orderId);
+
+    @Query("SELECT pe FROM PaymentEntity pe WHERE pe.paymentEventEntity.paymentEventSeq = :paymentEventSeq")
+    Optional<PaymentEntity> findByPaymentEventSeq(@Param("paymentEventSeq") Long paymentEventSeq);
 }

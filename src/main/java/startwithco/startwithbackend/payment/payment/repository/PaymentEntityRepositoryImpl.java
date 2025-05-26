@@ -20,4 +20,9 @@ public class PaymentEntityRepositoryImpl implements PaymentEntityRepository {
     public Optional<PaymentEntity> findByOrderId(String orderId) {
         return repository.findByOrderId(orderId);
     }
+
+    @Override
+    public Optional<PaymentEntity> findByPaymentEventSeq(Long paymentEventSeq) {
+        return repository.findByPaymentEventSeq(paymentEventSeq);
+    }
 }

@@ -9,6 +9,8 @@ import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
 import startwithco.startwithbackend.b2b.consumer.repository.ConsumerRepository;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.b2b.vendor.repository.VendorEntityRepository;
+import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
+import startwithco.startwithbackend.payment.payment.repository.PaymentEntityRepository;
 import startwithco.startwithbackend.payment.paymentEvent.util.PAYMENT_EVENT_STATUS;
 import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 import startwithco.startwithbackend.solution.solution.util.SELL_TYPE;
@@ -34,6 +36,7 @@ import static startwithco.startwithbackend.payment.paymentEvent.controller.respo
 @Slf4j
 public class PaymentEventService {
     private final PaymentEventEntityRepository paymentEventEntityRepository;
+    private final PaymentEntityRepository paymentEntityRepository;
     private final SolutionEntityRepository solutionEntityRepository;
     private final VendorEntityRepository vendorEntityRepository;
     private final ConsumerRepository consumerRepository;
@@ -86,9 +89,12 @@ public class PaymentEventService {
         /*
          * [예외 처리]
          * 1. paymentEvent 유효성
+         * 2. Payment 유효성
          * */
         PaymentEventEntity paymentEventEntity = paymentEventEntityRepository.findByPaymentEventSeq(paymentEventSeq)
                 .orElseThrow(() -> new NotFoundException(NotFoundErrorResult.PAYMENT_EVENT_NOT_FOUND_EXCEPTION));
+        PaymentEntity paymentEntity = paymentEntityRepository.findByPaymentEventSeq(paymentEventSeq)
+                .orElseThrow(() -> new NotFoundException(NotFoundErrorResult.PAYMENT_NOT_FOUND_EXCEPTION));
 
         // 공통 필드
         String paymentEventName = paymentEventEntity.getPaymentEventName();
@@ -108,10 +114,10 @@ public class PaymentEventService {
                 paymentEventEntity.getPaymentEventStatus() == PAYMENT_EVENT_STATUS.CONFIRMED) {
 
             // 조건부 필드 값 설정
-            paymentCompletedAt = paymentEventEntity.getPaymentCompletedAt();
+            paymentCompletedAt = paymentEntity.getPaymentCompletedAt();
             developmentCompletedAt = paymentEventEntity.getDevelopmentCompletedAt();
             actualDuration = ChronoUnit.DAYS.between(paymentCompletedAt.toLocalDate(), developmentCompletedAt.toLocalDate());
-            autoConfirmScheduledAt = paymentEventEntity.getAutoConfirmScheduledAt();
+            autoConfirmScheduledAt = paymentEntity.getAutoConfirmScheduledAt();
         }
 
         return new GetPaymentEventEntityResponse(
@@ -142,8 +148,8 @@ public class PaymentEventService {
             throw new ConflictException(ConflictErrorResult.INVALID_PAYMENT_EVENT_STATUS_CONFLICT_EXCEPTION);
         }
 
-        PaymentEventEntity updatedPaymentEventEntity = paymentEventEntity.updateDevelopmentCompletedAt();
-        paymentEventEntityRepository.savePaymentEventEntity(updatedPaymentEventEntity);
+        paymentEventEntity.updateDevelopmentCompletedAt();
+        paymentEventEntityRepository.savePaymentEventEntity(paymentEventEntity);
     }
 
     @Transactional
