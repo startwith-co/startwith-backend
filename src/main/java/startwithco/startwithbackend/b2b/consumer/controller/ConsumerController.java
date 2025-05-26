@@ -75,6 +75,7 @@ public class ConsumerController {
     }
 
     @GetMapping(
+            value = "/details",
             name = "수요기업 상세보기 조회"
     )
     @Operation(
