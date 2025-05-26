@@ -8,4 +8,10 @@ public interface PaymentEventEntityRepository {
     PaymentEventEntity savePaymentEventEntity(PaymentEventEntity paymentEventEntity);
 
     Optional<PaymentEventEntity> findByPaymentEventSeq(Long paymentEventSeq);
+
+    Long countDEVELOPINGByConsumerSeq(Long consumerSeq);
+
+    Long countDEVELOPEDByConsumerSeq(Long consumerSeq);
+
+    Long countCONFIRMEDByConsumerSeq(Long consumerSeq);
 }

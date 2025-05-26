@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import startwithco.startwithbackend.payment.paymentEvent.domain.PaymentEventEntity;
+import startwithco.startwithbackend.payment.paymentEvent.util.PAYMENT_EVENT_STATUS;
 
 import java.util.Optional;
 
@@ -12,4 +13,13 @@ import java.util.Optional;
 public interface PaymentEventEntityJpaRepository extends JpaRepository<PaymentEventEntity, Long> {
     @Query("SELECT pe FROM PaymentEventEntity pe WHERE pe.paymentEventSeq = :paymentEventSeq")
     Optional<PaymentEventEntity> findByPaymentEventSeq(@Param("paymentEventSeq") Long paymentEventSeq);
+
+    @Query("SELECT COUNT(*) FROM PaymentEventEntity pe WHERE pe.consumerEntity.consumerSeq = :consumerSeq AND pe.paymentEventStatus = 'DEVELOPING'")
+    Long countDEVELOPINGByConsumerSeq(@Param("consumerSeq") Long consumerSeq);
+
+    @Query("SELECT COUNT(*) FROM PaymentEventEntity pe WHERE pe.consumerEntity.consumerSeq = :consumerSeq AND pe.paymentEventStatus = 'DEVELOPED'")
+    Long countDEVELOPEDByConsumerSeq(@Param("consumerSeq") Long consumerSeq);
+
+    @Query("SELECT COUNT(*) FROM PaymentEventEntity pe WHERE pe.consumerEntity.consumerSeq = :consumerSeq AND pe.paymentEventStatus = 'CONFIRMED'")
+    Long countCONFIRMEDByConsumerSeq(@Param("consumerSeq") Long consumerSeq);
 }
