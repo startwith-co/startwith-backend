@@ -20,4 +20,19 @@ public class PaymentEventEntityRepositoryImpl implements PaymentEventEntityRepos
     public Optional<PaymentEventEntity> findByPaymentEventSeq(Long paymentEventSeq) {
         return repository.findByPaymentEventSeq(paymentEventSeq);
     }
+
+    @Override
+    public Long countDEVELOPINGByConsumerSeq(Long consumerSeq) {
+        return repository.countDEVELOPINGByConsumerSeq(consumerSeq);
+    }
+
+    @Override
+    public Long countDEVELOPEDByConsumerSeq(Long consumerSeq) {
+        return repository.countDEVELOPEDByConsumerSeq(consumerSeq);
+    }
+
+    @Override
+    public Long countCONFIRMEDByConsumerSeq(Long consumerSeq) {
+        return repository.countCONFIRMEDByConsumerSeq(consumerSeq);
+    }
 }

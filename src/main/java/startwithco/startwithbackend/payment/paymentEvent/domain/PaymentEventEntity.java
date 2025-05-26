@@ -37,7 +37,7 @@ public class PaymentEventEntity extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "consumer_seq", nullable = false)
-    private ConsumerEntity customerEntity;
+    private ConsumerEntity consumerEntity;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "solution_seq", nullable = false)
@@ -83,5 +83,9 @@ public class PaymentEventEntity extends BaseTimeEntity {
         this.paymentEventStatus = paymentEventStatus;
 
         return this;
+    }
+
+    public void updatePaymentCompletedAt(LocalDateTime paymentCompletedAt) {
+        this.paymentCompletedAt = paymentCompletedAt;
     }
 }

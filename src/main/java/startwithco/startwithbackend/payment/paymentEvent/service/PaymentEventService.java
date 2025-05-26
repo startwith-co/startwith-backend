@@ -58,7 +58,7 @@ public class PaymentEventService {
             // 1. PaymentEntity 저장
             PaymentEventEntity paymentEventEntity = PaymentEventEntity.builder()
                     .vendorEntity(vendorEntity)
-                    .customerEntity(consumerEntity)
+                    .consumerEntity(consumerEntity)
                     .solutionEntity(solutionEntity)
                     .paymentEventName(request.paymentEventName())
                     .amount(request.amount())

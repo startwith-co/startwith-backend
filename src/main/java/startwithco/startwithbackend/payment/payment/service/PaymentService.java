@@ -24,6 +24,8 @@ import startwithco.startwithbackend.payment.paymentEvent.domain.PaymentEventEnti
 import startwithco.startwithbackend.payment.paymentEvent.repository.PaymentEventEntityRepository;
 import startwithco.startwithbackend.payment.paymentEvent.util.PAYMENT_EVENT_STATUS;
 
+import java.time.LocalDateTime;
+
 import static startwithco.startwithbackend.payment.payment.controller.request.PaymentRequest.*;
 import static startwithco.startwithbackend.payment.payment.controller.response.PaymentResponse.*;
 
@@ -93,6 +95,7 @@ public class PaymentService {
 
                         PaymentEventEntity paymentEventEntity = paymentEntity.getPaymentEventEntity();
                         paymentEventEntity.updatePaymentEventStatus(PAYMENT_EVENT_STATUS.DEVELOPING);
+                        paymentEventEntity.updatePaymentCompletedAt(LocalDateTime.now());
                         paymentEventEntityRepository.savePaymentEventEntity(paymentEventEntity);
 
                         TossPaymentApprovalResponse response = new TossPaymentApprovalResponse(
