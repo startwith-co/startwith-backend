@@ -1,7 +1,8 @@
 package startwithco.startwithbackend.payment.payment.util;
 
 public enum STATUS {
-    EXECUTED,     // 결제 승인 요청됨
-    COMPLETED,    // 결제 완료
-    FAILURE       // 결제 실패
+    APPROVAL_FAILED,  // 결제 승인 실패
+    NOT_READY,        // 결제 완료 후 아직 정산일 전
+    SETTLED,          // 판매자에게 실제 지급 완료
+    FAILED            // 지급 실패 (정산 실패 대응 필요)
 }

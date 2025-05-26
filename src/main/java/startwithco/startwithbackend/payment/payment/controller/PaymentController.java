@@ -35,7 +35,8 @@ public class PaymentController {
             name = "토스페이먼츠 PG사 연동 결제하기"
     )
     @Operation(
-            summary = "토스페이먼츠 PG사 연동 결제하기 API"
+            summary = "토스페이먼츠 PG사 연동 결제하기 API",
+            description = "amount의 경우 actualAmount(부가세 포함한 가격)을 보내야합니다."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "200 SUCCESS", useReturnTypeSchema = true),

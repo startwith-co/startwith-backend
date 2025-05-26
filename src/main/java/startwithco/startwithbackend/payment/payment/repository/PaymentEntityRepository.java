@@ -8,4 +8,6 @@ public interface PaymentEntityRepository {
     PaymentEntity savePaymentEntity(PaymentEntity paymentEntity);
 
     Optional<PaymentEntity> findByOrderId(String orderId);
+
+    Optional<PaymentEntity> findByPaymentEventSeq(Long paymentEventSeq);
 }

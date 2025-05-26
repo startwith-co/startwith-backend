@@ -10,6 +10,7 @@ import startwithco.startwithbackend.payment.paymentEvent.domain.PaymentEventEnti
 import startwithco.startwithbackend.payment.payment.util.STATUS;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "PAYMENT_ENTITY")
@@ -40,9 +41,16 @@ public class PaymentEntity extends BaseTimeEntity {
     @Column(name = "status", nullable = false)
     private STATUS status;
 
-    public PaymentEntity updateStatus(STATUS status) {
-        this.status = status;
+    @Column(name = "payment_completed_at", nullable = true)
+    private LocalDateTime paymentCompletedAt;
 
-        return this;
+    @Column(name = "toss_payment_settled_at", nullable = true)
+    private LocalDateTime tossPaymentSettledAt;
+
+    @Column(name = "auto_confirm_scheduled_at", nullable = true)
+    private LocalDateTime autoConfirmScheduledAt;
+
+    public void updateStatus(STATUS status) {
+        this.status = status;
     }
 }

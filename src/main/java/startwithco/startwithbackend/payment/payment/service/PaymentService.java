@@ -69,7 +69,9 @@ public class PaymentService {
                     .orderId(request.orderId())
                     .paymentKey(request.paymentKey())
                     .amount(request.amount())
-                    .status(STATUS.EXECUTED)
+                    .paymentCompletedAt(LocalDateTime.now())
+                    .status(STATUS.NOT_READY)
+                    .autoConfirmScheduledAt(LocalDateTime.now().plusDays(7))
                     .build();
 
             try {
@@ -89,16 +91,11 @@ public class PaymentService {
                     try {
                         JsonNode json = objectMapper.readTree(res);
 
-                        // [프로세스 4] 결제 상태 COMPLETED로 변경 및 응답 생성
-                        paymentEntity.updateStatus(STATUS.COMPLETED);
-                        paymentEntityRepository.savePaymentEntity(paymentEntity);
-
                         PaymentEventEntity paymentEventEntity = paymentEntity.getPaymentEventEntity();
                         paymentEventEntity.updatePaymentEventStatus(PAYMENT_EVENT_STATUS.DEVELOPING);
-                        paymentEventEntity.updatePaymentCompletedAt(LocalDateTime.now());
                         paymentEventEntityRepository.savePaymentEventEntity(paymentEventEntity);
 
-                        TossPaymentApprovalResponse response = new TossPaymentApprovalResponse(
+                        return Mono.just(new TossPaymentApprovalResponse(
                                 json.get("orderId").asText(),
                                 json.get("orderName").asText(),
                                 json.get("paymentKey").asText(),
@@ -106,9 +103,7 @@ public class PaymentService {
                                 json.get("totalAmount").asInt(),
                                 json.get("approvedAt").asText(),
                                 json.get("receipt").get("url").asText()
-                        );
-
-                        return Mono.just(response);
+                        ));
                     } catch (Exception e) {
                         return Mono.error(new ServerException(ServerErrorResult.INTERNAL_SERVER_EXCEPTION));
                     }
@@ -123,7 +118,7 @@ public class PaymentService {
                 PaymentEntity failedPayment = paymentEntityRepository.findByOrderId(request.orderId()).orElse(null);
 
                 if (failedPayment != null) {
-                    failedPayment.updateStatus(STATUS.FAILURE);
+                    failedPayment.updateStatus(STATUS.APPROVAL_FAILED);
                     paymentEntityRepository.savePaymentEntity(failedPayment);
 
                     PaymentEventEntity failedPaymentEventEntity = failedPayment.getPaymentEventEntity();

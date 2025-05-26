@@ -60,32 +60,19 @@ public class PaymentEventEntity extends BaseTimeEntity {
     @Column(name = "payment_event_status", nullable = false)
     private PAYMENT_EVENT_STATUS paymentEventStatus;
 
-    @Column(name = "payment_completed_at")
-    private LocalDateTime paymentCompletedAt;
-
     @Column(name = "development_completed_at")
     private LocalDateTime developmentCompletedAt;
 
-    @Column(name = "auto_confirm_scheduled_at")
-    private LocalDateTime autoConfirmScheduledAt;
-
-    public PaymentEventEntity updateDevelopmentCompletedAt() {
+    public void updateDevelopmentCompletedAt() {
         LocalDateTime now = LocalDateTime.now();
 
         this.developmentCompletedAt = now;
-        this.autoConfirmScheduledAt = now.plusDays(7);
         this.paymentEventStatus = PAYMENT_EVENT_STATUS.DEVELOPED;
-
-        return this;
     }
 
     public PaymentEventEntity updatePaymentEventStatus(PAYMENT_EVENT_STATUS paymentEventStatus) {
         this.paymentEventStatus = paymentEventStatus;
 
         return this;
-    }
-
-    public void updatePaymentCompletedAt(LocalDateTime paymentCompletedAt) {
-        this.paymentCompletedAt = paymentCompletedAt;
     }
 }
