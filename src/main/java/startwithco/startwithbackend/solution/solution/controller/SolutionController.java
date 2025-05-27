@@ -20,6 +20,8 @@ import startwithco.startwithbackend.exception.notFound.NotFoundExceptionHandler;
 import startwithco.startwithbackend.exception.server.ServerExceptionHandler;
 import startwithco.startwithbackend.solution.solution.service.SolutionService;
 
+import java.io.IOException;
+
 import static startwithco.startwithbackend.solution.solution.controller.request.SolutionRequest.SaveSolutionEntityRequest;
 import static startwithco.startwithbackend.solution.solution.controller.response.SolutionResponse.SaveSolutionEntityResponse;
 
@@ -44,13 +46,13 @@ public class SolutionController {
                     4. CATEGORY: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY\n
                     5. SELL_TYPE: SINGLE, SUBSCRIBE\n
                     6. DIRECTION: INCREASE, DECREASE\n
+                    7. 광클 방지를 위한 disable 처리해주세요.\n
                     """
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "200 SUCCESS", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "S500", description = "500 INTERNAL SERVER EXCEPTION", content = @Content(schema = @Schema(implementation = ServerExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "B001", description = "400 BAD REQUEST EXCEPTION", content = @Content(schema = @Schema(implementation = BadRequestExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "IRCE002", description = "409 IDEMPOTENT REQUEST CONFLICT EXCEPTION", content = @Content(schema = @Schema(implementation = ConflictExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "VNFE002", description = "404 VENDOR NOT FOUND EXCEPTION", content = @Content(schema = @Schema(implementation = NotFoundExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "SCE003", description = "409 SOLUTION CONFLICT EXCEPTION", content = @Content(schema = @Schema(implementation = ConflictExceptionHandler.ErrorResponse.class))),
     })
@@ -59,7 +61,7 @@ public class SolutionController {
             @RequestPart(value = "representImageUrl", required = true) MultipartFile representImageUrl,
             @RequestPart(value = "descriptionPdfUrl", required = true) MultipartFile descriptionPdfUrl,
             @RequestPart SaveSolutionEntityRequest request
-    ) {
+    ) throws IOException {
         request.validate(representImageUrl, descriptionPdfUrl);
 
         SaveSolutionEntityResponse response = solutionService.saveSolutionEntity(request, representImageUrl, descriptionPdfUrl);
@@ -81,13 +83,13 @@ public class SolutionController {
                     4. CATEGORY: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY\n
                     5. SELL_TYPE: SINGLE, SUBSCRIBE\n
                     6. DIRECTION: INCREASE, DECREASE\n
+                    7. 광클 방지를 위한 disable 처리해주세요.\n
                     """
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "200 SUCCESS", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "S500", description = "500 INTERNAL SERVER EXCEPTION", content = @Content(schema = @Schema(implementation = ServerExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "B001", description = "400 BAD REQUEST EXCEPTION", content = @Content(schema = @Schema(implementation = BadRequestExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "IRCE002", description = "409 IDEMPOTENT REQUEST CONFLICT EXCEPTION", content = @Content(schema = @Schema(implementation = ConflictExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "VNFE002", description = "404 VENDOR NOT FOUND EXCEPTION", content = @Content(schema = @Schema(implementation = NotFoundExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "SNFE003", description = "404 SOLUTION NOT FOUND EXCEPTION", content = @Content(schema = @Schema(implementation = NotFoundExceptionHandler.ErrorResponse.class))),
     })
@@ -96,7 +98,7 @@ public class SolutionController {
             @RequestPart(value = "representImageUrl", required = true) MultipartFile representImageUrl,
             @RequestPart(value = "descriptionPdfUrl", required = true) MultipartFile descriptionPdfUrl,
             @RequestPart SaveSolutionEntityRequest request
-    ) {
+    ) throws IOException {
         request.validate(representImageUrl, descriptionPdfUrl);
 
         solutionService.modifySolutionEntity(request, representImageUrl, descriptionPdfUrl);

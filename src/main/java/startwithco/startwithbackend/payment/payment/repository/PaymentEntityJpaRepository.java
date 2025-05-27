@@ -13,6 +13,18 @@ public interface PaymentEntityJpaRepository extends JpaRepository<PaymentEntity,
     @Query("SELECT pe FROM PaymentEntity pe WHERE pe.orderId = :orderId")
     Optional<PaymentEntity> findByOrderId(@Param("orderId") String orderId);
 
-    @Query("SELECT pe FROM PaymentEntity pe WHERE pe.paymentEventEntity.paymentEventSeq = :paymentEventSeq")
-    Optional<PaymentEntity> findByPaymentEventSeq(@Param("paymentEventSeq") Long paymentEventSeq);
+    @Query("""
+            SELECT CASE
+                     WHEN COUNT(p) > 0 THEN false
+                     ELSE true
+                   END
+            FROM PaymentEntity p
+            WHERE p.paymentEventEntity.paymentEventSeq = :paymentEventSeq
+              AND p.orderId = :orderId
+              AND p.paymentStatus IN ('SUCCESS', 'FAILURE')
+        """)
+    boolean canApproveTossPayment(
+            @Param("orderId") String orderId,
+            @Param("paymentEventSeq") Long paymentEventSeq
+    );
 }

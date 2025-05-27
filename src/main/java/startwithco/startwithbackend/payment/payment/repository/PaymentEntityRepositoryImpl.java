@@ -22,7 +22,7 @@ public class PaymentEntityRepositoryImpl implements PaymentEntityRepository {
     }
 
     @Override
-    public Optional<PaymentEntity> findByPaymentEventSeq(Long paymentEventSeq) {
-        return repository.findByPaymentEventSeq(paymentEventSeq);
+    public boolean canApproveTossPayment(String orderId, Long paymentEventSeq) {
+        return repository.canApproveTossPayment(orderId, paymentEventSeq);
     }
 }

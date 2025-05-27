@@ -4,7 +4,6 @@ import startwithco.startwithbackend.exception.badRequest.BadRequestErrorResult;
 import startwithco.startwithbackend.exception.badRequest.BadRequestException;
 
 public class ConsumerRequest {
-
     public record SaveConsumerRequest(
             String consumerName,
             String password,
@@ -21,14 +20,5 @@ public class ConsumerRequest {
 
         }
     }
-
-    public record LoginRequest(
-            String email,
-            String password
-    ) {
-    }
-
-
-
 }
 
