@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
@@ -19,7 +18,7 @@ import startwithco.startwithbackend.exception.server.ServerErrorResult;
 import startwithco.startwithbackend.exception.server.ServerException;
 import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
 import startwithco.startwithbackend.payment.payment.repository.PaymentEntityRepository;
-import startwithco.startwithbackend.payment.payment.util.STATUS;
+import startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS;
 import startwithco.startwithbackend.payment.paymentEvent.domain.PaymentEventEntity;
 import startwithco.startwithbackend.payment.paymentEvent.repository.PaymentEventEntityRepository;
 import startwithco.startwithbackend.payment.paymentEvent.util.PAYMENT_EVENT_STATUS;
@@ -42,86 +41,75 @@ public class PaymentService {
     public Mono<TossPaymentApprovalResponse> tossPaymentApproval(TossPaymentApprovalRequest request) {
         /*
          * [예외 처리]
-         * 1. 존재하지 않는 결제 이벤트: 404 PAYMENT_EVENT_NOT_FOUND_EXCEPTION
-         * 2. 결제 이벤트 상태가 REQUESTED가 아님: 409 INVALID_PAYMENT_EVENT_STATUS_CONFLICT_EXCEPTION
-         * 3. 결제 금액 불일치: 400 AMOUNT_MISMATCH_BAD_REQUEST_EXCEPTION
-         * 4. 중복 결제(orderId 중복): 409 IDEMPOTENT_REQUEST_CONFLICT_EXCEPTION
-         * 5. 결제 승인 응답 파싱 실패: 500 INTERNAL_SERVER_EXCEPTION
-         * 6. 기타 서버 오류 → 결제 상태 FAILURE로 갱신 시도: 500 INTERNAL_SERVER_EXCEPTION
+         * 1. PaymentEntity 유효성 검사
+         * 2. PaymentEventStatus가 REQUESTED가 아닐 경우
+         * 3. 결제 금액 불일치
+         * 4. 결제 승인 실패 떴지만 orderId가 동일할 경우
          */
+        PaymentEventEntity paymentEventEntity = paymentEventEntityRepository.findByPaymentEventSeq(request.paymentEventSeq())
+                .orElseThrow(() -> new NotFoundException(NotFoundErrorResult.PAYMENT_EVENT_NOT_FOUND_EXCEPTION));
 
-        return Mono.fromCallable(() -> {
-            // [프로세스 1] 결제 이벤트 조회 및 유효성 검사
-            PaymentEventEntity paymentEventEntity = paymentEventEntityRepository.findByPaymentEventSeq(request.paymentEventSeq())
-                    .orElseThrow(() -> new NotFoundException(NotFoundErrorResult.PAYMENT_EVENT_NOT_FOUND_EXCEPTION));
+        if (paymentEventEntity.getPaymentEventStatus() != PAYMENT_EVENT_STATUS.REQUESTED) {
+            throw new ConflictException(ConflictErrorResult.INVALID_PAYMENT_EVENT_STATUS_CONFLICT_EXCEPTION);
+        }
 
-            if (paymentEventEntity.getPaymentEventStatus() != PAYMENT_EVENT_STATUS.REQUESTED) {
-                throw new ConflictException(ConflictErrorResult.INVALID_PAYMENT_EVENT_STATUS_CONFLICT_EXCEPTION);
-            }
+        if (!paymentEventEntity.getAmount().equals(request.amount())) {
+            throw new BadRequestException(BadRequestErrorResult.AMOUNT_MISMATCH_BAD_REQUEST_EXCEPTION);
+        }
 
-            if (!paymentEventEntity.getAmount().equals(request.amount())) {
-                throw new BadRequestException(BadRequestErrorResult.AMOUNT_MISMATCH_BAD_REQUEST_EXCEPTION);
-            }
+        if (!paymentEntityRepository.canApproveTossPayment(request.orderId(), request.paymentEventSeq())) {
+            throw new BadRequestException(BadRequestErrorResult.ORDER_ID_DUPLICATED_BAD_REQUEST_EXCEPTION);
+        }
 
-            // [프로세스 2] 결제 정보 선 저장 (EXECUTED 상태)
-            PaymentEntity paymentEntity = PaymentEntity.builder()
-                    .paymentEventEntity(paymentEventEntity)
-                    .orderId(request.orderId())
-                    .paymentKey(request.paymentKey())
-                    .amount(request.amount())
-                    .paymentCompletedAt(LocalDateTime.now())
-                    .status(STATUS.NOT_READY)
-                    .autoConfirmScheduledAt(LocalDateTime.now().plusDays(7))
-                    .build();
+        PaymentEntity paymentEntity = PaymentEntity.builder()
+                .paymentEventEntity(paymentEventEntity)
+                .orderId(request.orderId())
+                .paymentKey(request.paymentKey())
+                .amount(request.amount())
+                .paymentStatus(PAYMENT_STATUS.IN_PROGRESS)
+                .build();
 
+        paymentEntityRepository.savePaymentEntity(paymentEntity);
+
+        return commonService.executeTossPaymentApproval(
+                request.paymentKey(),
+                request.orderId(),
+                request.amount()
+        ).flatMap(res -> {
             try {
+                JsonNode json = objectMapper.readTree(res);
+
+                paymentEntity.updateSuccessStatus();
                 paymentEntityRepository.savePaymentEntity(paymentEntity);
-            } catch (DataIntegrityViolationException e) {
-                throw new ConflictException(ConflictErrorResult.IDEMPOTENT_REQUEST_CONFLICT_EXCEPTION);
+
+                /*
+                * TODO
+                *  PAYMENT EVENT STATUS 는 어떻게 수정?
+                *  결제 승인되면 구매확정으로?
+                * */
+
+                return Mono.just(new TossPaymentApprovalResponse(
+                        json.get("orderId").asText(),
+                        json.get("orderName").asText(),
+                        json.get("paymentKey").asText(),
+                        json.get("method").asText(),
+                        json.get("totalAmount").asInt(),
+                        json.get("approvedAt").asText(),
+                        json.get("receipt").get("url").asText()
+                ));
+            } catch (Exception e) {
+                return Mono.error(new ServerException(ServerErrorResult.INTERNAL_SERVER_EXCEPTION));
             }
-
-            return paymentEntity;
-        }).flatMap(paymentEntity ->
-                // [프로세스 3] PG사 결제 승인 요청 및 응답 파싱
-                commonService.executeTossPaymentApproval(
-                        paymentEntity.getPaymentKey(),
-                        paymentEntity.getOrderId(),
-                        paymentEntity.getAmount()
-                ).flatMap(res -> {
-                    try {
-                        JsonNode json = objectMapper.readTree(res);
-
-                        PaymentEventEntity paymentEventEntity = paymentEntity.getPaymentEventEntity();
-                        paymentEventEntity.updatePaymentEventStatus(PAYMENT_EVENT_STATUS.DEVELOPING);
-                        paymentEventEntityRepository.savePaymentEventEntity(paymentEventEntity);
-
-                        return Mono.just(new TossPaymentApprovalResponse(
-                                json.get("orderId").asText(),
-                                json.get("orderName").asText(),
-                                json.get("paymentKey").asText(),
-                                json.get("method").asText(),
-                                json.get("totalAmount").asInt(),
-                                json.get("approvedAt").asText(),
-                                json.get("receipt").get("url").asText()
-                        ));
-                    } catch (Exception e) {
-                        return Mono.error(new ServerException(ServerErrorResult.INTERNAL_SERVER_EXCEPTION));
-                    }
-                })
-        ).onErrorResume(e -> {
-            // [프로세스 5] 서버 예외 발생 시 결제 상태 FAILURE로 갱신 시도
-            if (e instanceof ConflictException || e instanceof BadRequestException || e instanceof NotFoundException) {
-                return Mono.error(e);
-            }
+        }).onErrorResume(e -> {
+            PaymentEntity failedPaymentEntity = paymentEntityRepository.findByOrderId(request.orderId())
+                    .orElse(null);
 
             try {
-                PaymentEntity failedPayment = paymentEntityRepository.findByOrderId(request.orderId()).orElse(null);
+                if (failedPaymentEntity != null) {
+                    failedPaymentEntity.updateFailureStatus();
+                    paymentEntityRepository.savePaymentEntity(failedPaymentEntity);
 
-                if (failedPayment != null) {
-                    failedPayment.updateStatus(STATUS.APPROVAL_FAILED);
-                    paymentEntityRepository.savePaymentEntity(failedPayment);
-
-                    PaymentEventEntity failedPaymentEventEntity = failedPayment.getPaymentEventEntity();
+                    PaymentEventEntity failedPaymentEventEntity = failedPaymentEntity.getPaymentEventEntity();
                     failedPaymentEventEntity.updatePaymentEventStatus(PAYMENT_EVENT_STATUS.REQUESTED);
                     paymentEventEntityRepository.savePaymentEventEntity(failedPaymentEventEntity);
                 }

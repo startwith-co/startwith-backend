@@ -73,27 +73,4 @@ public class ConsumerController {
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SUCCESS"));
     }
-
-    @GetMapping(
-            value = "/details",
-            name = "수요기업 상세보기 조회"
-    )
-    @Operation(
-            summary = "수요기업 상세보기 (개발 진행 중, 개발 완료, 구매 확정)조회 API / 담당자(박종훈)"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "200 SUCCESS", useReturnTypeSchema = true),
-            @ApiResponse(responseCode = "S500", description = "500 INTERNAL SERVER EXCEPTION", content = @Content(schema = @Schema(implementation = ServerExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "B001", description = "400 BAD REQUEST EXCEPTION", content = @Content(schema = @Schema(implementation = BadRequestExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "CNFE004", description = "404 CONSUMER NOT FOUND EXCEPTION", content = @Content(schema = @Schema(implementation = NotFoundExceptionHandler.ErrorResponse.class))),
-    })
-    public ResponseEntity<BaseResponse<ConsumerDetailResponse>> getConsumerDetail(@RequestParam(name = "consumerSeq") Long consumerSeq) {
-        if (consumerSeq == null) {
-            throw new BadRequestException(BadRequestErrorResult.BAD_REQUEST_EXCEPTION);
-        }
-
-        ConsumerDetailResponse response = consumerService.getConsumerDetails(consumerSeq);
-
-        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
-    }
 }

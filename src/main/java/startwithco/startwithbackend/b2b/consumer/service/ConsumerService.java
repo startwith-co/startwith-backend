@@ -52,20 +52,4 @@ public class ConsumerService {
             throw new ConflictException(ConflictErrorResult.IDEMPOTENT_REQUEST_CONFLICT_EXCEPTION);
         }
     }
-
-    @Transactional(readOnly = true)
-    public ConsumerDetailResponse getConsumerDetails(Long consumerSeq) {
-        /*
-         * [예외 처리]
-         * 1. 존재하지 않는 소비자: 404 CONSUMER_NOT_FOUND_EXCEPTION
-         */
-        consumerRepository.findByConsumerSeq(consumerSeq)
-                .orElseThrow(() -> new NotFoundException(NotFoundErrorResult.CONSUMER_NOT_FOUND_EXCEPTION));
-
-        Long DEVELOPING = paymentEventEntityRepository.countDEVELOPEDByConsumerSeq(consumerSeq);
-        Long DEVELOPED = paymentEventEntityRepository.countDEVELOPEDByConsumerSeq(consumerSeq);
-        Long CONFIRMED = paymentEventEntityRepository.countCONFIRMEDByConsumerSeq(consumerSeq);
-
-        return new ConsumerDetailResponse(DEVELOPING, DEVELOPED, CONFIRMED);
-    }
 }

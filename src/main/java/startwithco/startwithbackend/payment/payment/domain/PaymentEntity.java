@@ -6,10 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import startwithco.startwithbackend.base.BaseTimeEntity;
+import startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS;
 import startwithco.startwithbackend.payment.paymentEvent.domain.PaymentEventEntity;
-import startwithco.startwithbackend.payment.payment.util.STATUS;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -24,22 +23,22 @@ public class PaymentEntity extends BaseTimeEntity {
     @Column(name = "payment_seq")
     private Long paymentSeq;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payment_event_seq", nullable = false)
     private PaymentEventEntity paymentEventEntity;
 
-    @Column(name = "order_id", nullable = false, unique = true)
+    @Column(name = "order_id", nullable = false)
     private String orderId;
 
-    @Column(name = "payment_key", nullable = false, unique = true)
+    @Column(name = "payment_key", nullable = false)
     private String paymentKey;
 
     @Column(name = "amount", nullable = false)
     private Long amount;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private STATUS status;
+    @Column(name = "payment_status", nullable = false)
+    private PAYMENT_STATUS paymentStatus;
 
     @Column(name = "payment_completed_at", nullable = true)
     private LocalDateTime paymentCompletedAt;
@@ -50,7 +49,13 @@ public class PaymentEntity extends BaseTimeEntity {
     @Column(name = "auto_confirm_scheduled_at", nullable = true)
     private LocalDateTime autoConfirmScheduledAt;
 
-    public void updateStatus(STATUS status) {
-        this.status = status;
+    public void updateFailureStatus() {
+        this.paymentStatus = PAYMENT_STATUS.FAILURE;
+        this.paymentCompletedAt = null;
+    }
+
+    public void updateSuccessStatus() {
+        this.paymentStatus = PAYMENT_STATUS.SUCCESS;
+        this.paymentCompletedAt = LocalDateTime.now();
     }
 }

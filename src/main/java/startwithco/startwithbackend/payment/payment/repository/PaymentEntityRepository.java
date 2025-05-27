@@ -9,5 +9,5 @@ public interface PaymentEntityRepository {
 
     Optional<PaymentEntity> findByOrderId(String orderId);
 
-    Optional<PaymentEntity> findByPaymentEventSeq(Long paymentEventSeq);
+    boolean canApproveTossPayment(String orderId, Long paymentEventSeq);
 }

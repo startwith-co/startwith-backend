@@ -36,7 +36,13 @@ public class PaymentController {
     )
     @Operation(
             summary = "토스페이먼츠 PG사 연동 결제하기 API",
-            description = "amount의 경우 actualAmount(부가세 포함한 가격)을 보내야합니다."
+            description = """
+                    1. amount의 경우 부가세 포함한 가격을 보내야합니다.\n
+                    2. 광클 방지를 위한 disable 처리해주세요.\n
+                    3. 만약 결제 요청의 상태가 REQUEST가 아닐 경우 결제가 진행되지 않습니다.\n
+                    4. paymentKey의 경우 SuccessURL에서 받은 값, orderId의 경우 UUID 생성해서 넘겨주시면 됩니다.\n
+                    5. SERVER - TOSS 사이 간 orderId로 멱등성 처리가 돼 있습니다. 만약 결제 승인 실패가 나면 기존 orderId가 아닌 새로운 orderId를 만들어 넘겨줘야합니다.\n
+                    """
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "200 SUCCESS", useReturnTypeSchema = true),
@@ -45,7 +51,7 @@ public class PaymentController {
             @ApiResponse(responseCode = "PENFE005", description = "404 PAYMENT EVENT NOT FOUND EXCEPTION", content = @Content(schema = @Schema(implementation = NotFoundExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "IPESCE007", description = "409 INVALID PAYMENT EVENT STATUS CONFLICT EXCEPTION", content = @Content(schema = @Schema(implementation = ConflictExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "AMBRE002", description = "400 AMOUNT MISMATCH BAD REQUEST EXCEPTION", content = @Content(schema = @Schema(implementation = BadRequestExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "IRCE002", description = "409 IDEMPOTENT REQUEST CONFLICT EXCEPTION", content = @Content(schema = @Schema(implementation = ConflictExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "OIDBRE003", description = "400 ORDER ID DUPLICATED BAD REQUEST EXCEPTION", content = @Content(schema = @Schema(implementation = BadRequestExceptionHandler.ErrorResponse.class))),
     })
     public Mono<ResponseEntity<BaseResponse<TossPaymentApprovalResponse>>> tossPaymentApproval(
             @Valid
