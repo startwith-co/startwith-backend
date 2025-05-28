@@ -1,12 +1,7 @@
 package startwithco.startwithbackend.payment.paymentEvent.controller.response;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import startwithco.startwithbackend.payment.paymentEvent.util.PAYMENT_EVENT_ROUND;
 import startwithco.startwithbackend.payment.paymentEvent.util.PAYMENT_EVENT_STATUS;
 import startwithco.startwithbackend.solution.solution.util.CATEGORY;
-import startwithco.startwithbackend.solution.solution.util.SELL_TYPE;
-
-import java.time.LocalDateTime;
 
 public class PaymentEventResponse {
     public record SavePaymentEventEntityResponse(
@@ -15,29 +10,39 @@ public class PaymentEventResponse {
 
     }
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     public record GetPaymentEventEntityResponse(
             Long paymentEventSeq,
             String paymentEventName,
-            SELL_TYPE sellType,
+            CATEGORY category,
             Long amount,
-            Long duration,
-            PAYMENT_EVENT_ROUND paymentEventRound,
-            PAYMENT_EVENT_STATUS paymentEventStatus
+            PAYMENT_EVENT_STATUS paymentEventStatus,
+            String contractConfirmationUrl,
+            String refundPolicyUrl,
+            String orderId
     ) {
 
     }
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     public record GetPaymentEventEntityOrderResponse(
-            String representImageUrl,
+            // 주문 내역
+            Long paymentEventSeq,
+            String orderId,
             String paymentEventName,
-            String vendorBannerImageUrl,
-            String vendorName,
             CATEGORY category,
-            Long duration,
+            String vendorName,
+            String vendorBannerImageUrl,
+            String representImageUrl,
+
+            // 총 결제 금액
             Long amount,
-            Long actualAmount
+            Long tax,
+            Long actualAmount,
+
+            // 주문자 정보
+            Long consumerSeq,
+            String consumerName,
+            String phoneNumber,
+            String email
     ) {
 
     }

@@ -10,21 +10,45 @@ import java.util.Optional;
 
 @Repository
 public interface PaymentEntityJpaRepository extends JpaRepository<PaymentEntity, Long> {
-    @Query("SELECT pe FROM PaymentEntity pe WHERE pe.orderId = :orderId")
-    Optional<PaymentEntity> findByOrderId(@Param("orderId") String orderId);
-
     @Query("""
-            SELECT CASE
-                     WHEN COUNT(p) > 0 THEN false
-                     ELSE true
-                   END
-            FROM PaymentEntity p
-            WHERE p.paymentEventEntity.paymentEventSeq = :paymentEventSeq
-              AND p.orderId = :orderId
-              AND p.paymentStatus IN ('SUCCESS', 'FAILURE')
-        """)
+                SELECT CASE
+                         WHEN COUNT(p) > 0 THEN false
+                         ELSE true
+                       END
+                FROM PaymentEntity p
+                WHERE p.paymentEventEntity.orderId = :orderId
+                  AND p.paymentEventEntity.paymentEventSeq = :paymentEventSeq
+                  AND p.paymentStatus IN ('SUCCESS', 'FAILURE')
+            """)
     boolean canApproveTossPayment(
             @Param("orderId") String orderId,
             @Param("paymentEventSeq") Long paymentEventSeq
     );
+
+    @Query("""
+            SELECT p
+            FROM PaymentEntity p
+            WHERE p.paymentEventEntity.paymentEventSeq = :paymentEventSeq
+              AND p.paymentStatus = 'SUCCESS'
+            """)
+    Optional<PaymentEntity> findSUCCESSByPaymentEventSeq(@Param("paymentEventSeq") Long paymentEventSeq);
+
+    @Query("""
+            SELECT CASE
+                     WHEN COUNT(p) = 0 THEN true
+                     ELSE false
+                   END
+            FROM PaymentEntity p
+            WHERE p.paymentEventEntity.paymentEventSeq = :paymentEventSeq
+              AND p.paymentStatus = 'IN_PROGRESS'
+            """)
+    boolean canSavePaymentEntity(@Param("paymentEventSeq") Long paymentEventSeq);
+
+    @Query("""
+            SELECT p
+            FROM PaymentEntity p
+            WHERE p.paymentEventEntity.paymentEventSeq = :paymentEventSeq
+              AND p.paymentStatus = 'IN_PROGRESS'
+            """)
+    Optional<PaymentEntity> findINPROGRESSByPaymentEventSeq(@Param("paymentEventSeq") Long paymentEventSeq);
 }

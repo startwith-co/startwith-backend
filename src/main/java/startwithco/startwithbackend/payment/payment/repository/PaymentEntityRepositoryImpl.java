@@ -17,12 +17,22 @@ public class PaymentEntityRepositoryImpl implements PaymentEntityRepository {
     }
 
     @Override
-    public Optional<PaymentEntity> findByOrderId(String orderId) {
-        return repository.findByOrderId(orderId);
+    public boolean canApproveTossPayment(String orderId, Long paymentEventSeq) {
+        return repository.canApproveTossPayment(orderId, paymentEventSeq);
     }
 
     @Override
-    public boolean canApproveTossPayment(String orderId, Long paymentEventSeq) {
-        return repository.canApproveTossPayment(orderId, paymentEventSeq);
+    public Optional<PaymentEntity> findSUCCESSByPaymentEventSeq(Long paymentEventSeq) {
+        return repository.findSUCCESSByPaymentEventSeq(paymentEventSeq);
+    }
+
+    @Override
+    public boolean canSavePaymentEntity(Long paymentEventSeq) {
+        return repository.canSavePaymentEntity(paymentEventSeq);
+    }
+
+    @Override
+    public Optional<PaymentEntity> findINPROGRESSByPaymentEventSeq(Long paymentEventSeq) {
+        return repository.findINPROGRESSByPaymentEventSeq(paymentEventSeq);
     }
 }

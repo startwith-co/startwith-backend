@@ -11,20 +11,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest;
-import startwithco.startwithbackend.b2b.consumer.controller.response.ConsumerResponse;
 import startwithco.startwithbackend.b2b.consumer.service.ConsumerService;
 import startwithco.startwithbackend.base.BaseResponse;
-import startwithco.startwithbackend.exception.badRequest.BadRequestErrorResult;
-import startwithco.startwithbackend.exception.badRequest.BadRequestException;
-import startwithco.startwithbackend.exception.badRequest.BadRequestExceptionHandler;
-import startwithco.startwithbackend.exception.conflict.ConflictExceptionHandler;
-import startwithco.startwithbackend.exception.notFound.NotFoundExceptionHandler;
-import startwithco.startwithbackend.exception.server.ServerExceptionHandler;
-import startwithco.startwithbackend.payment.paymentEvent.controller.response.PaymentEventResponse;
+import startwithco.startwithbackend.exception.handler.GlobalExceptionHandler;
 
 import static startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest.*;
-import static startwithco.startwithbackend.b2b.consumer.controller.response.ConsumerResponse.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -48,19 +39,19 @@ public class ConsumerController {
                     description = "500 SERVER_ERROR",
                     content = @Content(
                             schema = @Schema(
-                                    implementation = ServerExceptionHandler.ErrorResponse.class))),
+                                    implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(
                     responseCode = "DB002",
                     description = "400 Invalid DTO Parameter errors",
                     content = @Content(
                             schema = @Schema(
-                                    implementation = BadRequestExceptionHandler.ErrorResponse.class))),
+                                    implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(
                     responseCode = "CEDCE002",
                     description = "409 CONSUMER_EMAIL_DUPLICATION_CONFLICT_EXCEPTION",
                     content = @Content(
                             schema = @Schema(
-                                    implementation = ConflictExceptionHandler.ErrorResponse.class)))
+                                    implementation = GlobalExceptionHandler.ErrorResponse.class)))
     })
     public ResponseEntity<BaseResponse<String>> saveConsumer(@Valid @RequestBody SaveConsumerRequest request) {
 

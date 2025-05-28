@@ -1,7 +1,6 @@
 package startwithco.startwithbackend.payment.paymentEvent.repository;
 
 import startwithco.startwithbackend.payment.paymentEvent.domain.PaymentEventEntity;
-import startwithco.startwithbackend.solution.solution.util.SELL_TYPE;
 
 import java.util.Optional;
 
@@ -10,5 +9,5 @@ public interface PaymentEventEntityRepository {
 
     Optional<PaymentEventEntity> findByPaymentEventSeq(Long paymentEventSeq);
 
-    boolean canSavePaymentEventEntity(Long consumerSeq, Long vendorSeq, Long solutionSeq, SELL_TYPE sellType);
+    boolean canSavePaymentEventEntity(Long consumerSeq, Long vendorSeq, Long solutionSeq);
 }

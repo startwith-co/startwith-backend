@@ -1,5 +1,7 @@
 package startwithco.startwithbackend.payment.payment.controller.response;
 
+import java.time.LocalDateTime;
+
 public class PaymentResponse {
     public record TossPaymentApprovalResponse(
             String orderId,
@@ -7,9 +9,7 @@ public class PaymentResponse {
             String paymentKey,
             String method,
             Integer totalAmount,
-            String approvedAt,
+            LocalDateTime approvedAt,
             String receiptUrl
-    ) {
-
-    }
+    ) {}
 }
