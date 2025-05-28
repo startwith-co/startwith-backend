@@ -3,7 +3,6 @@ package startwithco.startwithbackend.payment.paymentEvent.repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import startwithco.startwithbackend.payment.paymentEvent.domain.PaymentEventEntity;
-import startwithco.startwithbackend.solution.solution.util.SELL_TYPE;
 
 import java.util.Optional;
 
@@ -23,7 +22,7 @@ public class PaymentEventEntityRepositoryImpl implements PaymentEventEntityRepos
     }
 
     @Override
-    public boolean canSavePaymentEventEntity(Long consumerSeq, Long vendorSeq, Long solutionSeq, SELL_TYPE sellType) {
-        return repository.canSavePaymentEventEntity(consumerSeq, vendorSeq, solutionSeq, sellType);
+    public boolean canSavePaymentEventEntity(Long consumerSeq, Long vendorSeq, Long solutionSeq) {
+        return repository.canSavePaymentEventEntity(consumerSeq, vendorSeq, solutionSeq);
     }
 }

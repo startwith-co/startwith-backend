@@ -1,40 +1,34 @@
 package startwithco.startwithbackend.b2b.consumer.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest;
-import startwithco.startwithbackend.b2b.consumer.controller.response.ConsumerResponse;
 import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
 import startwithco.startwithbackend.b2b.consumer.repository.ConsumerRepository;
-import startwithco.startwithbackend.exception.conflict.ConflictErrorResult;
-import startwithco.startwithbackend.exception.conflict.ConflictException;
-import startwithco.startwithbackend.exception.notFound.NotFoundErrorResult;
-import startwithco.startwithbackend.exception.notFound.NotFoundException;
-import startwithco.startwithbackend.payment.paymentEvent.repository.PaymentEventEntityRepository;
+import startwithco.startwithbackend.exception.ConflictException;
 
-import static startwithco.startwithbackend.b2b.consumer.controller.response.ConsumerResponse.*;
+import static startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest.*;
+import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.*;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class ConsumerService {
-
     private final ConsumerRepository consumerRepository;
-    private final PaymentEventEntityRepository paymentEventEntityRepository;
     private final BCryptPasswordEncoder encoder;
 
-
     @Transactional
-    public void saveConsumer(ConsumerRequest.SaveConsumerRequest request) {
-
+    public void saveConsumer(SaveConsumerRequest request) {
         // 유효성 검사
         consumerRepository.findByEmail(request.email())
                 .ifPresent(entity -> {
-                    throw new ConflictException(ConflictErrorResult.CONSUMER_EMAIL_DUPLICATION_CONFLICT_EXCEPTION);
+                    throw new ConflictException(
+                            HttpStatus.CONFLICT.value(),
+                            "중복된 이메일입니다.",
+                            getCode("중복된 이메일입니다.", ExceptionType.CONFLICT)
+                    );
                 });
 
         try {
@@ -48,8 +42,11 @@ public class ConsumerService {
             consumerRepository.save(consumerEntity);
 
         } catch (DataIntegrityViolationException e) {
-            log.error("Solution Service saveSolutionEntity Method DataIntegrityViolationException-> {}", e.getMessage());
-            throw new ConflictException(ConflictErrorResult.IDEMPOTENT_REQUEST_CONFLICT_EXCEPTION);
+            throw new ConflictException(
+                    HttpStatus.CONFLICT.value(),
+                    "동시성 저장은 불가능합니다.",
+                    getCode("동시성 저장은 불가능합니다.", ExceptionType.CONFLICT)
+            );
         }
     }
 }

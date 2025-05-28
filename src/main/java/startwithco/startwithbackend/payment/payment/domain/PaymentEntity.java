@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.Where;
 import startwithco.startwithbackend.base.BaseTimeEntity;
 import startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS;
 import startwithco.startwithbackend.payment.paymentEvent.domain.PaymentEventEntity;
@@ -54,8 +55,12 @@ public class PaymentEntity extends BaseTimeEntity {
         this.paymentCompletedAt = null;
     }
 
-    public void updateSuccessStatus() {
+    public void updateSuccessStatus(LocalDateTime paymentCompletedAt) {
         this.paymentStatus = PAYMENT_STATUS.SUCCESS;
-        this.paymentCompletedAt = LocalDateTime.now();
+        this.paymentCompletedAt = paymentCompletedAt;
+    }
+
+    public void updatePaymentStatus(PAYMENT_STATUS paymentStatus) {
+        this.paymentStatus = paymentStatus;
     }
 }

@@ -1,4 +1,4 @@
-package startwithco.startwithbackend.exception.server;
+package startwithco.startwithbackend.exception;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -6,5 +6,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public class ServerException extends RuntimeException {
-    private final ServerErrorResult errorResult;
+    private final int httpStatus;
+    private final String message;
+    private final String code;
 }

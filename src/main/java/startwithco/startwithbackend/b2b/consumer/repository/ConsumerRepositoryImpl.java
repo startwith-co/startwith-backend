@@ -3,8 +3,6 @@ package startwithco.startwithbackend.b2b.consumer.repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
-import startwithco.startwithbackend.exception.conflict.ConflictErrorResult;
-import startwithco.startwithbackend.exception.conflict.ConflictException;
 
 import java.util.Optional;
 

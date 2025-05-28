@@ -1,59 +1,50 @@
 package startwithco.startwithbackend.payment.paymentEvent.controller.request;
 
-import startwithco.startwithbackend.payment.paymentEvent.util.PAYMENT_EVENT_ROUND;
-import startwithco.startwithbackend.solution.solution.util.SELL_TYPE;
-import startwithco.startwithbackend.exception.badRequest.BadRequestErrorResult;
-import startwithco.startwithbackend.exception.badRequest.BadRequestException;
+import org.springframework.http.HttpStatus;
+import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
+import startwithco.startwithbackend.solution.solution.util.CATEGORY;
+import startwithco.startwithbackend.exception.BadRequestException;
 
 import static io.micrometer.common.util.StringUtils.isBlank;
+import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.getCode;
 
 public class PaymentEventRequest {
     public record SavePaymentEventRequest(
-            Long solutionSeq,
             Long consumerSeq,
             Long vendorSeq,
+            String category,
             String paymentEventName,
-            String sellType,
-            Long amount,
-            Long duration,
-            String paymentEventRound
+            Long amount
     ) {
         public void validate() {
-            if (solutionSeq == null ||
-                    consumerSeq == null ||
+            if (consumerSeq == null ||
                     vendorSeq == null ||
                     isBlank(paymentEventName) ||
-                    isBlank(sellType) ||
-                    amount == null ||
-                    duration == null) {
-                throw new BadRequestException(BadRequestErrorResult.BAD_REQUEST_EXCEPTION);
+                    isBlank(category) ||
+                    amount == null) {
+                throw new BadRequestException(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "요청 데이터 오류입니다.",
+                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                );
             }
 
             if (amount < 0) {
-                throw new BadRequestException(BadRequestErrorResult.BAD_REQUEST_EXCEPTION);
+                throw new BadRequestException(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "요청 데이터 오류입니다.",
+                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                );
             }
 
-            if (sellType.equals("SINGLE")) {
-                if (isBlank(paymentEventRound)) {
-                    throw new BadRequestException(BadRequestErrorResult.BAD_REQUEST_EXCEPTION);
-                }
-
-                try {
-                    SELL_TYPE.valueOf(sellType.toUpperCase());
-                    PAYMENT_EVENT_ROUND.valueOf(paymentEventRound.toUpperCase());
-                } catch (Exception e) {
-                    throw new BadRequestException(BadRequestErrorResult.BAD_REQUEST_EXCEPTION);
-                }
-            } else if (sellType.equals("SUBSCRIBE")) {
-                if (!isBlank(paymentEventRound)) {
-                    throw new BadRequestException(BadRequestErrorResult.BAD_REQUEST_EXCEPTION);
-                }
-
-                try {
-                    SELL_TYPE.valueOf(sellType.toUpperCase());
-                } catch (Exception e) {
-                    throw new BadRequestException(BadRequestErrorResult.BAD_REQUEST_EXCEPTION);
-                }
+            try {
+                CATEGORY.valueOf(category.toUpperCase());
+            } catch (Exception e) {
+                throw new BadRequestException(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "요청 데이터 오류입니다.",
+                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                );
             }
         }
     }
@@ -63,7 +54,11 @@ public class PaymentEventRequest {
     ) {
         public void validate() {
             if (paymentEventSeq == null) {
-                throw new BadRequestException(BadRequestErrorResult.BAD_REQUEST_EXCEPTION);
+                throw new BadRequestException(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "요청 데이터 오류입니다.",
+                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                );
             }
         }
     }

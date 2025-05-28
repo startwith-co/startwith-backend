@@ -1,19 +1,20 @@
 package startwithco.startwithbackend.solution.solution.controller.request;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.multipart.MultipartFile;
-import startwithco.startwithbackend.exception.badRequest.BadRequestErrorResult;
-import startwithco.startwithbackend.exception.badRequest.BadRequestException;
+import startwithco.startwithbackend.exception.BadRequestException;
+import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
 import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 import startwithco.startwithbackend.solution.effect.util.DIRECTION;
-import startwithco.startwithbackend.solution.solution.util.SELL_TYPE;
 
 import java.util.List;
 
 import static io.micrometer.common.util.StringUtils.isBlank;
+import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.getCode;
 
 public class SolutionRequest {
     public record SaveSolutionEntityRequest(
+            // 솔루션 기본 정보 입력
             Long vendorSeq,
             String solutionName,
             String solutionDetail,
@@ -22,10 +23,15 @@ public class SolutionRequest {
             String recommendedCompanySize,
             String solutionImplementationType,
             String specialist,
+
+            // 판매 정보 입력
             Long amount,
-            String sellType,
             Long duration,
+
+            // 솔루션 상세 정보 입력
             List<SolutionEffectEntityRequest> solutionEffect,
+
+            // 키워드 검색 태그
             List<String> keyword
     ) {
         public record SolutionEffectEntityRequest(
@@ -36,7 +42,7 @@ public class SolutionRequest {
 
         }
 
-        public void validate(MultipartFile representImageUrl, MultipartFile descriptionPdfUrl) {
+        public void validate() {
             if (vendorSeq == null ||
                     isBlank(solutionName) ||
                     isBlank(solutionDetail) ||
@@ -46,17 +52,17 @@ public class SolutionRequest {
                     isBlank(solutionImplementationType) ||
                     isBlank(specialist) ||
                     amount == null ||
-                    sellType == null ||
                     duration == null ||
-                    representImageUrl == null ||
-                    descriptionPdfUrl == null ||
                     CollectionUtils.isEmpty(keyword)) {
-                throw new BadRequestException(BadRequestErrorResult.BAD_REQUEST_EXCEPTION);
+                throw new BadRequestException(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "요청 데이터 오류입니다.",
+                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                );
             }
 
             try {
                 CATEGORY.valueOf(category.toUpperCase());
-                SELL_TYPE.valueOf(sellType.toUpperCase());
 
                 if (!CollectionUtils.isEmpty(solutionEffect)) {
                     for (SolutionEffectEntityRequest effect : solutionEffect) {
@@ -64,7 +70,19 @@ public class SolutionRequest {
                     }
                 }
             } catch (Exception e) {
-                throw new BadRequestException(BadRequestErrorResult.BAD_REQUEST_EXCEPTION);
+                throw new BadRequestException(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "요청 데이터 오류입니다.",
+                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                );
+            }
+
+            if (amount <= 0) {
+                throw new BadRequestException(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "요청 데이터 오류입니다.",
+                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                );
             }
         }
     }

@@ -2,18 +2,18 @@ package startwithco.startwithbackend.solution.solution.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.b2b.vendor.repository.VendorEntityRepository;
+import startwithco.startwithbackend.exception.ServerException;
 import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 import startwithco.startwithbackend.solution.effect.util.DIRECTION;
-import startwithco.startwithbackend.solution.solution.util.SELL_TYPE;
-import startwithco.startwithbackend.exception.conflict.ConflictErrorResult;
-import startwithco.startwithbackend.exception.conflict.ConflictException;
-import startwithco.startwithbackend.exception.notFound.NotFoundErrorResult;
-import startwithco.startwithbackend.exception.notFound.NotFoundException;
+import startwithco.startwithbackend.exception.ConflictException;
+import startwithco.startwithbackend.exception.NotFoundException;
 import startwithco.startwithbackend.solution.effect.domain.SolutionEffectEntity;
 import startwithco.startwithbackend.solution.effect.repository.SolutionEffectEntityRepository;
 import startwithco.startwithbackend.solution.keyword.domain.SolutionKeywordEntity;
@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.*;
+import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.getCode;
 import static startwithco.startwithbackend.solution.solution.controller.request.SolutionRequest.*;
 import static startwithco.startwithbackend.solution.solution.controller.response.SolutionResponse.*;
 
@@ -46,66 +48,84 @@ public class SolutionService {
             SaveSolutionEntityRequest request,
             MultipartFile representImageUrl,
             MultipartFile descriptionPdfUrl
-    ) throws IOException {
+    ) {
         /*
          * [예외 처리]
          * 1. vendor 유효성 검사
          * 2. Solution 존재 여부 확인
          * */
         VendorEntity vendorEntity = vendorEntityRepository.findByVendorSeq(request.vendorSeq())
-                .orElseThrow(() -> new NotFoundException(NotFoundErrorResult.VENDOR_NOT_FOUND_EXCEPTION));
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 벤더 기업입니다.",
+                        getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
+                ));
         solutionEntityRepository.findByVendorSeqAndCategory(request.vendorSeq(), CATEGORY.valueOf(request.category()))
                 .ifPresent(solutionEntity -> {
-                    throw new ConflictException(ConflictErrorResult.SOLUTION_CONFLICT_EXCEPTION);
+                    throw new ConflictException(
+                            HttpStatus.CONFLICT.value(),
+                            "해당 벤더의 해당 카테고리 솔루션이 이미 존재합니다.",
+                            getCode("해당 벤더의 해당 카테고리 솔루션이 이미 존재합니다.", ExceptionType.CONFLICT)
+                    );
                 });
 
-        // 1. SolutionEntity 저장
-        String S3RepresentImageUrl = commonService.uploadJPGFile(representImageUrl);
-        String S3DescriptionPdfUrl = commonService.uploadPDFFile(descriptionPdfUrl);
+        try {
+            String s3RepresentImageUrl = commonService.uploadJPGFile(representImageUrl);
+            String s3DescriptionPdfUrl = commonService.uploadPDFFile(descriptionPdfUrl);
 
-        SolutionEntity erpEntity = SolutionEntity.builder()
-                .vendorEntity(vendorEntity)
-                .solutionName(request.solutionName())
-                .solutionDetail(request.solutionDetail())
-                .category(CATEGORY.valueOf(request.category()))
-                .industry(request.industry())
-                .recommendedCompanySize(request.recommendedCompanySize())
-                .solutionImplementationType(request.solutionImplementationType())
-                .amount(request.amount())
-                .sellType(SELL_TYPE.valueOf(request.sellType()))
-                .duration(request.duration())
-                .specialist(request.specialist())
-                .representImageUrl(S3RepresentImageUrl)
-                .descriptionPdfUrl(S3DescriptionPdfUrl)
-                .build();
+            SolutionEntity solutionEntity = SolutionEntity.builder()
+                    .vendorEntity(vendorEntity)
+                    .solutionName(request.solutionName())
+                    .solutionDetail(request.solutionDetail())
+                    .category(CATEGORY.valueOf(request.category()))
+                    .industry(request.industry())
+                    .recommendedCompanySize(request.recommendedCompanySize())
+                    .solutionImplementationType(request.solutionImplementationType())
+                    .amount(request.amount())
+                    .duration(request.duration())
+                    .representImageUrl(s3RepresentImageUrl)
+                    .descriptionPdfUrl(s3DescriptionPdfUrl)
+                    .specialist(request.specialist())
+                    .build();
 
-        SolutionEntity solutionEntity = solutionEntityRepository.saveSolutionEntity(erpEntity);
+            solutionEntityRepository.saveSolutionEntity(solutionEntity);
 
-        // 2. SolutionEffectEntity 저장
-        List<SolutionEffectEntity> solutionEffectEntities = Optional.ofNullable(request.solutionEffect())
-                .orElse(List.of())
-                .stream()
-                .map(e -> SolutionEffectEntity.builder()
-                        .solutionEntity(solutionEntity)
-                        .effectName(e.effectName())
-                        .percent(e.percent())
-                        .direction(DIRECTION.valueOf(e.direction()))
-                        .build())
-                .collect(Collectors.toList());
+            List<SolutionEffectEntity> solutionEffectEntities = Optional.ofNullable(request.solutionEffect())
+                    .orElse(List.of())
+                    .stream()
+                    .map(e -> SolutionEffectEntity.builder()
+                            .solutionEntity(solutionEntity)
+                            .effectName(e.effectName())
+                            .percent(e.percent())
+                            .direction(DIRECTION.valueOf(e.direction()))
+                            .build())
+                    .collect(Collectors.toList());
 
-        solutionEffectEntityRepository.saveAll(solutionEffectEntities);
+            solutionEffectEntityRepository.saveAll(solutionEffectEntities);
 
-        // 3. SolutionKeywordEntity 저장
-        List<SolutionKeywordEntity> solutionKeywordEntities = request.keyword().stream()
-                .map(k -> SolutionKeywordEntity.builder()
-                        .solutionEntity(solutionEntity)
-                        .keyword(k)
-                        .build())
-                .collect(Collectors.toList());
+            List<SolutionKeywordEntity> solutionKeywordEntities = request.keyword().stream()
+                    .map(k -> SolutionKeywordEntity.builder()
+                            .solutionEntity(solutionEntity)
+                            .keyword(k)
+                            .build())
+                    .collect(Collectors.toList());
 
-        solutionKeywordEntityRepository.saveAll(solutionKeywordEntities);
+            solutionKeywordEntityRepository.saveAll(solutionKeywordEntities);
 
-        return new SaveSolutionEntityResponse(solutionEntity.getSolutionSeq());
+            return new SaveSolutionEntityResponse(solutionEntity.getSolutionSeq());
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException(
+                    HttpStatus.CONFLICT.value(),
+                    "동시성 저장은 불가능합니다.",
+                    getCode("동시성 저장은 불가능합니다.", ExceptionType.CONFLICT)
+            );
+        } catch (IOException e) {
+            throw new ServerException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "S3 UPLOAD 실패",
+                    getCode("S3 UPLOAD 실패", ExceptionType.SERVER)
+            );
+        }
     }
 
     @Transactional
@@ -113,61 +133,80 @@ public class SolutionService {
             SaveSolutionEntityRequest request,
             MultipartFile representImageUrl,
             MultipartFile descriptionPdfUrl
-    ) throws IOException {
+    ) {
         /*
          * [예외 처리]
          * 1. vendor 유효성 검사
          * 2. solution 유효성 검사
          * */
         vendorEntityRepository.findByVendorSeq(request.vendorSeq())
-                .orElseThrow(() -> new NotFoundException(NotFoundErrorResult.VENDOR_NOT_FOUND_EXCEPTION));
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 벤더 기업입니다.",
+                        getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
+                ));
         SolutionEntity solutionEntity = solutionEntityRepository.findByVendorSeqAndCategory(request.vendorSeq(), CATEGORY.valueOf(request.category()))
-                .orElseThrow(() -> new NotFoundException(NotFoundErrorResult.SOLUTION_NOT_FOUND_EXCEPTION));
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 솔루션입니다.",
+                        getCode("존재하지 않는 솔루션입니다.", ExceptionType.NOT_FOUND)
+                ));
 
-        // 1. SolutionEntity 업데이트
-        String S3RepresentImageUrl = commonService.uploadJPGFile(representImageUrl);
-        String S3DescriptionPdfUrl = commonService.uploadPDFFile(descriptionPdfUrl);
+        try {
+            String s3RepresentImageUrl = commonService.uploadJPGFile(representImageUrl);
+            String s3DescriptionPdfUrl = commonService.uploadPDFFile(descriptionPdfUrl);
 
-        SolutionEntity updatedSolutionEntity = solutionEntity.updateSolutionEntity(
-                request.solutionName(),
-                request.solutionDetail(),
-                request.industry(),
-                request.recommendedCompanySize(),
-                request.solutionImplementationType(),
-                request.amount(),
-                SELL_TYPE.valueOf(request.sellType()),
-                request.duration(),
-                request.specialist(),
-                S3RepresentImageUrl,
-                S3DescriptionPdfUrl
-        );
+            SolutionEntity updatedSolutionEntity = solutionEntity.updateSolutionEntity(
+                    request.solutionName(),
+                    request.solutionDetail(),
+                    CATEGORY.valueOf(request.category()),
+                    request.industry(),
+                    request.recommendedCompanySize(),
+                    request.solutionImplementationType(),
+                    request.amount(),
+                    request.duration(),
+                    request.specialist(),
+                    s3RepresentImageUrl,
+                    s3DescriptionPdfUrl
+            );
 
-        solutionEntityRepository.saveSolutionEntity(updatedSolutionEntity);
+            solutionEntityRepository.saveSolutionEntity(updatedSolutionEntity);
 
-        // 2. SolutionEffectEntity 삭제 후 저장
-        solutionEffectEntityRepository.deleteAllBySolutionSeq(solutionEntity.getSolutionSeq());
-        List<SolutionEffectEntity> solutionEffectEntities = Optional.ofNullable(request.solutionEffect())
-                .orElse(List.of())
-                .stream()
-                .map(e -> SolutionEffectEntity.builder()
-                        .solutionEntity(solutionEntity)
-                        .effectName(e.effectName())
-                        .percent(e.percent())
-                        .direction(DIRECTION.valueOf(e.direction()))
-                        .build())
-                .collect(Collectors.toList());
+            solutionEffectEntityRepository.deleteAllBySolutionSeq(solutionEntity.getSolutionSeq());
+            List<SolutionEffectEntity> solutionEffectEntities = Optional.ofNullable(request.solutionEffect())
+                    .orElse(List.of())
+                    .stream()
+                    .map(e -> SolutionEffectEntity.builder()
+                            .solutionEntity(solutionEntity)
+                            .effectName(e.effectName())
+                            .percent(e.percent())
+                            .direction(DIRECTION.valueOf(e.direction()))
+                            .build())
+                    .collect(Collectors.toList());
 
-        solutionEffectEntityRepository.saveAll(solutionEffectEntities);
+            solutionEffectEntityRepository.saveAll(solutionEffectEntities);
 
-        // 3. keywordEntity 삭제 후 저장
-        solutionKeywordEntityRepository.deleteAllBySolutionSeq(solutionEntity.getSolutionSeq());
-        List<SolutionKeywordEntity> solutionKeywordEntities = request.keyword().stream()
-                .map(k -> SolutionKeywordEntity.builder()
-                        .solutionEntity(solutionEntity)
-                        .keyword(k)
-                        .build())
-                .collect(Collectors.toList());
+            solutionKeywordEntityRepository.deleteAllBySolutionSeq(solutionEntity.getSolutionSeq());
+            List<SolutionKeywordEntity> solutionKeywordEntities = request.keyword().stream()
+                    .map(k -> SolutionKeywordEntity.builder()
+                            .solutionEntity(solutionEntity)
+                            .keyword(k)
+                            .build())
+                    .collect(Collectors.toList());
 
-        solutionKeywordEntityRepository.saveAll(solutionKeywordEntities);
+            solutionKeywordEntityRepository.saveAll(solutionKeywordEntities);
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException(
+                    HttpStatus.CONFLICT.value(),
+                    "동시성 저장은 불가능합니다.",
+                    getCode("동시성 저장은 불가능합니다.", ExceptionType.CONFLICT)
+            );
+        } catch (IOException e) {
+            throw new ServerException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "S3 UPLOAD 실패",
+                    getCode("S3 UPLOAD 실패", ExceptionType.SERVER)
+            );
+        }
     }
 }

@@ -1,4 +1,4 @@
-package startwithco.startwithbackend.exception.unauthorized;
+package startwithco.startwithbackend.exception;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -6,5 +6,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public class UnauthorizedException extends RuntimeException {
-    private final UnauthorizedErrorResult errorResult;
+    private final int httpStatus;
+    private final String message;
+    private final String code;
 }
