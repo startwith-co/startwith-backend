@@ -43,6 +43,12 @@ public class PaymentEventEntity extends BaseTimeEntity {
     @Column(name = "amount", nullable = false)
     private Long amount;
 
+    @Column(name = "tax", nullable = false)
+    private Long tax;
+
+    @Column(name = "actual_amount", nullable = false)
+    private Long actualAmount;
+
     @Column(name = "contract_confirmation_url", nullable = false)
     private String contractConfirmationUrl;
 
