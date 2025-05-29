@@ -3,6 +3,8 @@ package startwithco.startwithbackend.common.service;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -42,6 +44,8 @@ public class CommonService {
     @Qualifier("tossPaymentWebClient")
     private final WebClient tossPaymentWebClient;
 
+    private final ObjectMapper objectMapper;
+
     public String uploadJPGFile(MultipartFile multipartFile) throws IOException {
         String fileName = randomUUID().toString() + ".jpg";
         InputStream inputStream = multipartFile.getInputStream();
@@ -66,7 +70,7 @@ public class CommonService {
         return s3client.getUrl(bucketName, fileName).toString();
     }
 
-    public Mono<String> executeTossPaymentApproval(String paymentKey, String orderId, Long amount) {
+    public Mono<JsonNode> executeTossPaymentApproval(String paymentKey, String orderId, Long amount) {
         String encodedSecretKey = Base64.getEncoder()
                 .encodeToString((tossPaymentSecretKey + ":").getBytes(StandardCharsets.UTF_8));
 
@@ -82,15 +86,30 @@ public class CommonService {
                 ))
                 .retrieve()
                 .bodyToMono(String.class)
-                .doOnSuccess(res -> log.info("✅ 결제 승인 성공: {}", res))
-                .doOnError(WebClientResponseException.class, err ->
-                        log.error("❌ 결제 승인 실패 - 응답 에러: {}", err.getResponseBodyAsString()))
-                .onErrorResume(Throwable.class, err -> {
-                    log.error("❌ 결제 승인 실패: {}", err.getMessage());
+                .<JsonNode>handle((responseBody, sink) -> {
+                    try {
+                        sink.next(objectMapper.readTree(responseBody));
+                    } catch (Exception e) {
+                        sink.error(new ServerException(
+                                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                                "결제 응답 파싱 중 오류가 발생했습니다.",
+                                getCode("결제 응답 파싱 중 오류가 발생했습니다.", ExceptionType.SERVER)
+                        ));
+                    }
+                })
+                .doOnSuccess(json -> log.info("✅ 결제 승인 성공: {}", json))
+                .doOnError(WebClientResponseException.class, err -> {
+                    throw new ServerException(
+                            HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                            "WebClient 응답 에러가 발생했습니다.",
+                            getCode("WebClient 응답 에러가 발생했습니다.", ExceptionType.SERVER)
+                    );
+                })
+                .onErrorResume(err -> {
                     return Mono.error(new ServerException(
                             HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                            "내부 서버 오류가 발생했습니다.",
-                            getCode("내부 서버 오류가 발생했습니다.", ExceptionType.SERVER)
+                            "토스페이먼츠 결제 승인 실패",
+                            getCode("토스페이먼츠 결제 승인 실패", ExceptionType.SERVER)
                     ));
                 });
     }

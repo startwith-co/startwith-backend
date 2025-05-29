@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Where;
 import startwithco.startwithbackend.base.BaseTimeEntity;
+import startwithco.startwithbackend.payment.payment.util.METHOD;
 import startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS;
 import startwithco.startwithbackend.payment.paymentEvent.domain.PaymentEventEntity;
 
@@ -41,6 +42,13 @@ public class PaymentEntity extends BaseTimeEntity {
     @Column(name = "payment_status", nullable = false)
     private PAYMENT_STATUS paymentStatus;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "method", nullable = true)
+    private METHOD method;
+
+    @Column(name = "secret", nullable = true)
+    private String secret;
+
     @Column(name = "payment_completed_at", nullable = true)
     private LocalDateTime paymentCompletedAt;
 
@@ -62,5 +70,13 @@ public class PaymentEntity extends BaseTimeEntity {
 
     public void updatePaymentStatus(PAYMENT_STATUS paymentStatus) {
         this.paymentStatus = paymentStatus;
+    }
+
+    public void updateMethod(METHOD method) {
+        this.method = method;
+    }
+
+    public void updateSecret(String secret) {
+        this.secret = secret;
     }
 }

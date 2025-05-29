@@ -89,6 +89,8 @@ public class PaymentEventService {
         String s3ContractConfirmationUrl = commonService.uploadPDFFile(contractConfirmationUrl);
         String s3RefundPolicyUrl = commonService.uploadPDFFile(refundPolicyUrl);
         String orderId = UUID.randomUUID().toString();
+        Long tax = (long) (request.amount() * 0.1);
+        Long actualAmount = request.amount() + tax;
 
         PaymentEventEntity paymentEventEntity = PaymentEventEntity.builder()
                 .vendorEntity(vendorEntity)
@@ -96,6 +98,8 @@ public class PaymentEventService {
                 .solutionEntity(solutionEntity)
                 .paymentEventName(request.paymentEventName())
                 .amount(request.amount())
+                .tax(tax)
+                .actualAmount(actualAmount)
                 .contractConfirmationUrl(s3ContractConfirmationUrl)
                 .refundPolicyUrl(s3RefundPolicyUrl)
                 .paymentEventStatus(PAYMENT_EVENT_STATUS.REQUESTED)
@@ -203,10 +207,6 @@ public class PaymentEventService {
         VendorEntity vendorEntity = solutionEntity.getVendorEntity();
         ConsumerEntity consumerEntity = paymentEventEntity.getConsumerEntity();
 
-        Long amount = paymentEventEntity.getAmount();
-        Long tax = (long) (amount * 0.1);
-        Long actualAmount = amount + tax;
-
         return new GetPaymentEventEntityOrderResponse(
                 paymentEventEntity.getPaymentEventSeq(),
                 paymentEventEntity.getOrderId(),
@@ -215,9 +215,9 @@ public class PaymentEventService {
                 vendorEntity.getVendorName(),
                 vendorEntity.getVendorBannerImageUrl(),
                 solutionEntity.getRepresentImageUrl(),
-                amount,
-                tax,
-                actualAmount,
+                paymentEventEntity.getAmount(),
+                paymentEventEntity.getTax(),
+                paymentEventEntity.getActualAmount(),
                 consumerEntity.getConsumerSeq(),
                 consumerEntity.getConsumerName(),
                 consumerEntity.getPhoneNumber(),

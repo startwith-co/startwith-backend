@@ -37,6 +37,8 @@ public class ExceptionCodeMapper {
         SERVER_MAP.put("결제 응답 파싱 중 오류가 발생했습니다.", "SERVER_EXCEPTION_003");
         SERVER_MAP.put("구매 확정, 정산 완료 결제 요청이지만 결제 승인된 정보가 없습니다.", "SERVER_EXCEPTION_004");
         SERVER_MAP.put("중복된 결제 데이터가 존재합니다.", "SERVER_EXCEPTION_005");
+        SERVER_MAP.put("토스페이먼츠 결제 승인 실패", "SERVER_EXCEPTION_006");
+        SERVER_MAP.put("WebClient 응답 에러가 발생했습니다.", "SERVER_EXCEPTION_007");
 
         // UnauthorizedException
     }

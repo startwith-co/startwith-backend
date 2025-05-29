@@ -1,7 +1,6 @@
 package startwithco.startwithbackend.payment.payment.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -12,8 +11,10 @@ import startwithco.startwithbackend.common.service.CommonService;
 import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.NotFoundException;
 import startwithco.startwithbackend.exception.ServerException;
+import startwithco.startwithbackend.payment.payment.controller.response.PaymentResponse;
 import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
 import startwithco.startwithbackend.payment.payment.repository.PaymentEntityRepository;
+import startwithco.startwithbackend.payment.payment.util.METHOD;
 import startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS;
 import startwithco.startwithbackend.payment.paymentEvent.domain.PaymentEventEntity;
 import startwithco.startwithbackend.payment.paymentEvent.repository.PaymentEventEntityRepository;
@@ -34,10 +35,9 @@ public class PaymentService {
     private final PaymentEntityRepository paymentEntityRepository;
     private final PaymentEventEntityRepository paymentEventEntityRepository;
     private final CommonService commonService;
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Transactional
-    public Mono<TossPaymentApprovalResponse> tossPaymentApproval(TossPaymentApprovalRequest request) {
+    public Mono<?> tossPaymentApproval(TossPaymentApprovalRequest request) {
         /*
          * [예외 처리]
          * 1. PaymentEntity 유효성 검사
@@ -58,7 +58,7 @@ public class PaymentService {
                     getCode("결제 요청이 REQUEST 상태가 아닙니다.", ExceptionType.BAD_REQUEST)
             );
         }
-        if (!paymentEventEntity.getAmount().equals(request.amount())) {
+        if (!paymentEventEntity.getActualAmount().equals(request.amount())) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
                     "결제 금액이 TOSS PAYMENT 승인 금액과 다릅니다.",
@@ -96,28 +96,66 @@ public class PaymentService {
                 request.paymentKey(),
                 request.orderId(),
                 request.amount()
-        ).flatMap(res -> {
+        ).flatMap(json -> {
             try {
-                JsonNode json = objectMapper.readTree(res);
-                String approvedAtStr = json.get("approvedAt").asText();
-                OffsetDateTime offsetDateTime = OffsetDateTime.parse(approvedAtStr);
-                LocalDateTime approvedAt = offsetDateTime.toLocalDateTime();
+                String method = json.get("method").asText();
 
-                paymentEntity.updateSuccessStatus(approvedAt);
-                paymentEntityRepository.savePaymentEntity(paymentEntity);
+                if ("카드".equals(method)) {
+                    String approvedAtStr = json.get("approvedAt").asText();
+                    LocalDateTime approvedAt = OffsetDateTime.parse(approvedAtStr).toLocalDateTime();
 
-                paymentEventEntity.updatePaymentEventStatus(PAYMENT_EVENT_STATUS.CONFIRMED);
-                paymentEventEntityRepository.savePaymentEventEntity(paymentEventEntity);
+                    paymentEntity.updateMethod(METHOD.CARD);
+                    paymentEntity.updateSuccessStatus(approvedAt);
+                    paymentEntityRepository.savePaymentEntity(paymentEntity);
 
-                return Mono.just(new TossPaymentApprovalResponse(
-                        json.get("orderId").asText(),
-                        json.get("orderName").asText(),
-                        json.get("paymentKey").asText(),
-                        json.get("method").asText(),
-                        json.get("totalAmount").asInt(),
-                        approvedAt,
-                        json.get("receipt").get("url").asText()
-                ));
+                    paymentEventEntity.updatePaymentEventStatus(PAYMENT_EVENT_STATUS.CONFIRMED);
+                    paymentEventEntityRepository.savePaymentEventEntity(paymentEventEntity);
+
+                    JsonNode cardNode = json.get("card");
+                    return Mono.just(new TossCardPaymentApprovalResponse(
+                            json.get("orderId").asText(),
+                            json.get("orderName").asText(),
+                            json.get("paymentKey").asText(),
+                            method,
+                            json.get("totalAmount").asInt(),
+                            approvedAt,
+                            cardNode != null && cardNode.get("issuerCode") != null ? cardNode.get("issuerCode").asText() : null,
+                            cardNode != null && cardNode.get("number") != null ? cardNode.get("number").asText() : null,
+                            cardNode != null && cardNode.get("cardType") != null ? cardNode.get("cardType").asText() : null,
+                            json.get("receipt").get("url").asText()
+                    ));
+                } else if ("가상계좌".equals(method)) {
+                    paymentEntity.updateMethod(METHOD.VIRTUAL_ACCOUNT);
+                    paymentEntity.updateSecret(json.get("secret").asText());
+                    paymentEntityRepository.savePaymentEntity(paymentEntity);
+
+                    JsonNode vaNode = json.get("virtualAccount");
+                    String requestedAtStr = json.get("requestedAt").asText();
+                    String dueDateStr = vaNode.get("dueDate").asText();
+
+                    return Mono.just(new TossVirtualAccountPaymentResponse(
+                            json.get("orderId").asText(),
+                            json.get("orderName").asText(),
+                            json.get("paymentKey").asText(),
+                            method,
+                            json.get("totalAmount").asInt(),
+                            OffsetDateTime.parse(requestedAtStr).toLocalDateTime(),
+                            vaNode.get("accountNumber").asText(),
+                            vaNode.get("bankCode").asText(),
+                            vaNode.get("customerName").asText(),
+                            OffsetDateTime.parse(dueDateStr).toLocalDateTime(),
+                            json.has("cashReceipt") && json.get("cashReceipt").has("receiptUrl") ?
+                                    json.get("cashReceipt").get("receiptUrl").asText() : null,
+                            json.get("secret").asText(),
+                            json.get("receipt").get("url").asText()
+                    ));
+                } else {
+                    return Mono.error(new ServerException(
+                            HttpStatus.BAD_REQUEST.value(),
+                            "지원하지 않는 결제 수단입니다: " + method,
+                            getCode("지원하지 않는 결제 수단입니다", ExceptionType.BAD_REQUEST)
+                    ));
+                }
             } catch (Exception e) {
                 return Mono.error(new ServerException(
                         HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -129,11 +167,9 @@ public class PaymentService {
             paymentEntity.updateFailureStatus();
             paymentEntityRepository.savePaymentEntity(paymentEntity);
 
-            PaymentEventEntity failedPaymentEventEntity = paymentEntity.getPaymentEventEntity();
-            failedPaymentEventEntity.updatePaymentEventStatus(PAYMENT_EVENT_STATUS.REQUESTED);
-            String orderId = UUID.randomUUID().toString();
-            failedPaymentEventEntity.updatePaymentEventOrderId(orderId);
-            paymentEventEntityRepository.savePaymentEventEntity(failedPaymentEventEntity);
+            paymentEventEntity.updatePaymentEventStatus(PAYMENT_EVENT_STATUS.REQUESTED);
+            paymentEventEntity.updatePaymentEventOrderId(UUID.randomUUID().toString());
+            paymentEventEntityRepository.savePaymentEventEntity(paymentEventEntity);
 
             return Mono.error(new ServerException(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
