@@ -35,6 +35,7 @@ public class ConsumerService {
             ConsumerEntity consumerEntity = ConsumerEntity.builder()
                     .consumerName(request.consumerName())
                     .encodedPassword(encoder.encode(request.password()))
+                    .phoneNum(request.phoneNum())
                     .email(request.email())
                     .industry(request.industry())
                     .build();
