@@ -14,6 +14,8 @@ import startwithco.startwithbackend.common.service.CommonService;
 import startwithco.startwithbackend.exception.ConflictException;
 import startwithco.startwithbackend.exception.NotFoundException;
 import startwithco.startwithbackend.exception.ServerException;
+import startwithco.startwithbackend.payment.paymentEvent.repository.PaymentEventEntityRepository;
+import startwithco.startwithbackend.payment.paymentEvent.util.PAYMENT_EVENT_STATUS;
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 import startwithco.startwithbackend.solution.solution.repository.SolutionEntityRepository;
 
@@ -32,11 +34,12 @@ import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.ge
 public class VendorService {
     private final VendorEntityRepository vendorEntityRepository;
     private final SolutionEntityRepository solutionEntityRepository;
+    private final PaymentEventEntityRepository paymentEventEntityRepository;
     private final CommonService commonService;
     private final BCryptPasswordEncoder encoder;
 
     @Transactional(readOnly = true)
-    public List<GetVendorSolutionCategory> getVendorSolutionCategory(Long vendorSeq) {
+    public List<GetVendorSolutionCategoryResponse> getVendorSolutionCategory(Long vendorSeq) {
         /*
          * [예외 처리]
          * 1. vendor 유효성 검사
@@ -50,9 +53,9 @@ public class VendorService {
 
         List<SolutionEntity> solutionEntities = solutionEntityRepository.findAllByVendorSeq(vendorSeq);
 
-        List<GetVendorSolutionCategory> response = new ArrayList<>();
+        List<GetVendorSolutionCategoryResponse> response = new ArrayList<>();
         for (SolutionEntity solutionEntity : solutionEntities) {
-            response.add(new GetVendorSolutionCategory(solutionEntity.getCategory(), solutionEntity.getSolutionSeq()));
+            response.add(new GetVendorSolutionCategoryResponse(solutionEntity.getCategory(), solutionEntity.getSolutionSeq()));
         }
 
         return response;
@@ -89,12 +92,32 @@ public class VendorService {
                     "동시성 저장은 불가능합니다.",
                     getCode("동시성 저장은 불가능합니다.", ExceptionType.CONFLICT)
             );
-        } catch (IOException e) {
-            throw new ServerException(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "S3 UPLOAD 실패",
-                    getCode("S3 UPLOAD 실패", ExceptionType.SERVER)
-            );
         }
+    }
+
+    public GetVendorSettlementManagementStatusResponse getVendorSettlementManagementStatus(Long vendorSeq) {
+        vendorEntityRepository.findByVendorSeq(vendorSeq)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 벤더 기업입니다.",
+                        getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
+                ));
+
+        Long requested = paymentEventEntityRepository.countREQUESTEDPaymentEntityByVendorSeq(vendorSeq);
+        Long confirmed = paymentEventEntityRepository.countCONFIRMEDPaymentEntityByVendorSeq(vendorSeq);
+        Long settled = paymentEventEntityRepository.countSETTLEDPaymentEntityByVendorSeq(vendorSeq);
+
+        return new GetVendorSettlementManagementStatusResponse(vendorSeq, requested, confirmed, settled);
+    }
+
+    public List<GetVendorSettlementManagementProgressResponse> getVendorSettlementManagementProgress(Long vendorSeq, String paymentEventStatus, int start, int end) {
+        vendorEntityRepository.findByVendorSeq(vendorSeq)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 벤더 기업입니다.",
+                        getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
+                ));
+
+        return vendorEntityRepository.getVendorSettlementManagementProgress(vendorSeq, paymentEventStatus, start, end);
     }
 }

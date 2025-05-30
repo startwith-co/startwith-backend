@@ -10,4 +10,10 @@ public interface PaymentEventEntityRepository {
     Optional<PaymentEventEntity> findByPaymentEventSeq(Long paymentEventSeq);
 
     boolean canSavePaymentEventEntity(Long consumerSeq, Long vendorSeq, Long solutionSeq);
+
+    Long countREQUESTEDPaymentEntityByVendorSeq(Long vendorSeq);
+
+    Long countCONFIRMEDPaymentEntityByVendorSeq(Long vendorSeq);
+
+    Long countSETTLEDPaymentEntityByVendorSeq(Long vendorSeq);
 }

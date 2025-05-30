@@ -18,7 +18,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import startwithco.startwithbackend.exception.ServerException;
-import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,28 +45,44 @@ public class CommonService {
 
     private final ObjectMapper objectMapper;
 
-    public String uploadJPGFile(MultipartFile multipartFile) throws IOException {
-        String fileName = randomUUID().toString() + ".jpg";
-        InputStream inputStream = multipartFile.getInputStream();
+    public String uploadJPGFile(MultipartFile multipartFile) {
+        try {
+            String fileName = randomUUID().toString() + ".jpg";
+            InputStream inputStream = multipartFile.getInputStream();
 
-        ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(multipartFile.getSize());
-        metadata.setContentType(multipartFile.getContentType());
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentLength(multipartFile.getSize());
+            metadata.setContentType(multipartFile.getContentType());
 
-        s3client.putObject(new PutObjectRequest(bucketName, fileName, inputStream, metadata));
-        return s3client.getUrl(bucketName, fileName).toString();
+            s3client.putObject(new PutObjectRequest(bucketName, fileName, inputStream, metadata));
+            return s3client.getUrl(bucketName, fileName).toString();
+        } catch (IOException e) {
+            throw new ServerException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "S3 UPLOAD 실패",
+                    getCode("S3 UPLOAD 실패", ExceptionType.SERVER)
+            );
+        }
     }
 
-    public String uploadPDFFile(MultipartFile pdfFile) throws IOException {
-        String fileName = randomUUID().toString() + ".pdf";
-        InputStream inputStream = pdfFile.getInputStream();
+    public String uploadPDFFile(MultipartFile pdfFile) {
+        try {
+            String fileName = randomUUID().toString() + ".pdf";
+            InputStream inputStream = pdfFile.getInputStream();
 
-        ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(pdfFile.getSize());
-        metadata.setContentType("application/pdf");
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentLength(pdfFile.getSize());
+            metadata.setContentType("application/pdf");
 
-        s3client.putObject(new PutObjectRequest(bucketName, fileName, inputStream, metadata));
-        return s3client.getUrl(bucketName, fileName).toString();
+            s3client.putObject(new PutObjectRequest(bucketName, fileName, inputStream, metadata));
+            return s3client.getUrl(bucketName, fileName).toString();
+        } catch (IOException e) {
+            throw new ServerException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "S3 UPLOAD 실패",
+                    getCode("S3 UPLOAD 실패", ExceptionType.SERVER)
+            );
+        }
     }
 
     public Mono<JsonNode> executeTossPaymentApproval(String paymentKey, String orderId, Long amount) {
