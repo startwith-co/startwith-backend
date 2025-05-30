@@ -18,11 +18,6 @@ public class SolutionEntityRepositoryImpl implements SolutionEntityRepository {
     }
 
     @Override
-    public Optional<SolutionEntity> findBySolutionSeq(Long solutionSeq) {
-        return repository.findBySolutionSeq(solutionSeq);
-    }
-
-    @Override
     public Optional<SolutionEntity> findByVendorSeqAndCategory(Long vendorSeq, CATEGORY category) {
         return repository.findByVendorSeqAndCategory(vendorSeq, category);
     }

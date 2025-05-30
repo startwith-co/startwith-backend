@@ -119,12 +119,6 @@ public class SolutionService {
                     "동시성 저장은 불가능합니다.",
                     getCode("동시성 저장은 불가능합니다.", ExceptionType.CONFLICT)
             );
-        } catch (IOException e) {
-            throw new ServerException(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "S3 UPLOAD 실패",
-                    getCode("S3 UPLOAD 실패", ExceptionType.SERVER)
-            );
         }
     }
 
@@ -200,12 +194,6 @@ public class SolutionService {
                     HttpStatus.CONFLICT.value(),
                     "동시성 저장은 불가능합니다.",
                     getCode("동시성 저장은 불가능합니다.", ExceptionType.CONFLICT)
-            );
-        } catch (IOException e) {
-            throw new ServerException(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "S3 UPLOAD 실패",
-                    getCode("S3 UPLOAD 실패", ExceptionType.SERVER)
             );
         }
     }

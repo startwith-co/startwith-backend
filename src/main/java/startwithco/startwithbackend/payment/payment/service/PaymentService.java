@@ -11,7 +11,6 @@ import startwithco.startwithbackend.common.service.CommonService;
 import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.NotFoundException;
 import startwithco.startwithbackend.exception.ServerException;
-import startwithco.startwithbackend.payment.payment.controller.response.PaymentResponse;
 import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
 import startwithco.startwithbackend.payment.payment.repository.PaymentEntityRepository;
 import startwithco.startwithbackend.payment.payment.util.METHOD;
@@ -38,13 +37,6 @@ public class PaymentService {
 
     @Transactional
     public Mono<?> tossPaymentApproval(TossPaymentApprovalRequest request) {
-        /*
-         * [예외 처리]
-         * 1. PaymentEntity 유효성 검사
-         * 2. PaymentEventStatus가 REQUESTED가 아닐 경우
-         * 3. 결제 금액 불일치
-         * 4. 이미 결제 요청에 대해 결제 승인이 된 경우
-         */
         PaymentEventEntity paymentEventEntity = paymentEventEntityRepository.findByPaymentEventSeq(request.paymentEventSeq())
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),

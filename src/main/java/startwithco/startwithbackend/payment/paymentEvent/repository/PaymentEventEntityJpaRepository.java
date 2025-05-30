@@ -33,4 +33,28 @@ public interface PaymentEventEntityJpaRepository extends JpaRepository<PaymentEv
             @Param("vendorSeq") Long vendorSeq,
             @Param("solutionSeq") Long solutionSeq
     );
+
+    @Query("""
+                SELECT COUNT(*)
+                FROM PaymentEventEntity pe
+                WHERE pe.vendorEntity.vendorSeq = :vendorSeq
+                  AND pe.paymentEventStatus = 'REQUESTED'
+            """)
+    Long countREQUESTEDPaymentEntityByVendorSeq(@Param("vendorSeq") Long vendorSeq);
+
+    @Query("""
+                SELECT COUNT(*)
+                FROM PaymentEventEntity pe
+                WHERE pe.vendorEntity.vendorSeq = :vendorSeq
+                  AND pe.paymentEventStatus = 'CONFIRMED'
+            """)
+    Long countCONFIRMEDPaymentEntityByVendorSeq(@Param("vendorSeq") Long vendorSeq);
+
+    @Query("""
+                SELECT COUNT(*)
+                FROM PaymentEventEntity pe
+                WHERE pe.vendorEntity.vendorSeq = :vendorSeq
+                  AND pe.paymentEventStatus = 'SETTLED'
+            """)
+    Long countSETTLEDPaymentEntityByVendorSeq(@Param("vendorSeq") Long vendorSeq);
 }

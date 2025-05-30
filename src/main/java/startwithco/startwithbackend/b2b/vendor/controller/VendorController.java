@@ -17,6 +17,7 @@ import startwithco.startwithbackend.b2b.vendor.service.VendorService;
 import startwithco.startwithbackend.base.BaseResponse;
 import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.handler.GlobalExceptionHandler;
+import startwithco.startwithbackend.payment.paymentEvent.util.PAYMENT_EVENT_STATUS;
 
 import java.util.List;
 
@@ -46,7 +47,7 @@ public class VendorController {
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_001", description = "존재하지 않는 벤더 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
-    public ResponseEntity<BaseResponse<List<GetVendorSolutionCategory>>> getVendorSolutionCategory(@RequestParam(name = "vendorSeq") Long vendorSeq) {
+    public ResponseEntity<BaseResponse<List<GetVendorSolutionCategoryResponse>>> getVendorSolutionCategory(@RequestParam(name = "vendorSeq") Long vendorSeq) {
         if (vendorSeq == null) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
@@ -55,7 +56,7 @@ public class VendorController {
             );
         }
 
-        List<GetVendorSolutionCategory> response = vendorService.getVendorSolutionCategory(vendorSeq);
+        List<GetVendorSolutionCategoryResponse> response = vendorService.getVendorSolutionCategory(vendorSeq);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
     }
@@ -87,5 +88,91 @@ public class VendorController {
         vendorService.saveVendor(request, businessLicenseImage);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SUCCESS"));
+    }
+
+    @GetMapping(
+            value = "/dashboard/status",
+            name = "벤더 기업 정산 관리 현황"
+    )
+    @Operation(
+            summary = "벤더 기업 정산 관리 현황 API / 담당자(박종훈)"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_001", description = "존재하지 않는 벤더 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+    })
+    public ResponseEntity<BaseResponse<GetVendorSettlementManagementStatusResponse>> getVendorSettlementManagementStatus(
+            @RequestParam(value = "vendorSeq", required = false) Long vendorSeq
+    ) {
+        if (vendorSeq == null) {
+            throw new BadRequestException(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "요청 데이터 오류입니다.",
+                    getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
+            );
+        }
+
+        GetVendorSettlementManagementStatusResponse response = vendorService.getVendorSettlementManagementStatus(vendorSeq);
+
+        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
+    }
+
+    @GetMapping(
+            value = "/dashboard/progress",
+            name = "벤더 기업 정산 관리 현황"
+    )
+    @Operation(
+            summary = "벤더 기업 정산 관리 현황 API / 담당자(박종훈)",
+            description = """
+                    1. start와 end는 시작과 끝의 인덱스 번호입니다. default: start = 0, end = 10
+                    2. 데이터 개수의 경우 end - start개 반환합니다.
+                    """
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_001", description = "존재하지 않는 벤더 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+    })
+    public ResponseEntity<BaseResponse<List<GetVendorSettlementManagementProgressResponse>>> getVendorSettlementManagementProgress(
+            @RequestParam(value = "vendorSeq", required = false) Long vendorSeq,
+            @RequestParam(value = "paymentEventStatus", required = false) String paymentEventStatus,
+            @RequestParam(value = "start", defaultValue = "0") int start,
+            @RequestParam(value = "end", defaultValue = "10") int end
+    ) {
+        if (vendorSeq == null) {
+            throw new BadRequestException(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "요청 데이터 오류입니다.",
+                    getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
+            );
+        }
+        if (paymentEventStatus != null) {
+            try {
+                PAYMENT_EVENT_STATUS.valueOf(paymentEventStatus);
+            } catch (IllegalArgumentException e) {
+                throw new BadRequestException(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "요청 데이터 오류입니다.",
+                        getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
+                );
+            }
+
+            if (!(PAYMENT_EVENT_STATUS.valueOf(paymentEventStatus) != PAYMENT_EVENT_STATUS.CONFIRMED ||
+                    PAYMENT_EVENT_STATUS.valueOf(paymentEventStatus) != PAYMENT_EVENT_STATUS.SETTLED)) {
+                throw new BadRequestException(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "요청 데이터 오류입니다.",
+                        getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
+                );
+            }
+        }
+
+        List<GetVendorSettlementManagementProgressResponse> response
+                = vendorService.getVendorSettlementManagementProgress(vendorSeq, paymentEventStatus, start, end);
+
+        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
     }
 }

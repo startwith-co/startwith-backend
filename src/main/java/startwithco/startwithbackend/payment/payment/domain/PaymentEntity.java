@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.Where;
 import startwithco.startwithbackend.base.BaseTimeEntity;
 import startwithco.startwithbackend.payment.payment.util.METHOD;
 import startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS;
@@ -52,9 +51,6 @@ public class PaymentEntity extends BaseTimeEntity {
     @Column(name = "payment_completed_at", nullable = true)
     private LocalDateTime paymentCompletedAt;
 
-    @Column(name = "toss_payment_settled_at", nullable = true)
-    private LocalDateTime tossPaymentSettledAt;
-
     @Column(name = "auto_confirm_scheduled_at", nullable = true)
     private LocalDateTime autoConfirmScheduledAt;
 
@@ -66,6 +62,7 @@ public class PaymentEntity extends BaseTimeEntity {
     public void updateSuccessStatus(LocalDateTime paymentCompletedAt) {
         this.paymentStatus = PAYMENT_STATUS.SUCCESS;
         this.paymentCompletedAt = paymentCompletedAt;
+        this.autoConfirmScheduledAt = paymentCompletedAt.plusDays(7);
     }
 
     public void updatePaymentStatus(PAYMENT_STATUS paymentStatus) {

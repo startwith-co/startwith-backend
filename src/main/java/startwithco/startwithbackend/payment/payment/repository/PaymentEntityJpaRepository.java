@@ -12,13 +12,13 @@ import java.util.Optional;
 public interface PaymentEntityJpaRepository extends JpaRepository<PaymentEntity, Long> {
     @Query("""
                 SELECT CASE
-                         WHEN COUNT(p) > 0 THEN false
-                         ELSE true
+                         WHEN COUNT(e) = 1 THEN true
+                         ELSE false
                        END
-                FROM PaymentEntity p
-                WHERE p.paymentEventEntity.orderId = :orderId
-                  AND p.paymentEventEntity.paymentEventSeq = :paymentEventSeq
-                  AND p.paymentStatus IN ('SUCCESS', 'FAILURE')
+                FROM PaymentEventEntity e
+                WHERE e.orderId = :orderId
+                  AND e.paymentEventSeq = :paymentEventSeq
+                  AND e.paymentEventStatus = 'REQUESTED'
             """)
     boolean canApproveTossPayment(
             @Param("orderId") String orderId,
