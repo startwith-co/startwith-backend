@@ -29,6 +29,9 @@ public class ConsumerEntity extends BaseTimeEntity {
     @Column(name = "phone_number", nullable = false)
     private String phoneNumber;
 
+    @Column(name="phone_num", nullable = false)
+    private String phoneNum;
+
     @Column(name = "encoded_password", nullable = false)
     private String encodedPassword;
 
