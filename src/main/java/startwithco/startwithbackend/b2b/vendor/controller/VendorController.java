@@ -13,7 +13,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest;
+import startwithco.startwithbackend.b2b.consumer.controller.response.ConsumerResponse;
 import startwithco.startwithbackend.b2b.vendor.controller.request.VendorRequest;
+import startwithco.startwithbackend.b2b.vendor.controller.response.VendorResponse;
 import startwithco.startwithbackend.b2b.vendor.service.VendorService;
 import startwithco.startwithbackend.base.BaseResponse;
 import startwithco.startwithbackend.exception.BadRequestException;
@@ -232,5 +235,26 @@ public class VendorController {
                 = vendorService.getVendorSettlementManagementProgress(vendorSeq, paymentEventStatus, start, end);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
+    }
+
+    @PostMapping(value = "/login", name = "Vendor 로그인")
+    @Operation(summary = "Vendor Login API", description = "Vendor Login API")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_009", description = "존재하지 않는 이메일 입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_007", description = "비밀번호가 일치하지 않습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "SERVER_EXCEPTION_010", description = "Redis 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+    })
+    public ResponseEntity<BaseResponse<LoginVendorResponse>> loginConsumer(@Valid @RequestBody VendorRequest.LoginVendorRequest request) {
+
+        // DTO 유효성 검사
+        request.validateLoginVendorRequest(request);
+
+//        ConsumerResponse.LoginConsumerResponse login = consumerService.login(request);
+        LoginVendorResponse login = vendorService.login(request);
+
+        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), login));
     }
 }

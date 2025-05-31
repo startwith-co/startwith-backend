@@ -34,4 +34,9 @@ public class VendorResponse {
     ) {
 
     }
+
+    public record LoginVendorResponse(
+            String accessToken,
+            String refreshToken
+    ) {}
 }

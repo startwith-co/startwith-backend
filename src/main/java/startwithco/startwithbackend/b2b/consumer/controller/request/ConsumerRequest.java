@@ -1,6 +1,7 @@
 package startwithco.startwithbackend.b2b.consumer.controller.request;
 
 import org.springframework.http.HttpStatus;
+import startwithco.startwithbackend.b2b.vendor.controller.request.VendorRequest;
 import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
 
@@ -35,6 +36,22 @@ public class ConsumerRequest {
                 );
             }
 
+        }
+    }
+
+    public record LoginConsumerRequest (
+            String email,
+            String password
+    ) {
+        public void validateLoginConsumerRequest(LoginConsumerRequest request) {
+
+            if (request.email == null || request.password == null) {
+                throw new BadRequestException(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "요청 데이터 오류입니다.",
+                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                );
+            }
         }
     }
 }
