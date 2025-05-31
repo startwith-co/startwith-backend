@@ -28,7 +28,7 @@ import static startwithco.startwithbackend.solution.solution.controller.response
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/solution-service/solution")
-@Tag(name = "솔루션", description = "담당자(송인준)")
+@Tag(name = "솔루션", description = "담당자(박종훈)")
 public class SolutionController {
     private final SolutionService solutionService;
 
@@ -38,7 +38,7 @@ public class SolutionController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @Operation(
-            summary = "솔루션 생성 / 담당자(박종훈)",
+            summary = "솔루션 생성 API",
             description = """
                     1. 광클 방지를 위한 disable 처리해주세요.\n
                     2. 중복 가능한 데이터의 경우 ','로 이어서 String으로 보내주세요. EX) 소기업,중기업,중견기업\n
@@ -82,7 +82,7 @@ public class SolutionController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @Operation(
-            summary = "솔루션 수정 / 담당자(박종훈)",
+            summary = "솔루션 수정 API",
             description = """
                     1. 광클 방지를 위한 disable 처리해주세요.\n
                     2. 중복 가능한 데이터의 경우 ','로 이어서 String으로 보내주세요. EX) 소기업,중기업,중견기업\n

@@ -12,12 +12,16 @@ import java.util.Optional;
 
 @Repository
 public interface SolutionEntityJpaRepository extends JpaRepository<SolutionEntity, Long> {
-    @Query("SELECT s FROM SolutionEntity s WHERE s.solutionSeq = :solutionSeq")
-    Optional<SolutionEntity> findBySolutionSeq(@Param("solutionSeq") Long solutionSeq);
-
     @Query("SELECT s FROM SolutionEntity s WHERE s.vendorEntity.vendorSeq = :vendorSeq AND s.category = :category")
     Optional<SolutionEntity> findByVendorSeqAndCategory(@Param("vendorSeq") Long vendorSeq, @Param("category") CATEGORY category);
 
     @Query("SELECT s FROM SolutionEntity s WHERE s.vendorEntity.vendorSeq = :vendorSeq")
     List<SolutionEntity> findAllByVendorSeq(@Param("vendorSeq") Long vendorSeq);
+
+    @Query("""
+            SELECT s
+            FROM SolutionEntity s
+            WHERE s.solutionSeq = :solutionSeq
+            """)
+    Optional<SolutionEntity> findBySolutionSeq(@Param("solutionSeq") Long solutionSeq);
 }

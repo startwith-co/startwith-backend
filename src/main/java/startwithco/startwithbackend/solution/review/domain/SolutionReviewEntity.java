@@ -10,7 +10,12 @@ import startwithco.startwithbackend.base.BaseTimeEntity;
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 
 @Entity
-@Table(name = "SOLUTION_REVIEW_ENTITY")
+@Table(
+        name = "SOLUTION_REVIEW_ENTITY",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"consumer_seq", "solution_seq"})
+        }
+)
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -35,4 +40,9 @@ public class SolutionReviewEntity extends BaseTimeEntity {
     @Lob
     @Column(name = "comment", nullable = false)
     private String comment;
+
+    public void updateSolutionReviewEntity(Double start, String comment) {
+        this.star = start;
+        this.comment = comment;
+    }
 }

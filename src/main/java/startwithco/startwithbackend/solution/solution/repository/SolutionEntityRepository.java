@@ -12,4 +12,6 @@ public interface SolutionEntityRepository {
     Optional<SolutionEntity> findByVendorSeqAndCategory(Long vendorSeq, CATEGORY category);
 
     List<SolutionEntity> findAllByVendorSeq(Long vendorSeq);
+
+    Optional<SolutionEntity> findBySolutionSeq(Long solutionSeq);
 }

@@ -26,4 +26,9 @@ public class SolutionEntityRepositoryImpl implements SolutionEntityRepository {
     public List<SolutionEntity> findAllByVendorSeq(Long vendorSeq) {
         return repository.findAllByVendorSeq(vendorSeq);
     }
+
+    @Override
+    public Optional<SolutionEntity> findBySolutionSeq(Long solutionSeq) {
+        return repository.findBySolutionSeq(solutionSeq);
+    }
 }
