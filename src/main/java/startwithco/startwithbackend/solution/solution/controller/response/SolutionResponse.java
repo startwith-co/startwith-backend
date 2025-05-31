@@ -1,6 +1,7 @@
 package startwithco.startwithbackend.solution.solution.controller.response;
 
 import startwithco.startwithbackend.solution.effect.util.DIRECTION;
+import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 
 import java.util.List;
 
@@ -30,5 +31,20 @@ public class SolutionResponse {
         ) {
 
         }
+    }
+
+    public record GetAllSolutionEntityResponse(
+            Long solutionSeq,
+            String solutionName,
+            Long amount,
+            String representImageUrl,
+            CATEGORY category,
+
+            Long vendorSeq,
+            String vendorName,
+
+            Double averageStar,
+            Long countSolutionReview
+    ) {
     }
 }

@@ -23,4 +23,17 @@ public interface SolutionReviewEntityJpaRepository extends JpaRepository<Solutio
             @Param("solutionReviewSeq") Long solutionReviewSeq
     );
 
+    @Query("""
+            SELECT COUNT(sre)
+            FROM SolutionReviewEntity sre
+            WHERE sre.solutionEntity.solutionSeq = :solutionSeq
+            """)
+    Long countBySolutionSeq(@Param("solutionSeq") Long solutionSeq);
+
+    @Query("""
+            SELECT AVG(sre.star)
+            FROM SolutionReviewEntity sre
+            WHERE sre.solutionEntity.solutionSeq = :solutionSeq
+            """)
+    Double averageBySolutionSeq(@Param("solutionSeq") Long solutionSeq);
 }

@@ -12,7 +12,9 @@ public interface SolutionReviewEntityRepository {
 
     Optional<SolutionReviewEntity> findBySolutionSeqAndConsumerSeqAndSolutionReviewSeq(Long solutionSeq, Long consumerSeq, Long solutionReviewSeq);
 
-    void deleteSolutionReviewEntity(SolutionReviewEntity solutionReviewEntity);
-
     List<GetAllSolutionReviewResponse> findAllBySolutionSeq(Long solutionSeq);
+
+    Long countBySolutionSeq(Long solutionSeq);
+
+    Double averageBySolutionSeq(Long solutionSeq);
 }

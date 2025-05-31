@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 import startwithco.startwithbackend.b2b.consumer.domain.QConsumerEntity;
 import startwithco.startwithbackend.solution.review.domain.QSolutionReviewEntity;
 import startwithco.startwithbackend.solution.review.domain.SolutionReviewEntity;
-import startwithco.startwithbackend.solution.solution.domain.QSolutionEntity;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,11 +30,6 @@ public class SolutionReviewEntityRepositoryImpl implements SolutionReviewEntityR
     }
 
     @Override
-    public void deleteSolutionReviewEntity(SolutionReviewEntity solutionReviewEntity) {
-        repository.delete(solutionReviewEntity);
-    }
-
-    @Override
     public List<GetAllSolutionReviewResponse> findAllBySolutionSeq(Long solutionSeq) {
         QConsumerEntity qConsumerEntity = QConsumerEntity.consumerEntity;
         QSolutionReviewEntity qSolutionReviewEntity = QSolutionReviewEntity.solutionReviewEntity;
@@ -55,5 +49,15 @@ public class SolutionReviewEntityRepositoryImpl implements SolutionReviewEntityR
                 .where(qSolutionReviewEntity.solutionEntity.solutionSeq.eq(solutionSeq))
                 .orderBy(qSolutionReviewEntity.createdAt.desc())
                 .fetch();
+    }
+
+    @Override
+    public Long countBySolutionSeq(Long solutionSeq) {
+        return repository.countBySolutionSeq(solutionSeq);
+    }
+
+    @Override
+    public Double averageBySolutionSeq(Long solutionSeq) {
+        return repository.averageBySolutionSeq(solutionSeq);
     }
 }

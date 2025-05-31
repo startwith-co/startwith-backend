@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.b2b.vendor.repository.VendorEntityRepository;
 import startwithco.startwithbackend.exception.ServerException;
+import startwithco.startwithbackend.solution.review.repository.SolutionReviewEntityRepository;
 import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 import startwithco.startwithbackend.solution.effect.util.DIRECTION;
 import startwithco.startwithbackend.exception.ConflictException;
@@ -23,6 +24,7 @@ import startwithco.startwithbackend.solution.solution.repository.SolutionEntityR
 import startwithco.startwithbackend.common.service.CommonService;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -41,6 +43,7 @@ public class SolutionService {
     private final SolutionEntityRepository solutionEntityRepository;
     private final SolutionEffectEntityRepository solutionEffectEntityRepository;
     private final SolutionKeywordEntityRepository solutionKeywordEntityRepository;
+    private final SolutionReviewEntityRepository solutionReviewEntityRepository;
 
     private final CommonService commonService;
 
@@ -214,5 +217,31 @@ public class SolutionService {
                 recommendedCompanySize,
                 solutionEffectResponse
         );
+    }
+
+    public List<GetAllSolutionEntityResponse> getAllSolutionEntity(String specialist, CATEGORY category, String industry, String budget, int start, int end) {
+        List<SolutionEntity> solutionEntities
+                = solutionEntityRepository.findBySpecialistAndCategoryAndIndustryAndBudget(specialist, category, industry, budget, start, end);
+
+        List<GetAllSolutionEntityResponse> response = new ArrayList<>();
+        for (SolutionEntity solutionEntity : solutionEntities) {
+            VendorEntity vendorEntity = solutionEntity.getVendorEntity();
+            Long countSolutionReview = solutionReviewEntityRepository.countBySolutionSeq(solutionEntity.getSolutionSeq());
+            Double averageStar = solutionReviewEntityRepository.averageBySolutionSeq(solutionEntity.getSolutionSeq());
+
+            response.add(new GetAllSolutionEntityResponse(
+                    solutionEntity.getSolutionSeq(),
+                    solutionEntity.getSolutionName(),
+                    solutionEntity.getAmount(),
+                    solutionEntity.getRepresentImageUrl(),
+                    solutionEntity.getCategory(),
+                    vendorEntity.getVendorSeq(),
+                    vendorEntity.getVendorName(),
+                    averageStar,
+                    countSolutionReview
+            ));
+        }
+
+        return response;
     }
 }

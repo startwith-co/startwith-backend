@@ -22,6 +22,7 @@ import startwithco.startwithbackend.solution.solution.service.SolutionService;
 import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 
 import java.io.IOException;
+import java.util.List;
 
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.getCode;
 import static startwithco.startwithbackend.solution.solution.controller.request.SolutionRequest.SaveSolutionEntityRequest;
@@ -141,7 +142,8 @@ public class SolutionController {
     })
     ResponseEntity<BaseResponse<GetSolutionEntityResponse>> getSolutionEntity(
             @RequestParam(value = "vendorSeq", required = false) Long vendorSeq,
-            @RequestParam(value = "category", required = false) String category) {
+            @RequestParam(value = "category", required = false) String category
+    ) {
         if (vendorSeq == null || category == null || category.isEmpty()) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
@@ -161,6 +163,59 @@ public class SolutionController {
         }
 
         GetSolutionEntityResponse response = solutionService.getSolutionEntity(vendorSeq, CATEGORY.valueOf(category));
+
+        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
+    }
+
+    @GetMapping(
+            value = "/list",
+            name = "전체 솔루션 조회"
+    )
+    @Operation(
+            summary = "전체 솔루션 조회 API",
+            description = """
+                    1. category: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY
+                    2. Param 값의 경우 전부 NULL 허용입니다.
+                    3. NULL로 들어온 값은 필터링하지 않습니다.
+                    4. budget의 경우 (전체, 500,000원 미만, 500,000~1,000,000원 미만, 1,000,000원~3,000,000원 미만, 3,000,000원~5,000,000원 미만, 5,000,000원~10,000,000원 미만, 10,000,000원 이상) 문자 그대로 보내주세요. Default의 경우 "전체" 보내주시면 됩니다.
+                    5. start와 end는 시작과 끝의 인덱스 번호입니다. default: start = 0, end = 10
+                    """
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+    })
+    ResponseEntity<BaseResponse<List<GetAllSolutionEntityResponse>>> getAllSolutionEntity(
+            @RequestParam(value = "specialist", required = false) String specialist,
+            @RequestParam(value = "category", required = false) String category,
+            @RequestParam(value = "industry", required = false) String industry,
+            @RequestParam(value = "budget", required = false) String budget,
+            @RequestParam(value = "start", defaultValue = "0") int start,
+            @RequestParam(value = "end", defaultValue = "10") int end
+    ) {
+        if (budget == null || budget.isEmpty()) {
+            throw new BadRequestException(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "요청 데이터 오류입니다.",
+                    getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+            );
+        }
+
+        if (category != null) {
+            try {
+                CATEGORY.valueOf(category);
+            } catch (IllegalArgumentException e) {
+                throw new BadRequestException(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "요청 데이터 오류입니다.",
+                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                );
+            }
+        }
+
+        CATEGORY categoryEnum = (category != null) ? CATEGORY.valueOf(category) : null;
+        List<GetAllSolutionEntityResponse> response = solutionService.getAllSolutionEntity(specialist, categoryEnum, industry, budget, start, end);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
     }
