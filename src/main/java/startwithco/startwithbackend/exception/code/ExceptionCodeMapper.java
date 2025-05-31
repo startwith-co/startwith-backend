@@ -30,7 +30,8 @@ public class ExceptionCodeMapper {
         NOT_FOUND_MAP.put("존재하지 않는 결제입니다.", "NOT_FOUND_EXCEPTION_003");
         NOT_FOUND_MAP.put("존재하지 않는 수요 기업입니다.", "NOT_FOUND_EXCEPTION_004");
         NOT_FOUND_MAP.put("존재하지 않는 솔루션입니다.", "NOT_FOUND_EXCEPTION_005");
-        NOT_FOUND_MAP.put("수요 기업이 해당 솔루션에 작성한 리뷰가 없습니다.", "NOT_FOUND_EXCEPTION_006");
+        NOT_FOUND_MAP.put("존재하지 않는 코드입니다.", "NOT_FOUND_EXCEPTION_006");
+        NOT_FOUND_MAP.put("수요 기업이 해당 솔루션에 작성한 리뷰가 없습니다.", "NOT_FOUND_EXCEPTION_007");
 
         // ServerException
         SERVER_MAP.put("내부 서버 오류가 발생했습니다.", "SERVER_EXCEPTION_001");
