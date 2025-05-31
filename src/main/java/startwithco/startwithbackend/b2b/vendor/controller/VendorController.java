@@ -148,10 +148,10 @@ public class VendorController {
 
     @GetMapping(
             value = "/dashboard/status",
-            name = "벤더 기업 정산 관리 현황"
+            name = "벤더 기업 정산 운영 현황"
     )
     @Operation(
-            summary = "벤더 기업 정산 관리 현황 API / 담당자(박종훈)"
+            summary = "벤더 기업 정산 운영 현황 API / 담당자(박종훈)"
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),

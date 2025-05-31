@@ -64,7 +64,7 @@ public class SolutionController {
             @RequestPart(value = "representImageUrl", required = false) MultipartFile representImageUrl,
             @RequestPart(value = "descriptionPdfUrl", required = false) MultipartFile descriptionPdfUrl,
             @RequestPart SaveSolutionEntityRequest request
-    ) throws IOException {
+    ) {
         request.validate();
         if (representImageUrl.isEmpty() || descriptionPdfUrl.isEmpty()) {
             throw new BadRequestException(

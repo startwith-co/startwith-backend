@@ -28,5 +28,5 @@ public class ClientEntity extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vendor_seq", nullable = false)
-    private VendorEntity vendor;
+    private VendorEntity vendorEntity;
 }
