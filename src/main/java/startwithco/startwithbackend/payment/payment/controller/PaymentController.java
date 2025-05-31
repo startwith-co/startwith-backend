@@ -70,21 +70,10 @@ public class PaymentController {
 
     @PostMapping(
             value = "/deposit-callback",
-            name = "토스페이먼츠 PG사 가상계좌 deposit-callback"
+            name = "FE가 사용하는 API가 아닙니다."
     )
     @Operation(
-            summary = "토스페이먼츠 PG사 결제 승인 API (가상계좌, 카드 결제)",
-            description = """
-                    1. 광클 방지를 위한 disable 처리해주세요.\n
-                    2. amount의 경우 부가세 포함한 가격을 보내야합니다.\n
-                    3. 만약 결제 요청의 상태가 REQUEST가 아닐 경우 결제가 진행되지 않습니다.\n
-                    4. paymentKey의 경우 SuccessURL에서 받은 값, orderId의 경우 결제 요청 조회에서 오는 orderId 값을 넘겨주시면 됩니다.\n
-                    5. SERVER - TOSS 사이 간 orderId로 멱등성 처리가 돼 있습니다.\n
-                    6. 만약 결제 승인 오류가 나게 되면 중복 결제 방지를 위해 해당 결제의 PaymentEvent에 orderId가 새롭게 발급됩니다. 다시 결제하고자 한다면 결제 요청 조회 후 새로운 orderId로 결제 승인 해야합니다.\n
-                    7. 카드 결제, 가상 계좌 결제 승인 모두 이 API를 사용하지만 Response의 method("카드", "가상계좌")에 따라 반환값이 다릅니다.\n
-                    8. 가상계좌 개발자 센터: https://docs.tosspayments.com/guides/v2/payment-window/integration-virtual-account\n
-                    9. 카드 결제 개발자 센터: https://docs.tosspayments.com/guides/payment/integration\n
-                    """
+            summary = "FE가 사용하는 API가 아닙니다. BE - TOSS 간 연동 API 입니다."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "SUCCESS", content = @Content(mediaType = "application/json", schema = @Schema(oneOf = {TossCardPaymentApprovalResponse.class, TossVirtualAccountPaymentResponse.class}))),
