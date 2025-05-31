@@ -202,11 +202,12 @@ public class VendorService {
     }
 
     private void saveRefreshToken(Long consumerSeq, String refreshToken) {
+
         try {
             redisTemplate.opsForValue().set(
                     String.valueOf(consumerSeq),
                     refreshToken,
-                    300000,
+                    refreshTokenExpiration,
                     TimeUnit.MILLISECONDS
             );
         } catch (Exception e) {

@@ -193,7 +193,7 @@ public class ConsumerService {
             redisTemplate.opsForValue().set(
                     String.valueOf(consumerSeq),
                     refreshToken,
-                    300000,
+                    refreshTokenExpiration,
                     TimeUnit.MILLISECONDS
             );
         } catch (Exception e) {
