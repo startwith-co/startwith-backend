@@ -186,5 +186,6 @@ public class PaymentService {
 
         PaymentEventEntity paymentEventEntity = paymentEntity.getPaymentEventEntity();
         paymentEventEntity.updatePaymentEventStatus(PAYMENT_EVENT_STATUS.CONFIRMED);
+        paymentEntityRepository.savePaymentEntity(paymentEntity);
     }
 }
