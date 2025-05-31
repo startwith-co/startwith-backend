@@ -123,8 +123,8 @@ public class CommonService {
                 .onErrorResume(err -> {
                     return Mono.error(new ServerException(
                             HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                            "토스페이먼츠 결제 승인 실패",
-                            getCode("토스페이먼츠 결제 승인 실패", ExceptionType.SERVER)
+                            err.getMessage(),
+                            getCode(err.getMessage(), ExceptionType.SERVER)
                     ));
                 });
     }

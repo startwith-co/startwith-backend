@@ -35,4 +35,9 @@ public class PaymentEntityRepositoryImpl implements PaymentEntityRepository {
     public Optional<PaymentEntity> findINPROGRESSByPaymentEventSeq(Long paymentEventSeq) {
         return repository.findINPROGRESSByPaymentEventSeq(paymentEventSeq);
     }
+
+    @Override
+    public Optional<PaymentEntity> findBySecret(String secret) {
+        return repository.findBySecret(secret);
+    }
 }

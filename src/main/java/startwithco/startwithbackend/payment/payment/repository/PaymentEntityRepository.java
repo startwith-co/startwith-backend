@@ -14,4 +14,6 @@ public interface PaymentEntityRepository {
     boolean canSavePaymentEntity(Long paymentEventSeq);
 
     Optional<PaymentEntity> findINPROGRESSByPaymentEventSeq(Long paymentEventSeq);
+
+    Optional<PaymentEntity> findBySecret(String secret);
 }

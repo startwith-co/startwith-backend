@@ -165,9 +165,22 @@ public class PaymentService {
 
             return Mono.error(new ServerException(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "내부 서버 오류가 발생했습니다.",
-                    getCode("내부 서버 오류가 발생했습니다.", ExceptionType.SERVER)
+                    e.getMessage(),
+                    getCode(e.getMessage(), ExceptionType.SERVER)
             ));
         });
+    }
+
+    public void tossPaymentDepositCallBack(TossPaymentDepositCallBackRequest request) {
+        PaymentEntity paymentEntity = paymentEntityRepository.findBySecret(request.secret())
+                .orElseThrow(() -> new ServerException(
+                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                        "무통장 입금 전 결제가 저장되지 않았습니다.",
+                        getCode("무통장 입금 전 결제가 저장되지 않았습니다.", ExceptionType.SERVER)
+                ));
+
+        LocalDateTime paymentCompletedAt = OffsetDateTime.parse(request.createdAt()).toLocalDateTime();
+        paymentEntity.updateSuccessStatus(paymentCompletedAt);
+        paymentEntityRepository.savePaymentEntity(paymentEntity);
     }
 }
