@@ -167,8 +167,8 @@ public class ConsumerService {
                 )));
     }
 
-    private static void validatePassword(LoginConsumerRequest request, ConsumerEntity consumerEntity) {
-        if (!consumerEntity.getPhoneNumber().equals(request.password())) {
+    private void validatePassword(LoginConsumerRequest request, ConsumerEntity consumerEntity) {
+        if (!encoder.matches(request.password(), consumerEntity.getEncodedPassword())) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
                     "비밀번호가 일치하지 않습니다.",
