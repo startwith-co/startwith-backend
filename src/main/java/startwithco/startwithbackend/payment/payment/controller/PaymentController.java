@@ -15,9 +15,11 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 import startwithco.startwithbackend.base.BaseResponse;
 import startwithco.startwithbackend.exception.handler.GlobalExceptionHandler;
+import startwithco.startwithbackend.payment.payment.controller.response.PaymentResponse;
 import startwithco.startwithbackend.payment.payment.service.PaymentService;
 
 import static startwithco.startwithbackend.payment.payment.controller.request.PaymentRequest.*;
+import static startwithco.startwithbackend.payment.payment.controller.response.PaymentResponse.*;
 
 @RestController
 @RequestMapping("/api/b2b-service/payment")
@@ -45,7 +47,7 @@ public class PaymentController {
                     """
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "200", description = "SUCCESS", content = @Content(mediaType = "application/json", schema = @Schema(oneOf = {TossCardPaymentApprovalResponse.class, TossVirtualAccountPaymentResponse.class}))),
             @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_002", description = "존재하지 않는 결제 요청입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
