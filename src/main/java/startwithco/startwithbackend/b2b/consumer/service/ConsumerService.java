@@ -105,4 +105,16 @@ public class ConsumerService {
 
         return response;
     }
+
+    public void validateEmail(String email) {
+
+        consumerRepository.findByEmail(email)
+                .ifPresent(entity -> {
+                    throw new ConflictException(
+                            HttpStatus.CONFLICT.value(),
+                            "이미 가입한 이메일 입니다.",
+                            getCode("이미 가입한 이메일 입니다.", ExceptionType.CONFLICT)
+                    );
+                });
+    }
 }
