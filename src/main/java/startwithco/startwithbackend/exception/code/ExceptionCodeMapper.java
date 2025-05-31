@@ -17,6 +17,7 @@ public class ExceptionCodeMapper {
         BAD_REQUEST_MAP.put("결제 금액이 TOSS PAYMENT 승인 금액과 다릅니다.", "BAD_REQUEST_EXCEPTION_003");
         BAD_REQUEST_MAP.put("해당 결제 요청은 승인할 수 없습니다. 유효하지 않은 주문이거나 이미 처리된 결제입니다.", "BAD_REQUEST_EXCEPTION_004");
         BAD_REQUEST_MAP.put("이미 결제 승인된 결제 요청입니다.", "BAD_REQUEST_EXCEPTION_005");
+        BAD_REQUEST_MAP.put("인증코드가 일치하지 않습니다.", "BAD_REQUEST_EXCEPTION_006");
 
         // ConflictException
         CONFLICT_MAP.put("중복된 이메일입니다.", "CONFLICT_EXCEPTION_001");
