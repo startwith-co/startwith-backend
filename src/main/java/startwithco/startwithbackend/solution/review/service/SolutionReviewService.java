@@ -42,6 +42,13 @@ public class SolutionReviewService {
                         "존재하지 않는 솔루션입니다.",
                         getCode("존재하지 않는 솔루션입니다.", ExceptionType.BAD_REQUEST)
                 ));
+        if (solutionReviewEntityRepository.existsByConsumerSeqAndSolutionSeq(request.consumerSeq(), request.solutionSeq())) {
+            throw new ConflictException(
+                    HttpStatus.CONFLICT.value(),
+                    "같은 솔루션에 리뷰는 한 번만 작성할 수 있습니다.",
+                    getCode("같은 솔루션에 리뷰는 한 번만 작성할 수 있습니다.", ExceptionType.CONFLICT)
+            );
+        }
 
         try {
             SolutionReviewEntity solutionReviewEntity = SolutionReviewEntity.builder()

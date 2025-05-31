@@ -17,4 +17,6 @@ public interface SolutionReviewEntityRepository {
     Long countBySolutionSeq(Long solutionSeq);
 
     Double averageBySolutionSeq(Long solutionSeq);
+
+    boolean existsByConsumerSeqAndSolutionSeq(Long consumerSeq, Long solutionSeq);
 }

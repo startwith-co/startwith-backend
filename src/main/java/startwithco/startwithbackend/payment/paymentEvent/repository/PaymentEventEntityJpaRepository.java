@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import startwithco.startwithbackend.payment.paymentEvent.domain.PaymentEventEntity;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -57,4 +58,12 @@ public interface PaymentEventEntityJpaRepository extends JpaRepository<PaymentEv
                   AND pe.paymentEventStatus = 'SETTLED'
             """)
     Long countSETTLEDPaymentEntityByVendorSeq(@Param("vendorSeq") Long vendorSeq);
+
+    @Query("""
+                SELECT pe
+                FROM PaymentEventEntity pe
+                WHERE pe.consumerEntity.consumerSeq = :consumerSeq
+                  AND (pe.paymentEventStatus = 'CONFIRMED' OR pe.paymentEventStatus = 'SETTLED')
+            """)
+    List<PaymentEventEntity> findAllByConsumerSeq(@Param("consumerSeq") Long consumerSeq);
 }
