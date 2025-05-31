@@ -63,4 +63,35 @@ public class VendorRequest {
 
         }
     }
+
+    public record SendMailRequest(
+        String email
+    ) {
+        public void validateMailSendRequest(SendMailRequest request) {
+
+            if (request.email == null) {
+                throw new BadRequestException(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "요청 데이터 오류입니다.",
+                        getCode("요청 데이터 오류입니다.",ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                );
+            }
+        }
+    }
+
+    public record VerifyCodeRequest(
+            String code,
+            String email
+    ) {
+        public void validateVerifyCodeRequest(VerifyCodeRequest request) {
+            if (request.code == null || request.email == null) {
+                throw new BadRequestException(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "요청 데이터 오류입니다.",
+                        getCode("요청 데이터 오류입니다.",ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                );
+            }
+        }
+    }
+
 }

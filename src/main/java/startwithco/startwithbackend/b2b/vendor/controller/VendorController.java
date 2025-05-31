@@ -13,11 +13,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import startwithco.startwithbackend.b2b.vendor.controller.request.VendorRequest;
 import startwithco.startwithbackend.b2b.vendor.service.VendorService;
 import startwithco.startwithbackend.base.BaseResponse;
 import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.handler.GlobalExceptionHandler;
 import startwithco.startwithbackend.payment.paymentEvent.util.PAYMENT_EVENT_STATUS;
+import startwithco.startwithbackend.common.service.CommonService;
 
 import java.util.List;
 
@@ -32,6 +34,7 @@ import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.ge
 @Tag(name = "벤더 기업", description = "담당자(송인준)")
 public class VendorController {
     private final VendorService vendorService;
+    private final CommonService commonService;
 
     @GetMapping(
             value = "/category",
@@ -86,6 +89,59 @@ public class VendorController {
         request.validateSaveVendorRequest(request, businessLicenseImage);
 
         vendorService.saveVendor(request, businessLicenseImage);
+
+
+        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SUCCESS"));
+    }
+
+    @PostMapping(value = "/email/send", name = "메일 전송")
+    @Operation(summary = "Mail Send API", description = "인증 메일 전송 API")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "SERVER_EXCEPTION_010", description = "Redis 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "CONFLICT_EXCEPTION_005", description = "이미 가입한 이메일 입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "SERVER_EXCEPTION_009", description = "이메일 전송 중 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+
+    })
+    public ResponseEntity<BaseResponse<String>> sendMail(@Valid @RequestBody VendorRequest.SendMailRequest request) {
+
+        // DTO 유효성 검사
+        request.validateMailSendRequest(request);
+
+        // 가입 여부 확인
+        vendorService.validateEmail(request.email());
+
+        // 메일 전송
+        String authKey = commonService.sendAuthKey(request.email());
+
+        // 인증코드 저장
+        commonService.saveAuthKey(request.email(), authKey, "vendor");
+
+        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SUCCESS"));
+    }
+
+    @PostMapping(value = "/email/verify", name = "인증코드 검증")
+    @Operation(summary = "Code Verify API", description = "인증코드 검증 API")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
+        @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+        @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+        @ApiResponse(responseCode = "CONFLICT_EXCEPTION_005", description = "이미 가입한 이메일 입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+        @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_005", description = "인증코드가 일치하지 않습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+        @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_006", description = "존재하지 않는 코드입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+    })
+    public ResponseEntity<BaseResponse<String>> verifyCode(@Valid @RequestBody VerifyCodeRequest request) {
+
+        // DTO 유효성 검사
+        request.validateVerifyCodeRequest(request);
+
+        // 가입 여부 확인
+        vendorService.validateEmail(request.email());
+
+        // 코드 검증
+        commonService.verifyCode(request,"verdor");
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SUCCESS"));
     }
