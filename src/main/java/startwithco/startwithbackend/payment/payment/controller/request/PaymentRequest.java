@@ -4,6 +4,8 @@ import org.springframework.http.HttpStatus;
 import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
 
+import java.time.LocalDateTime;
+
 import static io.micrometer.common.util.StringUtils.isBlank;
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.getCode;
 
@@ -23,5 +25,15 @@ public class PaymentRequest {
                 );
             }
         }
+    }
+
+    public record TossPaymentDepositCallBackRequest(
+            String createdAt,
+            String secret,
+            String status,
+            String transactionKey,
+            String orderId
+    ) {
+
     }
 }

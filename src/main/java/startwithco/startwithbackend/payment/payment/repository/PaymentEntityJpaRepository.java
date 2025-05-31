@@ -11,14 +11,14 @@ import java.util.Optional;
 @Repository
 public interface PaymentEntityJpaRepository extends JpaRepository<PaymentEntity, Long> {
     @Query("""
-                SELECT CASE
-                         WHEN COUNT(e) = 1 THEN true
-                         ELSE false
-                       END
-                FROM PaymentEventEntity e
-                WHERE e.orderId = :orderId
-                  AND e.paymentEventSeq = :paymentEventSeq
-                  AND e.paymentEventStatus = 'REQUESTED'
+            SELECT CASE
+                     WHEN COUNT(e) = 1 THEN true
+                     ELSE false
+                   END
+            FROM PaymentEventEntity e
+            WHERE e.orderId = :orderId
+              AND e.paymentEventSeq = :paymentEventSeq
+              AND e.paymentEventStatus = 'REQUESTED'
             """)
     boolean canApproveTossPayment(
             @Param("orderId") String orderId,
@@ -51,4 +51,11 @@ public interface PaymentEntityJpaRepository extends JpaRepository<PaymentEntity,
               AND p.paymentStatus = 'IN_PROGRESS'
             """)
     Optional<PaymentEntity> findINPROGRESSByPaymentEventSeq(@Param("paymentEventSeq") Long paymentEventSeq);
+
+    @Query("""
+            SELECT p
+            FROM PaymentEntity p
+            WHERE p.secret = :secret
+            """)
+    Optional<PaymentEntity> findBySecret(@Param("secret") String secret);
 }
