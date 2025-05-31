@@ -17,7 +17,8 @@ public class VendorRequest {
             String managerName,
             String phoneNumber,
             String email,
-            String password
+            String password,
+            String confirmPassword
     ) {
 
         public void validateSaveVendorRequest(VendorRequest.SaveVendorRequest request, MultipartFile businessLicenseImage) {
@@ -44,6 +45,15 @@ public class VendorRequest {
             // 2. 파일 확장자 검사 (추가 보안)
             String filename = businessLicenseImage.getOriginalFilename();
             if (filename == null || !filename.toLowerCase().endsWith(".pdf")) {
+                throw new BadRequestException(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "요청 데이터 오류입니다.",
+                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                );
+            }
+
+            // 3. 비밀번호 확인
+            if(!request.password().equals(request.confirmPassword)) {
                 throw new BadRequestException(
                         HttpStatus.BAD_REQUEST.value(),
                         "요청 데이터 오류입니다.",
