@@ -115,6 +115,7 @@ public class CommonService {
                 .doOnSuccess(json -> log.info("✅ 결제 승인 성공: {}", json))
                 .doOnError(WebClientResponseException.class, err -> {
                     log.error(err.getMessage());
+                    log.info("결제 승인 요청: paymentKey={}, orderId={}, amount={}", paymentKey, orderId, amount);
 
                     throw new ServerException(
                             HttpStatus.INTERNAL_SERVER_ERROR.value(),
