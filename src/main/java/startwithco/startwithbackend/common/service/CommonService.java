@@ -114,13 +114,10 @@ public class CommonService {
                 })
                 .doOnSuccess(json -> log.info("✅ 결제 승인 성공: {}", json))
                 .doOnError(WebClientResponseException.class, err -> {
-                    log.error(err.getMessage());
-                    log.info("결제 승인 요청: paymentKey={}, orderId={}, amount={}", paymentKey, orderId, amount);
-
                     throw new ServerException(
                             HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                            "WebClient 응답 에러가 발생했습니다.",
-                            getCode("WebClient 응답 에러가 발생했습니다.", ExceptionType.SERVER)
+                            err.getMessage(),
+                            getCode(err.getMessage(), ExceptionType.SERVER)
                     );
                 })
                 .onErrorResume(err -> {
