@@ -31,6 +31,7 @@ import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.*;
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.getCode;
 import static startwithco.startwithbackend.solution.solution.controller.request.SolutionRequest.*;
 import static startwithco.startwithbackend.solution.solution.controller.response.SolutionResponse.*;
+import static startwithco.startwithbackend.solution.solution.controller.response.SolutionResponse.GetSolutionEntityResponse.*;
 
 @Service
 @RequiredArgsConstructor
@@ -44,16 +45,7 @@ public class SolutionService {
     private final CommonService commonService;
 
     @Transactional
-    public SaveSolutionEntityResponse saveSolutionEntity(
-            SaveSolutionEntityRequest request,
-            MultipartFile representImageUrl,
-            MultipartFile descriptionPdfUrl
-    ) {
-        /*
-         * [예외 처리]
-         * 1. vendor 유효성 검사
-         * 2. Solution 존재 여부 확인
-         * */
+    public SaveSolutionEntityResponse saveSolutionEntity(SaveSolutionEntityRequest request, MultipartFile representImageUrl, MultipartFile descriptionPdfUrl) {
         VendorEntity vendorEntity = vendorEntityRepository.findByVendorSeq(request.vendorSeq())
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
@@ -123,16 +115,7 @@ public class SolutionService {
     }
 
     @Transactional
-    public void modifySolutionEntity(
-            SaveSolutionEntityRequest request,
-            MultipartFile representImageUrl,
-            MultipartFile descriptionPdfUrl
-    ) {
-        /*
-         * [예외 처리]
-         * 1. vendor 유효성 검사
-         * 2. solution 유효성 검사
-         * */
+    public void modifySolutionEntity(SaveSolutionEntityRequest request, MultipartFile representImageUrl, MultipartFile descriptionPdfUrl) {
         vendorEntityRepository.findByVendorSeq(request.vendorSeq())
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
@@ -196,5 +179,40 @@ public class SolutionService {
                     getCode("동시성 저장은 불가능합니다.", ExceptionType.CONFLICT)
             );
         }
+    }
+
+    public GetSolutionEntityResponse getSolutionEntity(Long vendorSeq, CATEGORY category) {
+        vendorEntityRepository.findByVendorSeq(vendorSeq)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 벤더 기업입니다.",
+                        getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
+                ));
+
+        SolutionEntity solutionEntity = solutionEntityRepository.findByVendorSeqAndCategory(vendorSeq, category)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "해당 기업이 작성한 카테고리 솔루션이 존재하지 않습니다.",
+                        getCode("해당 기업이 작성한 카테고리 솔루션이 존재하지 않습니다.", ExceptionType.NOT_FOUND)
+                ));
+
+        List<String> solutionImplementationType = List.of(solutionEntity.getSolutionImplementationType().split(","));
+        List<String> industry = List.of(solutionEntity.getIndustry().split(","));
+        List<String> recommendedCompanySize = List.of(solutionEntity.getRecommendedCompanySize().split(","));
+        List<SolutionEffectResponse> solutionEffectResponse
+                = solutionEffectEntityRepository.findAllBySolutionSeqCustom(solutionEntity.getSolutionSeq());
+
+        return new GetSolutionEntityResponse(
+                solutionEntity.getSolutionSeq(),
+                solutionEntity.getRepresentImageUrl(),
+                solutionEntity.getSolutionName(),
+                solutionEntity.getSolutionDetail(),
+                solutionEntity.getAmount(),
+                solutionImplementationType,
+                solutionEntity.getDuration(),
+                industry,
+                recommendedCompanySize,
+                solutionEffectResponse
+        );
     }
 }

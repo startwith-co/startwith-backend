@@ -14,5 +14,5 @@ public interface VendorEntityRepository {
 
     void save(VendorEntity vendorEntity);
 
-    List<GetVendorSettlementManagementProgressResponse> getVendorSettlementManagementProgress(Long vendorSeq, String paymentEventStatus, int start, int end);
+    List<GetVendorSettlementManagementProgressResponse> getVendorSettlementManagementProgressCustom(Long vendorSeq, String paymentEventStatus, int start, int end);
 }

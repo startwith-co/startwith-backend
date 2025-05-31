@@ -17,12 +17,15 @@ import startwithco.startwithbackend.base.BaseResponse;
 import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
 import startwithco.startwithbackend.exception.handler.GlobalExceptionHandler;
+import startwithco.startwithbackend.solution.solution.controller.response.SolutionResponse;
 import startwithco.startwithbackend.solution.solution.service.SolutionService;
+import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 
 import java.io.IOException;
 
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.getCode;
 import static startwithco.startwithbackend.solution.solution.controller.request.SolutionRequest.SaveSolutionEntityRequest;
+import static startwithco.startwithbackend.solution.solution.controller.response.SolutionResponse.*;
 import static startwithco.startwithbackend.solution.solution.controller.response.SolutionResponse.SaveSolutionEntityResponse;
 
 @RestController
@@ -118,5 +121,47 @@ public class SolutionController {
         solutionService.modifySolutionEntity(request, representImageUrl, descriptionPdfUrl);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SUCCESS"));
+    }
+
+    @GetMapping(
+            name = "솔루션 조회"
+    )
+    @Operation(
+            summary = "솔루션 조회 API",
+            description = """
+                    1. category: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY\n
+                    """
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_001", description = "존재하지 않는 벤더 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_008", description = "해당 기업이 작성한 카테고리 솔루션이 존재하지 않습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+    })
+    ResponseEntity<BaseResponse<GetSolutionEntityResponse>> getSolutionEntity(
+            @RequestParam(value = "vendorSeq", required = false) Long vendorSeq,
+            @RequestParam(value = "category", required = false) String category) {
+        if (vendorSeq == null || category == null || category.isEmpty()) {
+            throw new BadRequestException(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "요청 데이터 오류입니다.",
+                    getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+            );
+        }
+
+        try {
+            CATEGORY.valueOf(category);
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "요청 데이터 오류입니다.",
+                    getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+            );
+        }
+
+        GetSolutionEntityResponse response = solutionService.getSolutionEntity(vendorSeq, CATEGORY.valueOf(category));
+
+        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
     }
 }

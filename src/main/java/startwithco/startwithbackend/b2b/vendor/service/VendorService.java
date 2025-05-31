@@ -13,13 +13,10 @@ import startwithco.startwithbackend.b2b.vendor.repository.VendorEntityRepository
 import startwithco.startwithbackend.common.service.CommonService;
 import startwithco.startwithbackend.exception.ConflictException;
 import startwithco.startwithbackend.exception.NotFoundException;
-import startwithco.startwithbackend.exception.ServerException;
 import startwithco.startwithbackend.payment.paymentEvent.repository.PaymentEventEntityRepository;
-import startwithco.startwithbackend.payment.paymentEvent.util.PAYMENT_EVENT_STATUS;
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 import startwithco.startwithbackend.solution.solution.repository.SolutionEntityRepository;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -131,6 +128,6 @@ public class VendorService {
                         getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
                 ));
 
-        return vendorEntityRepository.getVendorSettlementManagementProgress(vendorSeq, paymentEventStatus, start, end);
+        return vendorEntityRepository.getVendorSettlementManagementProgressCustom(vendorSeq, paymentEventStatus, start, end);
     }
 }

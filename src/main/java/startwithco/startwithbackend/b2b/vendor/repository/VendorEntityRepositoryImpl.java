@@ -41,7 +41,7 @@ public class VendorEntityRepositoryImpl implements VendorEntityRepository {
     }
 
     @Override
-    public List<GetVendorSettlementManagementProgressResponse> getVendorSettlementManagementProgress(Long vendorSeq, String paymentEventStatus, int start, int end) {
+    public List<GetVendorSettlementManagementProgressResponse> getVendorSettlementManagementProgressCustom(Long vendorSeq, String paymentEventStatus, int start, int end) {
         QPaymentEventEntity qPaymentEventEntity = QPaymentEventEntity.paymentEventEntity;
         QSolutionEntity qSolutionEntity = QSolutionEntity.solutionEntity;
         QPaymentEntity qPaymentEntity = QPaymentEntity.paymentEntity;
