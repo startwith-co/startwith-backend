@@ -12,7 +12,7 @@ import startwithco.startwithbackend.exception.*;
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
-    @ExceptionHandler({Exception.class})
+    @ExceptionHandler({ServerException.class})
     public ResponseEntity<ErrorResponse> handleServerException(final ServerException exception) {
         return ResponseEntity.status(exception.getHttpStatus())
                 .body(new ErrorResponse(exception.getHttpStatus(), exception.getMessage(), exception.getCode()));
