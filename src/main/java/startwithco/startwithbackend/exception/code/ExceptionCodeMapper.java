@@ -18,6 +18,7 @@ public class ExceptionCodeMapper {
         BAD_REQUEST_MAP.put("해당 결제 요청은 승인할 수 없습니다. 유효하지 않은 주문이거나 이미 처리된 결제입니다.", "BAD_REQUEST_EXCEPTION_004");
         BAD_REQUEST_MAP.put("이미 결제 승인된 결제 요청입니다.", "BAD_REQUEST_EXCEPTION_005");
         BAD_REQUEST_MAP.put("인증코드가 일치하지 않습니다.", "BAD_REQUEST_EXCEPTION_006");
+        BAD_REQUEST_MAP.put("비밀번호가 일치하지 않습니다.", "BAD_REQUEST_EXCEPTION_007");
 
         // ConflictException
         CONFLICT_MAP.put("중복된 이메일입니다.", "CONFLICT_EXCEPTION_001");
@@ -35,6 +36,7 @@ public class ExceptionCodeMapper {
         NOT_FOUND_MAP.put("존재하지 않는 코드입니다.", "NOT_FOUND_EXCEPTION_006");
         NOT_FOUND_MAP.put("수요 기업이 해당 솔루션에 작성한 리뷰가 없습니다.", "NOT_FOUND_EXCEPTION_007");
         NOT_FOUND_MAP.put("해당 기업이 작성한 카테고리 솔루션이 존재하지 않습니다.", "NOT_FOUND_EXCEPTION_008");
+        NOT_FOUND_MAP.put("존재하지 않는 이메일 입니다.", "NOT_FOUND_EXCEPTION_009");
 
         // ServerException
         SERVER_MAP.put("내부 서버 오류가 발생했습니다.", "SERVER_EXCEPTION_001");

@@ -1,14 +1,20 @@
 package startwithco.startwithbackend.b2b.consumer.service;
 
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import startwithco.startwithbackend.b2b.consumer.controller.response.ConsumerResponse;
 import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
 import startwithco.startwithbackend.b2b.consumer.repository.ConsumerRepository;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
+import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.ConflictException;
 import startwithco.startwithbackend.exception.NotFoundException;
 import startwithco.startwithbackend.exception.ServerException;
@@ -20,7 +26,9 @@ import startwithco.startwithbackend.solution.review.repository.SolutionReviewEnt
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest.*;
 import static startwithco.startwithbackend.b2b.consumer.controller.response.ConsumerResponse.*;
@@ -33,8 +41,16 @@ public class ConsumerService {
     private final PaymentEventEntityRepository paymentEventEntityRepository;
     private final PaymentEntityRepository paymentEntityRepository;
     private final SolutionReviewEntityRepository solutionReviewEntityRepository;
-
+    private final RedisTemplate<String, String> redisTemplate;
     private final BCryptPasswordEncoder encoder;
+
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+    @Value("${jwt.accessTokenExpiration}")
+    private long accessTokenExpiration;
+    @Value("${jwt.refreshTokenExpiration}")
+    private long refreshTokenExpiration;
+
 
     @Transactional
     public void saveConsumer(SaveConsumerRequest request) {
@@ -116,5 +132,76 @@ public class ConsumerService {
                             getCode("이미 가입한 이메일 입니다.", ExceptionType.CONFLICT)
                     );
                 });
+    }
+
+    @Transactional
+    public LoginConsumerResponse login(LoginConsumerRequest request) {
+
+        // 이메일 검증
+        ConsumerEntity consumerEntity = validateEmail(request);
+
+        // 비밀번호 검증
+        validatePassword(request, consumerEntity);
+
+        // Access 토큰 생성
+        Long consumerSeq = consumerEntity.getConsumerSeq();
+
+        String accessToken = generateToken(accessTokenExpiration, consumerSeq);
+
+        // Refresh 토큰 생성
+        String refreshToken = generateToken(refreshTokenExpiration, consumerSeq);
+
+        // Refresh 토큰 저장
+        saveRefreshToken(consumerSeq, refreshToken);
+
+        return new LoginConsumerResponse(accessToken, refreshToken);
+
+    }
+
+    private ConsumerEntity validateEmail(LoginConsumerRequest request) {
+        return consumerRepository.findByEmail(request.email())
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 이메일 입니다.",
+                        getCode("존재하지 않는 이메일 입니다.", ExceptionType.NOT_FOUND
+                )));
+    }
+
+    private static void validatePassword(LoginConsumerRequest request, ConsumerEntity consumerEntity) {
+        if (!consumerEntity.getPhoneNumber().equals(request.password())) {
+            throw new BadRequestException(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "비밀번호가 일치하지 않습니다.",
+                    getCode("비밀번호가 일치하지 않습니다.", ExceptionType.BAD_REQUEST)
+            );
+        }
+    }
+
+    private String generateToken(long tokenExpiration, Long consumerSeq) {
+        Date now = new Date();
+        Date refreshExpiryDate = new Date(now.getTime() + tokenExpiration);
+        return Jwts.builder()
+                .setSubject(String.valueOf(consumerSeq))
+                .setIssuedAt(now)
+                .setExpiration(refreshExpiryDate)
+                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .compact();
+    }
+
+    private void saveRefreshToken(Long consumerSeq, String refreshToken) {
+        try {
+            redisTemplate.opsForValue().set(
+                    String.valueOf(consumerSeq),
+                    refreshToken,
+                    300000,
+                    TimeUnit.MILLISECONDS
+            );
+        } catch (Exception e) {
+            throw new ServerException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Redis 서버 오류가 발생했습니다.",
+                    getCode("Redis 서버 오류가 발생했습니다.", ExceptionType.SERVER)
+            );
+        }
     }
 }
