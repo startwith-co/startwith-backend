@@ -88,30 +88,6 @@ public class SolutionReviewService {
         solutionReviewEntityRepository.saveSolutionReviewEntity(solutionReviewEntity);
     }
 
-    public void deleteSolutionReviewEntity(DeleteSolutionReviewRequest request) {
-        consumerRepository.findByConsumerSeq(request.consumerSeq())
-                .orElseThrow(() -> new NotFoundException(
-                        HttpStatus.NOT_FOUND.value(),
-                        "존재하지 않는 수요 기업입니다.",
-                        getCode("존재하지 않는 수요 기업입니다.", ExceptionType.BAD_REQUEST)
-                ));
-        solutionEntityRepository.findBySolutionSeq(request.solutionSeq())
-                .orElseThrow(() -> new NotFoundException(
-                        HttpStatus.NOT_FOUND.value(),
-                        "존재하지 않는 솔루션입니다.",
-                        getCode("존재하지 않는 솔루션입니다.", ExceptionType.BAD_REQUEST)
-                ));
-        SolutionReviewEntity solutionReviewEntity
-                = solutionReviewEntityRepository.findBySolutionSeqAndConsumerSeqAndSolutionReviewSeq(request.solutionSeq(), request.consumerSeq(), request.solutionReviewSeq())
-                .orElseThrow(() -> new NotFoundException(
-                        HttpStatus.NOT_FOUND.value(),
-                        "수요 기업이 해당 솔루션에 작성한 리뷰가 없습니다.",
-                        getCode("수요 기업이 해당 솔루션에 작성한 리뷰가 없습니다.", ExceptionType.BAD_REQUEST)
-                ));
-
-        solutionReviewEntityRepository.deleteSolutionReviewEntity(solutionReviewEntity);
-    }
-
     public List<GetAllSolutionReviewResponse> getAllSolutionReviewEntity(Long solutionSeq) {
         solutionEntityRepository.findBySolutionSeq(solutionSeq)
                 .orElseThrow(() -> new NotFoundException(
