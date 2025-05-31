@@ -190,18 +190,10 @@ public class SolutionController {
             @RequestParam(value = "specialist", required = false) String specialist,
             @RequestParam(value = "category", required = false) String category,
             @RequestParam(value = "industry", required = false) String industry,
-            @RequestParam(value = "budget", required = false) String budget,
+            @RequestParam(value = "budget", required = false, defaultValue = "전체") String budget,
             @RequestParam(value = "start", defaultValue = "0") int start,
             @RequestParam(value = "end", defaultValue = "10") int end
     ) {
-        if (budget == null || budget.isEmpty()) {
-            throw new BadRequestException(
-                    HttpStatus.BAD_REQUEST.value(),
-                    "요청 데이터 오류입니다.",
-                    getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
-            );
-        }
-
         if (category != null) {
             try {
                 CATEGORY.valueOf(category);
