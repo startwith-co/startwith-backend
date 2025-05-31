@@ -17,12 +17,14 @@ public class ExceptionCodeMapper {
         BAD_REQUEST_MAP.put("결제 금액이 TOSS PAYMENT 승인 금액과 다릅니다.", "BAD_REQUEST_EXCEPTION_003");
         BAD_REQUEST_MAP.put("해당 결제 요청은 승인할 수 없습니다. 유효하지 않은 주문이거나 이미 처리된 결제입니다.", "BAD_REQUEST_EXCEPTION_004");
         BAD_REQUEST_MAP.put("이미 결제 승인된 결제 요청입니다.", "BAD_REQUEST_EXCEPTION_005");
+        BAD_REQUEST_MAP.put("인증코드가 일치하지 않습니다.", "BAD_REQUEST_EXCEPTION_005");
 
         // ConflictException
         CONFLICT_MAP.put("중복된 이메일입니다.", "CONFLICT_EXCEPTION_001");
         CONFLICT_MAP.put("동시성 저장은 불가능합니다.", "CONFLICT_EXCEPTION_002");
         CONFLICT_MAP.put("이미 동일한 솔루션에 대한 결제 요청이 진행 중입니다.", "CONFLICT_EXCEPTION_003");
         CONFLICT_MAP.put("해당 벤더의 해당 카테고리 솔루션이 이미 존재합니다.", "CONFLICT_EXCEPTION_004");
+        CONFLICT_MAP.put("이미 가입한 이메일 입니다.", "CONFLICT_EXCEPTION_005");
 
         // NotFoundException
         NOT_FOUND_MAP.put("존재하지 않는 벤더 기업입니다.", "NOT_FOUND_EXCEPTION_001");
@@ -30,6 +32,7 @@ public class ExceptionCodeMapper {
         NOT_FOUND_MAP.put("존재하지 않는 결제입니다.", "NOT_FOUND_EXCEPTION_003");
         NOT_FOUND_MAP.put("존재하지 않는 수요 기업입니다.", "NOT_FOUND_EXCEPTION_004");
         NOT_FOUND_MAP.put("존재하지 않는 솔루션입니다.", "NOT_FOUND_EXCEPTION_005");
+        NOT_FOUND_MAP.put("존재하지 않는 코드입니다.", "NOT_FOUND_EXCEPTION_006");
 
         // ServerException
         SERVER_MAP.put("내부 서버 오류가 발생했습니다.", "SERVER_EXCEPTION_001");
@@ -40,6 +43,8 @@ public class ExceptionCodeMapper {
         SERVER_MAP.put("토스페이먼츠 결제 승인 실패", "SERVER_EXCEPTION_006");
         SERVER_MAP.put("WebClient 응답 에러가 발생했습니다.", "SERVER_EXCEPTION_007");
         SERVER_MAP.put("무통장 입금 전 결제가 저장되지 않았습니다.", "SERVER_EXCEPTION_008");
+        SERVER_MAP.put("이메일 전송 중 오류가 발생했습니다.", "SERVER_EXCEPTION_009");
+        SERVER_MAP.put("Redis 서버 오류가 발생했습니다.", "SERVER_EXCEPTION_010");
 
         // UnauthorizedException
     }

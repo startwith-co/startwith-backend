@@ -93,6 +93,19 @@ public class VendorService {
                     getCode("동시성 저장은 불가능합니다.", ExceptionType.CONFLICT)
             );
         }
+
+    }
+
+    public void validateEmail(String email) {
+
+        vendorEntityRepository.findByEmail(email)
+                .ifPresent(entity -> {
+                    throw new ConflictException(
+                            HttpStatus.CONFLICT.value(),
+                            "이미 가입한 이메일 입니다.",
+                            getCode("이미 가입한 이메일 입니다.", ExceptionType.CONFLICT)
+                    );
+                });
     }
 
     public GetVendorSettlementManagementStatusResponse getVendorSettlementManagementStatus(Long vendorSeq) {
