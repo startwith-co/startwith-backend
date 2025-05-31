@@ -180,8 +180,8 @@ public class PaymentService {
                         getCode("무통장 입금 전 결제가 저장되지 않았습니다.", ExceptionType.SERVER)
                 ));
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
-        LocalDateTime paymentCompletedAt = OffsetDateTime.parse(request.createdAt(), formatter).toLocalDateTime();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
+        LocalDateTime paymentCompletedAt = LocalDateTime.parse(request.createdAt(), formatter);
         paymentEntity.updateSuccessStatus(paymentCompletedAt);
         paymentEntityRepository.savePaymentEntity(paymentEntity);
     }
