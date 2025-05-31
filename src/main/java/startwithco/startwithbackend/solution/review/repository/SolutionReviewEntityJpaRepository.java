@@ -36,4 +36,16 @@ public interface SolutionReviewEntityJpaRepository extends JpaRepository<Solutio
             WHERE sre.solutionEntity.solutionSeq = :solutionSeq
             """)
     Double averageBySolutionSeq(@Param("solutionSeq") Long solutionSeq);
+
+    @Query("""
+            SELECT
+                  CASE
+                  WHEN COUNT(sre) > 0 THEN true
+                  ELSE false
+                  END
+            FROM SolutionReviewEntity sre
+            WHERE sre.solutionEntity.solutionSeq = :solutionSeq
+              AND sre.consumerEntity.consumerSeq = :consumerSeq
+            """)
+    boolean existsByConsumerSeqAndSolutionSeq(@Param("consumerSeq") Long consumerSeq, @Param("solutionSeq") Long solutionSeq);
 }

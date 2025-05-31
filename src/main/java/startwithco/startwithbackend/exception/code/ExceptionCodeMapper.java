@@ -23,6 +23,7 @@ public class ExceptionCodeMapper {
         CONFLICT_MAP.put("동시성 저장은 불가능합니다.", "CONFLICT_EXCEPTION_002");
         CONFLICT_MAP.put("이미 동일한 솔루션에 대한 결제 요청이 진행 중입니다.", "CONFLICT_EXCEPTION_003");
         CONFLICT_MAP.put("해당 벤더의 해당 카테고리 솔루션이 이미 존재합니다.", "CONFLICT_EXCEPTION_004");
+        CONFLICT_MAP.put("같은 솔루션에 리뷰는 한 번만 작성할 수 있습니다.", "CONFLICT_EXCEPTION_005");
 
         // NotFoundException
         NOT_FOUND_MAP.put("존재하지 않는 벤더 기업입니다.", "NOT_FOUND_EXCEPTION_001");

@@ -2,6 +2,7 @@ package startwithco.startwithbackend.payment.paymentEvent.repository;
 
 import startwithco.startwithbackend.payment.paymentEvent.domain.PaymentEventEntity;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface PaymentEventEntityRepository {
@@ -16,4 +17,6 @@ public interface PaymentEventEntityRepository {
     Long countCONFIRMEDPaymentEntityByVendorSeq(Long vendorSeq);
 
     Long countSETTLEDPaymentEntityByVendorSeq(Long vendorSeq);
+
+    List<PaymentEventEntity> findAllByConsumerSeq(Long consumerSeq);
 }

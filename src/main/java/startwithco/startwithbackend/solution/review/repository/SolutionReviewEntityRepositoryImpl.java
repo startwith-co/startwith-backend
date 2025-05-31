@@ -60,4 +60,9 @@ public class SolutionReviewEntityRepositoryImpl implements SolutionReviewEntityR
     public Double averageBySolutionSeq(Long solutionSeq) {
         return repository.averageBySolutionSeq(solutionSeq);
     }
+
+    @Override
+    public boolean existsByConsumerSeqAndSolutionSeq(Long consumerSeq, Long solutionSeq) {
+        return repository.existsByConsumerSeqAndSolutionSeq(consumerSeq, solutionSeq);
+    }
 }
