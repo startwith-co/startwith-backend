@@ -21,6 +21,7 @@ import startwithco.startwithbackend.payment.paymentEvent.util.PAYMENT_EVENT_STAT
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.*;
@@ -179,7 +180,8 @@ public class PaymentService {
                         getCode("무통장 입금 전 결제가 저장되지 않았습니다.", ExceptionType.SERVER)
                 ));
 
-        LocalDateTime paymentCompletedAt = OffsetDateTime.parse(request.createdAt()).toLocalDateTime();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
+        LocalDateTime paymentCompletedAt = OffsetDateTime.parse(request.createdAt(), formatter).toLocalDateTime();
         paymentEntity.updateSuccessStatus(paymentCompletedAt);
         paymentEntityRepository.savePaymentEntity(paymentEntity);
     }
