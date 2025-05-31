@@ -184,6 +184,7 @@ public class SolutionService {
         }
     }
 
+    @Transactional(readOnly = true)
     public GetSolutionEntityResponse getSolutionEntity(Long vendorSeq, CATEGORY category) {
         vendorEntityRepository.findByVendorSeq(vendorSeq)
                 .orElseThrow(() -> new NotFoundException(
@@ -219,6 +220,7 @@ public class SolutionService {
         );
     }
 
+    @Transactional(readOnly = true)
     public List<GetAllSolutionEntityResponse> getAllSolutionEntity(String specialist, CATEGORY category, String industry, String budget, int start, int end) {
         List<SolutionEntity> solutionEntities
                 = solutionEntityRepository.findBySpecialistAndCategoryAndIndustryAndBudget(specialist, category, industry, budget, start, end);

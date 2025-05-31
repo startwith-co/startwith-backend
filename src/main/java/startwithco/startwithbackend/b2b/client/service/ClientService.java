@@ -3,6 +3,7 @@ package startwithco.startwithbackend.b2b.client.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import startwithco.startwithbackend.b2b.client.controller.response.ClientResponse;
 import startwithco.startwithbackend.b2b.client.domain.ClientEntity;
@@ -26,6 +27,7 @@ public class ClientService {
     private final VendorEntityRepository vendorEntityRepository;
     private final CommonService commonService;
 
+    @Transactional
     public SaveClientResponse saveClientEntity(SaveClientRequest request, MultipartFile logoImageUrl) {
         VendorEntity vendorEntity = vendorEntityRepository.findByVendorSeq(request.vendorSeq())
                 .orElseThrow(() -> new NotFoundException(
@@ -46,6 +48,7 @@ public class ClientService {
         return new SaveClientResponse(savedClientEntity.getClientSeq());
     }
 
+    @Transactional(readOnly = true)
     public List<GetAllClientResponse> getAllClientEntity(Long vendorSeq) {
         vendorEntityRepository.findByVendorSeq(vendorSeq)
                 .orElseThrow(() -> new NotFoundException(

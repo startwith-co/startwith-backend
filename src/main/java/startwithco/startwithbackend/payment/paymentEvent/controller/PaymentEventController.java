@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import startwithco.startwithbackend.base.BaseResponse;
 import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.handler.GlobalExceptionHandler;
+import startwithco.startwithbackend.payment.payment.controller.response.PaymentResponse;
 import startwithco.startwithbackend.payment.paymentEvent.service.PaymentEventService;
 
 import java.io.IOException;
@@ -82,20 +83,21 @@ public class PaymentEventController {
     @Operation(
             summary = "결제 요청하기 조회 API",
             description = """
-                    1. 광클 방지를 위한 disable 처리해주세요.\n
-                    2. category: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY\n
-                    3. paymentEventStatus: REQUESTED(결제 요청), CANCELLED(결제 요청 취소), CONFIRMED(구매 확정), SETTLED(정산 완료)\n
-                    4. CONFIRMED(구매 확정), SETTLED(정산 완료)의 경우는 결제 승인이 완료된 결제 요청입니다.\n
+                    1. 광클 방지를 위한 disable 처리해주세요.
+                    2. category: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY
+                    3. paymentEventStatus: REQUESTED(결제 요청), CANCELLED(결제 요청 취소), CONFIRMED(구매 확정), SETTLED(정산 완료)
+                    4. CONFIRMED(구매 확정), SETTLED(정산 완료)의 경우는 결제 승인이 완료된 결제 요청입니다.
+                    5. CONFIRMED, SETTLED의 Response: GetCONFIRMEDPaymentEventEntityResponse, REQUESTED, CANCELLED의 Response: GetREQUESTEDPaymentEventEntityResponse 입니다.
                     """
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "200", description = "SUCCESS", content = @Content(mediaType = "application/json", schema = @Schema(oneOf = {GetREQUESTEDPaymentEventEntityResponse.class, GetCONFIRMEDPaymentEventEntityResponse.class}))),
             @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_002", description = "존재하지 않는 결제 요청입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "SERVER_EXCEPTION_004", description = "구매 확정, 정산 완료 결제 요청이지만 결제 승인된 정보가 없습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
-    public ResponseEntity<BaseResponse<GetPaymentEventEntityResponse>> getPaymentEventEntity(
+    public ResponseEntity<BaseResponse<Object>> getPaymentEventEntity(
             @Valid
             @RequestParam(name = "paymentEventSeq") Long paymentEventSeq
     ) {
@@ -107,7 +109,7 @@ public class PaymentEventController {
             );
         }
 
-        GetPaymentEventEntityResponse response = paymentEventService.getPaymentEventEntity(paymentEventSeq);
+        Object response = paymentEventService.getPaymentEventEntity(paymentEventSeq);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
     }
@@ -118,8 +120,8 @@ public class PaymentEventController {
     @Operation(
             summary = "결제 요청 취소 API",
             description = """
-                    1. 광클 방지를 위한 disable 처리해주세요.\n
-                    2. 해당 결제 요청이 이미 결제 승인 완료면 결제 요청 취소가 불가능합니다.\n
+                    1. 광클 방지를 위한 disable 처리해주세요.
+                    2. 해당 결제 요청이 이미 결제 승인 완료면 결제 요청 취소가 불가능합니다.
                     """
     )
     @ApiResponses(value = {

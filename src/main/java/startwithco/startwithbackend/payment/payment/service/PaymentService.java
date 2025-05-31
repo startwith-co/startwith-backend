@@ -172,6 +172,7 @@ public class PaymentService {
         });
     }
 
+    @Transactional
     public void tossPaymentDepositCallBack(TossPaymentDepositCallBackRequest request) {
         PaymentEntity paymentEntity = paymentEntityRepository.findBySecret(request.secret())
                 .orElseThrow(() -> new ServerException(

@@ -10,7 +10,7 @@ public class PaymentEventResponse {
 
     }
 
-    public record GetPaymentEventEntityResponse(
+    public record GetREQUESTEDPaymentEventEntityResponse(
             Long paymentEventSeq,
             String paymentEventName,
             CATEGORY category,
@@ -19,6 +19,16 @@ public class PaymentEventResponse {
             String contractConfirmationUrl,
             String refundPolicyUrl,
             String orderId
+    ) {
+
+    }
+
+    public record GetCONFIRMEDPaymentEventEntityResponse(
+            Long paymentEventSeq,
+            String paymentEventName,
+            CATEGORY category,
+            Long amount,
+            PAYMENT_EVENT_STATUS paymentEventStatus
     ) {
 
     }

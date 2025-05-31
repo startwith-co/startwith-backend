@@ -37,10 +37,6 @@ public class VendorService {
 
     @Transactional(readOnly = true)
     public List<GetVendorSolutionCategoryResponse> getVendorSolutionCategory(Long vendorSeq) {
-        /*
-         * [예외 처리]
-         * 1. vendor 유효성 검사
-         * */
         vendorEntityRepository.findByVendorSeq(vendorSeq)
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
@@ -105,6 +101,7 @@ public class VendorService {
                 });
     }
 
+    @Transactional(readOnly = true)
     public GetVendorSettlementManagementStatusResponse getVendorSettlementManagementStatus(Long vendorSeq) {
         vendorEntityRepository.findByVendorSeq(vendorSeq)
                 .orElseThrow(() -> new NotFoundException(
@@ -120,6 +117,7 @@ public class VendorService {
         return new GetVendorSettlementManagementStatusResponse(vendorSeq, requested, confirmed, settled);
     }
 
+    @Transactional(readOnly = true)
     public List<GetVendorSettlementManagementProgressResponse> getVendorSettlementManagementProgress(Long vendorSeq, String paymentEventStatus, int start, int end) {
         vendorEntityRepository.findByVendorSeq(vendorSeq)
                 .orElseThrow(() -> new NotFoundException(

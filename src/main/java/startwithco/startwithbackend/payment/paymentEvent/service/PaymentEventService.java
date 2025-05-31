@@ -48,18 +48,7 @@ public class PaymentEventService {
      *  동시성 문제 처리 필요
      * */
     @Transactional
-    public SavePaymentEventEntityResponse savePaymentEventEntity(
-            SavePaymentEventRequest request,
-            MultipartFile contractConfirmationUrl,
-            MultipartFile refundPolicyUrl
-    ) throws IOException {
-        /*
-         * [예외 처리]
-         * 1. SolutionEntity 유효성 검사
-         * 2. VendorEntity 유효성 검사
-         * 3. ConsumerEntity 유효성 검사
-         * 4. Payment Event Status -> REQUEST 아닐 시 예외
-         * */
+    public SavePaymentEventEntityResponse savePaymentEventEntity(SavePaymentEventRequest request, MultipartFile contractConfirmationUrl, MultipartFile refundPolicyUrl) {
         SolutionEntity solutionEntity = solutionEntityRepository.findByVendorSeqAndCategory(request.vendorSeq(), CATEGORY.valueOf(request.category()))
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
@@ -112,52 +101,46 @@ public class PaymentEventService {
     }
 
     @Transactional(readOnly = true)
-    public GetPaymentEventEntityResponse getPaymentEventEntity(Long paymentEventSeq) {
-        /*
-         * [예외 처리]
-         * 1. paymentEvent 유효성
-         * */
+    public Object getPaymentEventEntity(Long paymentEventSeq) {
         PaymentEventEntity paymentEventEntity = paymentEventEntityRepository.findByPaymentEventSeq(paymentEventSeq)
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
                         "존재하지 않는 결제 요청입니다.",
                         getCode("존재하지 않는 결제 요청입니다.", ExceptionType.NOT_FOUND)
                 ));
-        Long amount = Long.MIN_VALUE;
 
         if (paymentEventEntity.getPaymentEventStatus() == PAYMENT_EVENT_STATUS.CONFIRMED ||
                 paymentEventEntity.getPaymentEventStatus() == PAYMENT_EVENT_STATUS.SETTLED) {
-            PaymentEntity paymentEntity = paymentEntityRepository.findSUCCESSByPaymentEventSeq(paymentEventSeq)
+            paymentEntityRepository.findSUCCESSByPaymentEventSeq(paymentEventSeq)
                     .orElseThrow(() -> new ServerException(
                             HttpStatus.INTERNAL_SERVER_ERROR.value(),
                             "구매 확정, 정산 완료 결제 요청이지만 결제 승인된 정보가 없습니다.",
                             getCode("구매 확정, 정산 완료 결제 요청이지만 결제 승인된 정보가 없습니다.", ExceptionType.SERVER)
                     ));
 
-            amount = paymentEntity.getAmount();
+            return new GetCONFIRMEDPaymentEventEntityResponse(
+                    paymentEventEntity.getPaymentEventSeq(),
+                    paymentEventEntity.getPaymentEventName(),
+                    paymentEventEntity.getSolutionEntity().getCategory(),
+                    paymentEventEntity.getActualAmount(),
+                    paymentEventEntity.getPaymentEventStatus()
+            );
         } else {
-            amount = paymentEventEntity.getAmount();
+            return new GetREQUESTEDPaymentEventEntityResponse(
+                    paymentEventEntity.getPaymentEventSeq(),
+                    paymentEventEntity.getPaymentEventName(),
+                    paymentEventEntity.getSolutionEntity().getCategory(),
+                    paymentEventEntity.getAmount(),
+                    paymentEventEntity.getPaymentEventStatus(),
+                    paymentEventEntity.getContractConfirmationUrl(),
+                    paymentEventEntity.getRefundPolicyUrl(),
+                    paymentEventEntity.getOrderId()
+            );
         }
-
-        return new GetPaymentEventEntityResponse(
-                paymentEventEntity.getPaymentEventSeq(),
-                paymentEventEntity.getPaymentEventName(),
-                paymentEventEntity.getSolutionEntity().getCategory(),
-                amount,
-                paymentEventEntity.getPaymentEventStatus(),
-                paymentEventEntity.getContractConfirmationUrl(),
-                paymentEventEntity.getRefundPolicyUrl(),
-                paymentEventEntity.getOrderId()
-        );
     }
 
     @Transactional
     public void deletePaymentEventEntity(DeletePaymentEventRequest request) {
-        /*
-         * [예외 처리]
-         * 1. paymentEvent 유효성
-         * 2. 해당 결제 요청이 이미 성공이면 삭제 불가능
-         * */
         PaymentEventEntity paymentEventEntity = paymentEventEntityRepository.findByPaymentEventSeq(request.paymentEventSeq())
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
@@ -184,11 +167,6 @@ public class PaymentEventService {
 
     @Transactional(readOnly = true)
     public GetPaymentEventEntityOrderResponse getPaymentEventEntityOrder(Long paymentEventSeq) {
-        /*
-         * [예외 처리]
-         * 1. paymentEvent 유효성
-         * 2. 이미 결제 승인이 완료된 Event
-         * */
         PaymentEventEntity paymentEventEntity = paymentEventEntityRepository.findByPaymentEventSeq(paymentEventSeq)
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
