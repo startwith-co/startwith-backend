@@ -42,9 +42,7 @@ public class ConsumerController {
     @PostMapping(name = "수요 기업 가입")
     @Operation(summary = "join Consumer API", description = "수요 기업 가입 API")
     @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "요청에 성공하였습니다.",
+            @ApiResponse(responseCode = "200", description = "요청에 성공하였습니다.",
                     useReturnTypeSchema = true),
             @ApiResponse(
                     responseCode = "S500",
@@ -141,7 +139,7 @@ public class ConsumerController {
                     """
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "SUCCESS", content = @Content(mediaType = "application/json", schema = @Schema(oneOf = {PaymentEventResponse.GetREQUESTEDPaymentEventEntityResponse.class, PaymentEventResponse.GetCONFIRMEDPaymentEventEntityResponse.class}))),
+            @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_004", description = "존재하지 않는 수요 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
