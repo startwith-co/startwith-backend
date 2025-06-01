@@ -56,6 +56,8 @@ public class PaymentService {
 
     @Transactional
     public Mono<?> tossPaymentApproval(TossPaymentApprovalRequest request) {
+        log.info("tossPaymentApproval");
+
         PaymentEventEntity paymentEventEntity = paymentEventEntityRepository.findByPaymentEventSeq(request.paymentEventSeq())
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
@@ -192,6 +194,8 @@ public class PaymentService {
 
     @Transactional
     public void tossPaymentDepositCallBack(TossPaymentDepositCallBackRequest request) {
+        log.info("tossPaymentDepositCallBack");
+
         PaymentEntity paymentEntity = paymentEntityRepository.findBySecret(request.secret())
                 .orElseThrow(() -> new ServerException(
                         HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -229,6 +233,8 @@ public class PaymentService {
 
     @Transactional
     public void refundTossPaymentApprovalRequest(RefundTossPaymentApprovalRequest request) {
+        log.info("refundTossPaymentApprovalRequest");
+
         PaymentEntity paymentEntity = paymentEntityRepository.findByOrderId(request.orderId())
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
