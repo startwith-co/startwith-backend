@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import startwithco.startwithbackend.b2b.consumer.controller.response.ConsumerResponse;
 import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
 import startwithco.startwithbackend.b2b.consumer.repository.ConsumerRepository;
+import startwithco요.startwithbackend.b2b.vendor.controller.response.VendorResponse;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.ConflictException;
@@ -156,6 +157,18 @@ public class ConsumerService {
 
         return new LoginConsumerResponse(accessToken, refreshToken, consumerSeq);
 
+    }
+
+    public GetConsumerInfo getConsumerInfo(Long vendorSeq) {
+
+        ConsumerEntity consumerEntity = consumerRepository.findByConsumerSeq(vendorSeq)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 수요 기업입니다.",
+                        getCode("존재하지 않는 수요 기업입니다.", ExceptionType.NOT_FOUND)
+                ));
+
+        return GetConsumerInfo.fromEntity(consumerEntity);
     }
 
     private ConsumerEntity validateEmail(LoginConsumerRequest request) {
