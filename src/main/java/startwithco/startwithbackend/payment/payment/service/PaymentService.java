@@ -198,14 +198,33 @@ public class PaymentService {
                         "무통장 입금 전 결제가 저장되지 않았습니다.",
                         getCode("무통장 입금 전 결제가 저장되지 않았습니다.", ExceptionType.SERVER)
                 ));
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
-        LocalDateTime paymentCompletedAt = LocalDateTime.parse(request.createdAt(), formatter);
-        paymentEntity.updateSuccessStatus(paymentCompletedAt);
-        paymentEntityRepository.savePaymentEntity(paymentEntity);
-
         PaymentEventEntity paymentEventEntity = paymentEntity.getPaymentEventEntity();
-        paymentEventEntity.updatePaymentEventStatus(PAYMENT_EVENT_STATUS.CONFIRMED);
-        paymentEntityRepository.savePaymentEntity(paymentEntity);
+
+        switch (request.status()) {
+            case "EXPIRED", "ABORTED" -> {
+                paymentEntity.updateFailureStatus();
+                paymentEntityRepository.savePaymentEntity(paymentEntity);
+
+                paymentEventEntity.updatePaymentEventStatus(PAYMENT_EVENT_STATUS.FAILED);
+                paymentEventEntityRepository.savePaymentEventEntity(paymentEventEntity);
+            }
+            case "DONE" -> {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
+                LocalDateTime paymentCompletedAt = LocalDateTime.parse(request.createdAt(), formatter);
+                paymentEntity.updateSuccessStatus(paymentCompletedAt);
+                paymentEntityRepository.savePaymentEntity(paymentEntity);
+
+                paymentEventEntity.updatePaymentEventStatus(PAYMENT_EVENT_STATUS.CONFIRMED);
+                paymentEntityRepository.savePaymentEntity(paymentEntity);
+            }
+            case "CANCELED", "PARTIAL_CANCELED" -> {
+                paymentEntity.updatePaymentStatus(PAYMENT_STATUS.REFUNDED);
+                paymentEntityRepository.savePaymentEntity(paymentEntity);
+
+                paymentEventEntity.updatePaymentEventStatus(PAYMENT_EVENT_STATUS.CANCELLED);
+                paymentEventEntityRepository.savePaymentEventEntity(paymentEventEntity);
+            }
+        }
     }
 
     @Transactional

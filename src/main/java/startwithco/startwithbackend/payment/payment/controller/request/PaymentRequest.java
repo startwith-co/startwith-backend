@@ -4,6 +4,8 @@ import org.springframework.http.HttpStatus;
 import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
 
+import java.util.Set;
+
 import static io.micrometer.common.util.StringUtils.isBlank;
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.getCode;
 
@@ -36,6 +38,10 @@ public class PaymentRequest {
     }
 
     public record RefundTossPaymentApprovalRequest(
+            /*
+             * TODO
+             *  bankCode에 맞게 validate 처리
+             * */
             String orderId,
             String cancelReason,
             String bankCode,
@@ -63,6 +69,22 @@ public class PaymentRequest {
                         "요청 데이터 오류입니다.",
                         getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
                 );
+            }
+
+            if (bankCode != null) {
+                Set<String> validBankCodes = Set.of(
+                        "03", "04", "07", "11", "20", "23", "27", "31", "32", "34",
+                        "35", "37", "39", "45", "48", "50", "64", "71", "81", "88",
+                        "89", "90", "92"
+                );
+
+                if (!validBankCodes.contains(bankCode)) {
+                    throw new BadRequestException(
+                            HttpStatus.BAD_REQUEST.value(),
+                            "지원하지 않는 은행 코드입니다.",
+                            getCode("지원하지 않는 은행 코드입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                    );
+                }
             }
         }
     }
