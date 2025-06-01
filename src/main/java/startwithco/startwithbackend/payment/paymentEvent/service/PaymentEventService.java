@@ -122,7 +122,8 @@ public class PaymentEventService {
                     paymentEventEntity.getSolutionEntity().getCategory(),
                     paymentEventEntity.getActualAmount(),
                     paymentEventEntity.getPaymentEventStatus(),
-                    paymentEventEntity.getCreatedAt()
+                    paymentEventEntity.getCreatedAt(),
+                    paymentEventEntity.getCreatedAt().plusDays(1)
             );
         } else {
             return new GetREQUESTEDPaymentEventEntityResponse(

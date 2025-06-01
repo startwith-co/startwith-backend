@@ -32,7 +32,8 @@ public class PaymentEventResponse {
             CATEGORY category,
             Long amount,
             PAYMENT_EVENT_STATUS paymentEventStatus,
-            LocalDateTime createdAt
+            LocalDateTime createdAt,
+            LocalDateTime refundDueDate
     ) {
 
     }
