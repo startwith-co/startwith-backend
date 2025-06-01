@@ -10,9 +10,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
 import startwithco.startwithbackend.b2b.consumer.repository.ConsumerRepository;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
+import startwithco.startwithbackend.common.service.CommonService;
 import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.ConflictException;
 import startwithco.startwithbackend.exception.NotFoundException;
@@ -42,6 +44,7 @@ public class ConsumerService {
     private final SolutionReviewEntityRepository solutionReviewEntityRepository;
     private final RedisTemplate<String, String> redisTemplate;
     private final BCryptPasswordEncoder encoder;
+    private final CommonService commonService;
 
     @Value("${jwt.secret}")
     private String jwtSecret;
@@ -49,6 +52,28 @@ public class ConsumerService {
     private long accessTokenExpiration;
     @Value("${jwt.refreshTokenExpiration}")
     private long refreshTokenExpiration;
+
+    @Transactional
+    public void updateConsumer(UpdateConsumerInfoRequest request, MultipartFile consumerImageUrl) {
+        ConsumerEntity consumerEntity = consumerRepository.findByConsumerSeq(request.consumerSeq())
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 수요 기업입니다.",
+                        getCode("존재하지 않는 수요 기업입니다.", ExceptionType.NOT_FOUND)
+                ));
+
+        String uploadJPGFile = commonService.uploadJPGFile(consumerImageUrl);
+
+        consumerEntity.update(
+                request.consumerName(),
+                request.phoneNumber(),
+                request.email(),
+                request.industry(),
+                uploadJPGFile
+        );
+
+        consumerRepository.save(consumerEntity);
+    }
 
 
     @Transactional

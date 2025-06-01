@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest;
 import startwithco.startwithbackend.b2b.consumer.service.ConsumerService;
 import startwithco.startwithbackend.b2b.vendor.controller.request.VendorRequest;
@@ -203,6 +204,26 @@ public class ConsumerController {
         GetConsumerInfo response = consumerService.getConsumerInfo(consumerSeq);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
+    }
+
+    @PutMapping( name = "Consumer 업데이트")
+    @Operation(summary = "Consumer Update API", description = "Consumer Update API")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_004", description = "존재하지 않는 수요 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+    })
+    public ResponseEntity<BaseResponse<String>> updateConsumer(@Valid
+                                                             @RequestPart ConsumerRequest.UpdateConsumerInfoRequest request,
+                                                             @RequestPart("consumerImageUrl") MultipartFile consumerImageUrl) {
+
+        // DTO 유효성 검사
+        request.validateUpdateConsumerRequest(request);
+
+        consumerService.updateConsumer(request, consumerImageUrl);
+
+        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "success"));
     }
 
 }
