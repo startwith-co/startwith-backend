@@ -56,8 +56,6 @@ public class PaymentService {
 
     @Transactional
     public Mono<?> tossPaymentApproval(TossPaymentApprovalRequest request) {
-        log.info("tossPaymentApproval");
-
         PaymentEventEntity paymentEventEntity = paymentEventEntityRepository.findByPaymentEventSeq(request.paymentEventSeq())
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
@@ -194,8 +192,6 @@ public class PaymentService {
 
     @Transactional
     public void tossPaymentDepositCallBack(TossPaymentDepositCallBackRequest request) {
-        log.info("tossPaymentDepositCallBack");
-
         PaymentEntity paymentEntity = paymentEntityRepository.findBySecret(request.secret())
                 .orElseThrow(() -> new ServerException(
                         HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -209,7 +205,8 @@ public class PaymentService {
                 paymentEntity.updateFailureStatus();
                 paymentEntityRepository.savePaymentEntity(paymentEntity);
 
-                paymentEventEntity.updatePaymentEventStatus(PAYMENT_EVENT_STATUS.FAILED);
+                paymentEventEntity.updatePaymentEventStatus(PAYMENT_EVENT_STATUS.REQUESTED);
+                paymentEventEntity.updatePaymentEventOrderId(UUID.randomUUID().toString());
                 paymentEventEntityRepository.savePaymentEventEntity(paymentEventEntity);
             }
             case "DONE" -> {
@@ -233,13 +230,11 @@ public class PaymentService {
 
     @Transactional
     public void refundTossPaymentApprovalRequest(RefundTossPaymentApprovalRequest request) {
-        log.info("refundTossPaymentApprovalRequest");
-
         PaymentEntity paymentEntity = paymentEntityRepository.findByOrderId(request.orderId())
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
-                        "존재하지 않는 결제 요청입니다.",
-                        getCode("존재하지 않는 결제 요청입니다.", ExceptionType.NOT_FOUND)
+                        "존재하지 않는 결제입니다.",
+                        getCode("존재하지 않는 결제입니다.", ExceptionType.NOT_FOUND)
                 ));
         PaymentEventEntity paymentEventEntity = paymentEntity.getPaymentEventEntity();
 

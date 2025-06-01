@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -75,7 +74,9 @@ public class PaymentController {
                     3. 만약 결제 요청의 상태가 REQUEST가 아닐 경우 결제가 진행되지 않습니다.
                     4. paymentKey의 경우 SuccessURL에서 받은 값, orderId의 경우 결제 요청 조회에서 오는 orderId 값을 넘겨주시면 됩니다.
                     5. SERVER - TOSS 사이 간 orderId로 멱등성 처리가 돼 있습니다.
-                    6. 만약 결제 승인 오류가 나게 되면 중복 결제 방지를 위해 해당 결제의 PaymentEvent에 orderId가 새롭게 발급됩니다. 다시 결제하고자 한다면 결제 요청 조회 후 새로운 orderId로 결제 승인 해야합니다.
+                    6. 만약 결제 승인 오류가 나게 되면 중복 결제 방지를 위해 해당 결제의 PaymentEvent에 **orderId가 새롭게 발급**됩니다. 
+                    7. 결제 승인 과정에서 요청 시간 만료와 같은 상황으로 인해 결제 실패 처리가 될 수 있습니다.
+                    8. 따라서 **결제 승인하기 전 반드시 결제 요청 조회 후 확인된 orderId로 결제 승인 해야합니다.**
                     7. 카드 결제, 가상 계좌 결제 승인 모두 이 API를 사용하지만 Response의 method("카드", "가상계좌")에 따라 반환값이 다릅니다.
                     8. 카드 결제 Response: TossCardPaymentApprovalResponse, 가상 계좌 Response: TossVirtualAccountPaymentResponse 입니다.
                     9. 가상계좌 개발자 센터: https://docs.tosspayments.com/guides/v2/payment-window/integration-virtual-account
@@ -112,7 +113,7 @@ public class PaymentController {
                     1. 광클 방지를 위한 disable 처리해주세요.
                     2. 플랫폼 환불 정책 상 부분 환불은 불가능 합니다.
                     3. 환불의 경우 24이내 3가지(카드 결제 취소, 가상 계좌 입금 전, 가상 계좌 입금 후)가 존재합니다.
-                    4. 아래는 환불 가능한 결제 상태 입니다. (결제 승인된 결제 상태 확인 API를 통해 결제 승인된 데이터의 상태를 확인할 수 있습니다.)
+                    4. 아래는 환불 가능한 결제 상태 입니다. **결제 승인된 결제 상태 확인 API를 통해 결제 승인된 데이터의 상태를 확인할 수 있습니다.**
                         - 카드 결제: METHOD(CARD), PAYMENT_STATUS(SUCCESS), PAYMENT_EVENT_STATUS(CONFIRMED)
                         - 가상 계좌 입금 후: METHOD(VIRTUAL_ACCOUNT), PAYMENT_STATUS(SUCCESS), PAYMENT_EVENT_STATUS(CONFIRMED)
                         - 가상 계좌 입금 전: METHOD(VIRTUAL_ACCOUNT), PAYMENT_STATUS(IN_PROGRESS), PAYMENT_EVENT_STATUS(REQUESTED)
@@ -150,6 +151,8 @@ public class PaymentController {
             @ApiResponse(responseCode = "200", description = "SUCCESS", content = @Content(mediaType = "application/json", schema = @Schema(oneOf = {TossCardPaymentApprovalResponse.class, TossVirtualAccountPaymentResponse.class}))),
             @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "SERVER_EXCEPTION_009", description = "환불이 불가능한 결제입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_003", description = "존재하지 않는 결제입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
     public ResponseEntity<BaseResponse<String>> refundTossPaymentApproval(@RequestBody RefundTossPaymentApprovalRequest request) {
         request.validate();

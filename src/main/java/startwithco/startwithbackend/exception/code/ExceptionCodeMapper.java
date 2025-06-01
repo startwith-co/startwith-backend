@@ -47,6 +47,8 @@ public class ExceptionCodeMapper {
         SERVER_MAP.put("토스페이먼츠 결제 승인 실패", "SERVER_EXCEPTION_006");
         SERVER_MAP.put("WebClient 응답 에러가 발생했습니다.", "SERVER_EXCEPTION_007");
         SERVER_MAP.put("무통장 입금 전 결제가 저장되지 않았습니다.", "SERVER_EXCEPTION_008");
+        SERVER_MAP.put("환불이 불가능한 결제입니다.", "SERVER_EXCEPTION_009");
+
         // UnauthorizedException
     }
 

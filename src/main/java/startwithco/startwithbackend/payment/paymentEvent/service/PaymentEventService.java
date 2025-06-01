@@ -96,7 +96,7 @@ public class PaymentEventService {
 
         paymentEventEntityRepository.savePaymentEventEntity(paymentEventEntity);
 
-        return new SavePaymentEventEntityResponse(paymentEventEntity.getPaymentEventSeq());
+        return new SavePaymentEventEntityResponse(paymentEventEntity.getPaymentEventSeq(), paymentEventEntity.getOrderId());
     }
 
     @Transactional(readOnly = true)

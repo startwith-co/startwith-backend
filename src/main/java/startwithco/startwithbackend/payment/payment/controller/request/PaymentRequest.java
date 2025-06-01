@@ -38,10 +38,6 @@ public class PaymentRequest {
     }
 
     public record RefundTossPaymentApprovalRequest(
-            /*
-             * TODO
-             *  bankCode에 맞게 validate 처리
-             * */
             String orderId,
             String cancelReason,
             String bankCode,

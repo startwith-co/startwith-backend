@@ -40,9 +40,9 @@ public class PaymentEventController {
     @Operation(
             summary = "결제 요청하기 생성 API",
             description = """
-                    1. 광클 방지를 위한 disable 처리해주세요.\n
-                    2. amount는 1보다 작을 수 없습니다.\n
-                    3. 이전에 동일한 솔루션의 결제 승인이 완료되지 않았다면 결제 요청을 할 수 없습니다.\n
+                    1. 광클 방지를 위한 disable 처리해주세요.
+                    2. amount는 1보다 작을 수 없습니다.
+                    3. 이전에 동일한 솔루션의 결제 승인이 완료되지 않았다면 결제 요청을 할 수 없습니다.
                     """
     )
     @ApiResponses(value = {
@@ -59,7 +59,7 @@ public class PaymentEventController {
             @RequestPart(value = "contractConfirmationUrl", required = false) MultipartFile contractConfirmationUrl,
             @RequestPart(value = "refundPolicyUrl", required = false) MultipartFile refundPolicyUrl,
             @RequestPart SavePaymentEventRequest request
-    ) throws IOException {
+    ) {
         if (contractConfirmationUrl.isEmpty() || refundPolicyUrl.isEmpty()) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
