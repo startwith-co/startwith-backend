@@ -3,6 +3,8 @@ package startwithco.startwithbackend.payment.paymentEvent.controller.response;
 import startwithco.startwithbackend.payment.paymentEvent.util.PAYMENT_EVENT_STATUS;
 import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 
+import java.time.LocalDateTime;
+
 public class PaymentEventResponse {
     public record SavePaymentEventEntityResponse(
             Long paymentEventSeq
@@ -18,7 +20,8 @@ public class PaymentEventResponse {
             PAYMENT_EVENT_STATUS paymentEventStatus,
             String contractConfirmationUrl,
             String refundPolicyUrl,
-            String orderId
+            String orderId,
+            LocalDateTime createdAt
     ) {
 
     }
@@ -28,7 +31,8 @@ public class PaymentEventResponse {
             String paymentEventName,
             CATEGORY category,
             Long amount,
-            PAYMENT_EVENT_STATUS paymentEventStatus
+            PAYMENT_EVENT_STATUS paymentEventStatus,
+            LocalDateTime createdAt
     ) {
 
     }

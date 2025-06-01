@@ -134,7 +134,7 @@ public class ConsumerController {
             name = "수요 고객 대시보드 조회"
     )
     @Operation(
-            summary = "수요 고객 대시보드 조회 API",
+            summary = "수요 고객 대시보드 조회 API / 담당자(박종훈)",
             description = """
                     1. paymentEventStatus: CONFIRMED(구매 확정), SETTLED(정산 완료)
                     2. method: CARD(카드 결제), VIRTUAL_ACCOUNT(가상 계좌)

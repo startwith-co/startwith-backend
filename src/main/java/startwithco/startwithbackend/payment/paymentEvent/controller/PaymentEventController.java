@@ -16,7 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 import startwithco.startwithbackend.base.BaseResponse;
 import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.handler.GlobalExceptionHandler;
-import startwithco.startwithbackend.payment.payment.controller.response.PaymentResponse;
 import startwithco.startwithbackend.payment.paymentEvent.service.PaymentEventService;
 
 import java.io.IOException;
