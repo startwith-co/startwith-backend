@@ -14,6 +14,7 @@ import startwithco.startwithbackend.common.service.CommonService;
 import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.ConflictException;
 import startwithco.startwithbackend.exception.ServerException;
+import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
 import startwithco.startwithbackend.payment.payment.repository.PaymentEntityRepository;
 import startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS;
 import startwithco.startwithbackend.payment.paymentEvent.util.PAYMENT_EVENT_STATUS;
@@ -109,7 +110,7 @@ public class PaymentEventService {
 
         if (paymentEventEntity.getPaymentEventStatus() == PAYMENT_EVENT_STATUS.CONFIRMED ||
                 paymentEventEntity.getPaymentEventStatus() == PAYMENT_EVENT_STATUS.SETTLED) {
-            paymentEntityRepository.findSUCCESSByPaymentEventSeq(paymentEventSeq)
+            PaymentEntity paymentEntity = paymentEntityRepository.findSUCCESSByPaymentEventSeq(paymentEventSeq)
                     .orElseThrow(() -> new ServerException(
                             HttpStatus.INTERNAL_SERVER_ERROR.value(),
                             "구매 확정, 정산 완료 결제 요청이지만 결제 승인된 정보가 없습니다.",
@@ -123,7 +124,7 @@ public class PaymentEventService {
                     paymentEventEntity.getActualAmount(),
                     paymentEventEntity.getPaymentEventStatus(),
                     paymentEventEntity.getCreatedAt(),
-                    paymentEventEntity.getCreatedAt().plusDays(1)
+                    paymentEntity.getPaymentCompletedAt().plusDays(1)
             );
         } else {
             return new GetREQUESTEDPaymentEventEntityResponse(

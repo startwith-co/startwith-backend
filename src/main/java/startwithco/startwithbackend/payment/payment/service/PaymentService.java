@@ -36,6 +36,24 @@ public class PaymentService {
     private final PaymentEventEntityRepository paymentEventEntityRepository;
     private final CommonService commonService;
 
+    @Transactional(readOnly = true)
+    public GetTossPaymentApprovalResponse getTossPaymentApproval(String orderId) {
+        PaymentEntity paymentEntity = paymentEntityRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 결제 요청입니다.",
+                        getCode("존재하지 않는 결제 요청입니다.", ExceptionType.NOT_FOUND)
+                ));
+
+        return new GetTossPaymentApprovalResponse(
+                paymentEntity.getOrderId(),
+                paymentEntity.getAmount(),
+                paymentEntity.getPaymentEventEntity().getPaymentEventStatus(),
+                paymentEntity.getPaymentStatus(),
+                paymentEntity.getMethod()
+        );
+    }
+
     @Transactional
     public Mono<?> tossPaymentApproval(TossPaymentApprovalRequest request) {
         PaymentEventEntity paymentEventEntity = paymentEventEntityRepository.findByPaymentEventSeq(request.paymentEventSeq())
@@ -120,11 +138,10 @@ public class PaymentService {
                 } else if ("가상계좌".equals(method)) {
                     JsonNode vaNode = json.get("virtualAccount");
                     String requestedAtStr = json.get("requestedAt").asText();
-                    String dueDateStr = vaNode.get("dueDate").asText();
 
                     paymentEntity.updateMethod(METHOD.VIRTUAL_ACCOUNT);
                     paymentEntity.updateSecret(json.get("secret").asText());
-                    paymentEntity.updateDueDate(OffsetDateTime.parse(dueDateStr).toLocalDateTime());
+                    paymentEntity.updateDueDate(OffsetDateTime.parse(requestedAtStr).toLocalDateTime().plusDays(1));
                     paymentEntityRepository.savePaymentEntity(paymentEntity);
 
                     return Mono.just(new TossVirtualAccountPaymentResponse(
@@ -137,7 +154,7 @@ public class PaymentService {
                             vaNode.get("accountNumber").asText(),
                             vaNode.get("bankCode").asText(),
                             vaNode.get("customerName").asText(),
-                            OffsetDateTime.parse(dueDateStr).toLocalDateTime(),
+                            OffsetDateTime.parse(requestedAtStr).toLocalDateTime().plusDays(1),
                             json.has("cashReceipt") && json.get("cashReceipt").has("receiptUrl") ?
                                     json.get("cashReceipt").get("receiptUrl").asText() : null,
                             json.get("secret").asText(),
@@ -189,5 +206,56 @@ public class PaymentService {
         PaymentEventEntity paymentEventEntity = paymentEntity.getPaymentEventEntity();
         paymentEventEntity.updatePaymentEventStatus(PAYMENT_EVENT_STATUS.CONFIRMED);
         paymentEntityRepository.savePaymentEntity(paymentEntity);
+    }
+
+    @Transactional
+    public void refundTossPaymentApprovalRequest(RefundTossPaymentApprovalRequest request) {
+        PaymentEntity paymentEntity = paymentEntityRepository.findByOrderId(request.orderId())
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 결제 요청입니다.",
+                        getCode("존재하지 않는 결제 요청입니다.", ExceptionType.NOT_FOUND)
+                ));
+        PaymentEventEntity paymentEventEntity = paymentEntity.getPaymentEventEntity();
+
+        if (paymentEntity.getMethod().equals(METHOD.CARD) &&
+                paymentEntity.getPaymentStatus().equals(PAYMENT_STATUS.SUCCESS) &&
+                paymentEventEntity.getPaymentEventStatus().equals(PAYMENT_EVENT_STATUS.CONFIRMED)) {
+            // 1. 카드 결제 - 전액 환불 (환불 계좌 필요 없음)
+            commonService.cancelTossPaymentApproval(paymentEntity.getPaymentKey(), request.cancelReason(), null, null, null);
+
+            paymentEntity.updatePaymentStatus(PAYMENT_STATUS.REFUNDED);
+            paymentEntityRepository.savePaymentEntity(paymentEntity);
+
+            paymentEventEntity.updatePaymentEventStatus(PAYMENT_EVENT_STATUS.CANCELLED);
+            paymentEventEntityRepository.savePaymentEventEntity(paymentEventEntity);
+        } else if (paymentEntity.getMethod().equals(METHOD.VIRTUAL_ACCOUNT) &&
+                paymentEntity.getPaymentStatus().equals(PAYMENT_STATUS.SUCCESS) &&
+                paymentEventEntity.getPaymentEventStatus().equals(PAYMENT_EVENT_STATUS.CONFIRMED)) {
+            commonService.cancelTossPaymentApproval(paymentEntity.getPaymentKey(), request.cancelReason(), request.bankCode(), request.accountNumber(), request.holderName());
+
+            paymentEntity.updatePaymentStatus(PAYMENT_STATUS.REFUNDED);
+            paymentEntityRepository.savePaymentEntity(paymentEntity);
+
+            paymentEventEntity.updatePaymentEventStatus(PAYMENT_EVENT_STATUS.CANCELLED);
+            paymentEventEntityRepository.savePaymentEventEntity(paymentEventEntity);
+        } else if (paymentEntity.getMethod().equals(METHOD.VIRTUAL_ACCOUNT) &&
+                paymentEntity.getPaymentStatus().equals(PAYMENT_STATUS.IN_PROGRESS) &&
+                paymentEventEntity.getPaymentEventStatus().equals(PAYMENT_EVENT_STATUS.REQUESTED)) {
+            // 3. 가상 계좌 입금 전 - 환불 계좌 필요 없음
+            commonService.cancelTossPaymentApproval(paymentEntity.getPaymentKey(), request.cancelReason(), null, null, null);
+
+            paymentEntity.updatePaymentStatus(PAYMENT_STATUS.REFUNDED);
+            paymentEntityRepository.savePaymentEntity(paymentEntity);
+
+            paymentEventEntity.updatePaymentEventStatus(PAYMENT_EVENT_STATUS.CANCELLED);
+            paymentEventEntityRepository.savePaymentEventEntity(paymentEventEntity);
+        } else {
+            throw new BadRequestException(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "환불이 불가능한 결제입니다.",
+                    getCode("환불이 불가능한 결제입니다.", ExceptionType.BAD_REQUEST)
+            );
+        }
     }
 }

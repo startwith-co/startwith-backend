@@ -4,8 +4,6 @@ import org.springframework.http.HttpStatus;
 import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
 
-import java.time.LocalDateTime;
-
 import static io.micrometer.common.util.StringUtils.isBlank;
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.getCode;
 
@@ -35,5 +33,37 @@ public class PaymentRequest {
             String orderId
     ) {
 
+    }
+
+    public record RefundTossPaymentApprovalRequest(
+            String orderId,
+            String cancelReason,
+            String bankCode,
+            String accountNumber,
+            String holderName
+    ) {
+        public void validate() {
+            if (orderId == null || orderId.isEmpty()) {
+                throw new BadRequestException(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "요청 데이터 오류입니다.",
+                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                );
+            }
+
+            boolean hasAnyRefundAccountField =
+                    bankCode != null || accountNumber != null || holderName != null;
+
+            boolean hasAllRefundAccountFields =
+                    bankCode != null && accountNumber != null && holderName != null;
+
+            if (hasAnyRefundAccountField && !hasAllRefundAccountFields) {
+                throw new BadRequestException(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "요청 데이터 오류입니다.",
+                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                );
+            }
+        }
     }
 }

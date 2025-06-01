@@ -28,10 +28,10 @@ public class PaymentEntity extends BaseTimeEntity {
     @JoinColumn(name = "payment_event_seq", nullable = false)
     private PaymentEventEntity paymentEventEntity;
 
-    @Column(name = "order_id", nullable = false)
+    @Column(name = "order_id", nullable = false, unique = true)
     private String orderId;
 
-    @Column(name = "payment_key", nullable = false)
+    @Column(name = "payment_key", nullable = false, unique = true)
     private String paymentKey;
 
     @Column(name = "amount", nullable = false)
@@ -66,6 +66,7 @@ public class PaymentEntity extends BaseTimeEntity {
         this.paymentStatus = PAYMENT_STATUS.SUCCESS;
         this.paymentCompletedAt = paymentCompletedAt;
         this.autoConfirmScheduledAt = paymentCompletedAt.plusDays(7);
+        this.dueDate = paymentCompletedAt.plusDays(1);
     }
 
     public void updatePaymentStatus(PAYMENT_STATUS paymentStatus) {

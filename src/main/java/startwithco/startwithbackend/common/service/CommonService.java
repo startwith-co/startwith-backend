@@ -28,10 +28,12 @@ import reactor.core.publisher.Mono;
 import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.NotFoundException;
 import startwithco.startwithbackend.exception.ServerException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -110,7 +112,7 @@ public class CommonService {
         return tossPaymentWebClient.post()
                 .uri("/confirm")
                 .header(HttpHeaders.AUTHORIZATION, "Basic " + encodedSecretKey)
-                .header("Idempotency-Key", orderId)
+                .header("Idempotency-Key", paymentKey)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(Map.of(
                         "paymentKey", paymentKey,
@@ -147,10 +149,61 @@ public class CommonService {
                 });
     }
 
+    public Mono<JsonNode> cancelTossPaymentApproval(String paymentKey, String cancelReason,
+                                                    String bankCode, String accountNumber, String holderName) {
+        String encodedSecretKey = Base64.getEncoder()
+                .encodeToString((tossPaymentSecretKey + ":").getBytes(StandardCharsets.UTF_8));
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("cancelReason", cancelReason);
+
+        if (bankCode != null && accountNumber != null && holderName != null) {
+            Map<String, String> refundReceiveAccount = new HashMap<>();
+            refundReceiveAccount.put("bank", bankCode);
+            refundReceiveAccount.put("accountNumber", accountNumber);
+            refundReceiveAccount.put("holderName", holderName);
+            requestBody.put("refundReceiveAccount", refundReceiveAccount);
+        }
+
+        return tossPaymentWebClient.post()
+                .uri("/{paymentKey}/cancel", paymentKey)
+                .header(HttpHeaders.AUTHORIZATION, "Basic " + encodedSecretKey)
+                .header("Idempotency-Key", paymentKey)
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToMono(String.class)
+                .<JsonNode>handle((responseBody, sink) -> {
+                    try {
+                        sink.next(objectMapper.readTree(responseBody));
+                    } catch (Exception e) {
+                        sink.error(new ServerException(
+                                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                                "결제 응답 파싱 중 오류가 발생했습니다.",
+                                getCode("결제 응답 파싱 중 오류가 발생했습니다.", ExceptionType.SERVER)
+                        ));
+                    }
+                })
+                .doOnSuccess(json -> log.info("✅ 결제 취소 성공: {}", json))
+                .doOnError(WebClientResponseException.class, err -> {
+                    throw new ServerException(
+                            HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                            err.getMessage(),
+                            getCode(err.getMessage(), ExceptionType.SERVER)
+                    );
+                })
+                .onErrorResume(err -> {
+                    return Mono.error(new ServerException(
+                            HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                            err.getMessage(),
+                            getCode(err.getMessage(), ExceptionType.SERVER)
+                    ));
+                });
+    }
+
     public String sendAuthKey(String email) {
 
         Random random = new Random();
-        String authKey =  String.valueOf(random.nextInt(888888) + 111111);
+        String authKey = String.valueOf(random.nextInt(888888) + 111111);
 
         String subject = "Solu 이메일 인증번호";
 
@@ -188,7 +241,7 @@ public class CommonService {
     public void saveAuthKey(String email, String authKey, String type) {
         try {
             redisTemplate.opsForValue().set(
-                    email+type,
+                    email + type,
                     authKey,
                     300000,
                     TimeUnit.MILLISECONDS
@@ -203,11 +256,11 @@ public class CommonService {
 
     }
 
-    public void verifyCode(VerifyCodeRequest request,String type) {
+    public void verifyCode(VerifyCodeRequest request, String type) {
 
-        String code = redisTemplate.opsForValue().get(request.email()+type);
+        String code = redisTemplate.opsForValue().get(request.email() + type);
 
-        if(code == null) {
+        if (code == null) {
             throw new NotFoundException(
                     HttpStatus.NOT_FOUND.value(),
                     "존재하지 않는 코드입니다",
@@ -215,7 +268,7 @@ public class CommonService {
             );
         }
 
-        if(!code.equals(request.code())) {
+        if (!code.equals(request.code())) {
             throw new BadRequestException(
                     HttpStatus.NOT_FOUND.value(),
                     "인증코드가 일치하지 않습니다.",

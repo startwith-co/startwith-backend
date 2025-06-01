@@ -40,4 +40,9 @@ public class PaymentEntityRepositoryImpl implements PaymentEntityRepository {
     public Optional<PaymentEntity> findBySecret(String secret) {
         return repository.findBySecret(secret);
     }
+
+    @Override
+    public Optional<PaymentEntity> findByOrderId(String orderId) {
+        return repository.findByOrderId(orderId);
+    }
 }

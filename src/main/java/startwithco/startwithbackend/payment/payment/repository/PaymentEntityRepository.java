@@ -16,4 +16,6 @@ public interface PaymentEntityRepository {
     Optional<PaymentEntity> findINPROGRESSByPaymentEventSeq(Long paymentEventSeq);
 
     Optional<PaymentEntity> findBySecret(String secret);
+
+    Optional<PaymentEntity> findByOrderId(String orderId);
 }

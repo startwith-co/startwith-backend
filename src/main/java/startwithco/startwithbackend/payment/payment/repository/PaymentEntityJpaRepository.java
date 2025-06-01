@@ -58,4 +58,11 @@ public interface PaymentEntityJpaRepository extends JpaRepository<PaymentEntity,
             WHERE p.secret = :secret
             """)
     Optional<PaymentEntity> findBySecret(@Param("secret") String secret);
+
+    @Query("""
+            SELECT p
+            FROM PaymentEntity p
+            WHERE p.orderId = :orderId
+            """)
+    Optional<PaymentEntity> findByOrderId(@Param("orderId") String orderId);
 }
