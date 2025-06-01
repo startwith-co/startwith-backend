@@ -168,7 +168,7 @@ public class VendorService {
         // Refresh 토큰 저장
         saveRefreshToken(consumerSeq, refreshToken);
 
-        return new LoginVendorResponse(accessToken, refreshToken);
+        return new LoginVendorResponse(accessToken, refreshToken, vendorEntity.getVendorSeq());
     }
 
     private VendorEntity validateEmail(VendorRequest.LoginVendorRequest request) {
@@ -217,5 +217,17 @@ public class VendorService {
                     getCode("Redis 서버 오류가 발생했습니다.", ExceptionType.SERVER)
             );
         }
+    }
+
+    public GetVendorInfo getVendorInfo(Long vendorSeq) {
+
+        VendorEntity vendorEntity = vendorEntityRepository.findByVendorSeq(vendorSeq)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 벤더 기업입니다.",
+                        getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
+                ));
+
+        return GetVendorInfo.fromEntity(vendorEntity);
     }
 }

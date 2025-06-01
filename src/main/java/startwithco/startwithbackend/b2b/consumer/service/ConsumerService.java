@@ -154,7 +154,7 @@ public class ConsumerService {
         // Refresh 토큰 저장
         saveRefreshToken(consumerSeq, refreshToken);
 
-        return new LoginConsumerResponse(accessToken, refreshToken);
+        return new LoginConsumerResponse(accessToken, refreshToken, consumerSeq);
 
     }
 

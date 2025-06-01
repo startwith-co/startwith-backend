@@ -6,6 +6,7 @@ import startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequ
 import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
 
+import java.time.LocalTime;
 import java.util.Objects;
 
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.getCode;
