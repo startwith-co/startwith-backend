@@ -14,7 +14,6 @@ import startwithco.startwithbackend.common.service.CommonService;
 import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.ConflictException;
 import startwithco.startwithbackend.exception.ServerException;
-import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
 import startwithco.startwithbackend.payment.payment.repository.PaymentEntityRepository;
 import startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS;
 import startwithco.startwithbackend.payment.paymentEvent.util.PAYMENT_EVENT_STATUS;
@@ -25,7 +24,6 @@ import startwithco.startwithbackend.payment.paymentEvent.repository.PaymentEvent
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 import startwithco.startwithbackend.solution.solution.repository.SolutionEntityRepository;
 
-import java.io.IOException;
 import java.util.UUID;
 
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.*;
@@ -123,7 +121,9 @@ public class PaymentEventService {
                     paymentEventEntity.getPaymentEventName(),
                     paymentEventEntity.getSolutionEntity().getCategory(),
                     paymentEventEntity.getActualAmount(),
-                    paymentEventEntity.getPaymentEventStatus()
+                    paymentEventEntity.getPaymentEventStatus(),
+                    paymentEventEntity.getCreatedAt(),
+                    paymentEventEntity.getCreatedAt().plusDays(1)
             );
         } else {
             return new GetREQUESTEDPaymentEventEntityResponse(
@@ -134,7 +134,8 @@ public class PaymentEventService {
                     paymentEventEntity.getPaymentEventStatus(),
                     paymentEventEntity.getContractConfirmationUrl(),
                     paymentEventEntity.getRefundPolicyUrl(),
-                    paymentEventEntity.getOrderId()
+                    paymentEventEntity.getOrderId(),
+                    paymentEventEntity.getCreatedAt()
             );
         }
     }
