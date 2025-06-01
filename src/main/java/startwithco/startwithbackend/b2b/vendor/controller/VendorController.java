@@ -108,7 +108,7 @@ public class VendorController {
             @ApiResponse(responseCode = "SERVER_EXCEPTION_009", description = "이메일 전송 중 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
 
     })
-    public ResponseEntity<BaseResponse<String>> sendMail(@Valid @RequestBody VendorRequest.SendMailRequest request) {
+    public ResponseEntity<BaseResponse<String>> sendMail(@Valid @RequestBody SendMailRequest request) {
 
         // DTO 유효성 검사
         request.validateMailSendRequest(request);
@@ -247,7 +247,7 @@ public class VendorController {
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_007", description = "비밀번호가 일치하지 않습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "SERVER_EXCEPTION_010", description = "Redis 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
-    public ResponseEntity<BaseResponse<LoginVendorResponse>> loginConsumer(@Valid @RequestBody VendorRequest.LoginVendorRequest request) {
+    public ResponseEntity<BaseResponse<LoginVendorResponse>> loginVendor(@Valid @RequestBody LoginVendorRequest request) {
 
         // DTO 유효성 검사
         request.validateLoginVendorRequest(request);
@@ -280,5 +280,25 @@ public class VendorController {
         GetVendorInfo response = vendorService.getVendorInfo(vendorSeq);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
+    }
+
+    @PutMapping( name = "Vendor 업데이트")
+    @Operation(summary = "Vendor Update API", description = "Vendor Update API")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_001", description = "존재하지 않는 벤더 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class)))
+    })
+    public ResponseEntity<BaseResponse<String>> updateVendor(@Valid
+                                                                 @RequestPart UpdateVendorInfoRequest request,
+                                                                 @RequestPart("vendorBannerImageUrl") MultipartFile vendorBannerImageUrl) {
+
+        // DTO 유효성 검사
+        request.validateUpdateVendorRequest(request);
+
+        vendorService.updateVendor(request, vendorBannerImageUrl);
+
+        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "success"));
     }
 }

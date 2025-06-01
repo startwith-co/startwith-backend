@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import startwithco.startwithbackend.base.BaseTimeEntity;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity
@@ -118,4 +119,33 @@ public class VendorEntity extends BaseTimeEntity {
 
     @Column(name = "client_count", nullable = true)
     private Long clientCount;
+
+
+    public void update(String vendorName, String managerName, String phoneNumber, String email, boolean audit,
+                       String accountNumber, String bank, String vendorExplanation, String vendorBannerImageUrl,
+                       boolean weekdayAvailable, LocalTime weekdayStartTime, LocalTime weekdayEndTime,
+                       boolean weekendAvailable, LocalTime weekendStartTime, LocalTime weekendEndTime,
+                       boolean holidayAvailable, LocalTime holidayStartTime, LocalTime holidayEndTime,
+                       Long orderCount, Long clientCount) {
+        this.vendorName = vendorName;
+        this.managerName = managerName;
+        this.phoneNumber = phoneNumber;
+        this.email = email;
+        this.audit = audit;
+        this.accountNumber = accountNumber;
+        this.bank = bank;
+        this.vendorExplanation = vendorExplanation;
+        this.vendorBannerImageUrl = vendorBannerImageUrl;
+        this.weekdayAvailable = weekdayAvailable;
+        this.weekdayStartTime = weekdayStartTime;
+        this.weekdayEndTime = weekdayEndTime;
+        this.weekendAvailable = weekendAvailable;
+        this.weekendStartTime = weekendStartTime;
+        this.weekendEndTime = weekendEndTime;
+        this.holidayAvailable = holidayAvailable;
+        this.holidayStartTime = holidayStartTime;
+        this.holidayEndTime = holidayEndTime;
+        this.orderCount = orderCount;
+        this.clientCount = clientCount;
+    }
 }
