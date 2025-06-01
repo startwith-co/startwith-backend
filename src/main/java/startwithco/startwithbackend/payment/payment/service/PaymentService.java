@@ -118,13 +118,14 @@ public class PaymentService {
                             json.get("receipt").get("url").asText()
                     ));
                 } else if ("가상계좌".equals(method)) {
-                    paymentEntity.updateMethod(METHOD.VIRTUAL_ACCOUNT);
-                    paymentEntity.updateSecret(json.get("secret").asText());
-                    paymentEntityRepository.savePaymentEntity(paymentEntity);
-
                     JsonNode vaNode = json.get("virtualAccount");
                     String requestedAtStr = json.get("requestedAt").asText();
                     String dueDateStr = vaNode.get("dueDate").asText();
+
+                    paymentEntity.updateMethod(METHOD.VIRTUAL_ACCOUNT);
+                    paymentEntity.updateSecret(json.get("secret").asText());
+                    paymentEntity.updateDueDate(OffsetDateTime.parse(dueDateStr).toLocalDateTime());
+                    paymentEntityRepository.savePaymentEntity(paymentEntity);
 
                     return Mono.just(new TossVirtualAccountPaymentResponse(
                             json.get("orderId").asText(),

@@ -54,6 +54,9 @@ public class PaymentEntity extends BaseTimeEntity {
     @Column(name = "auto_confirm_scheduled_at", nullable = true)
     private LocalDateTime autoConfirmScheduledAt;
 
+    @Column(name = "due_date", nullable = true)
+    private LocalDateTime dueDate;
+
     public void updateFailureStatus() {
         this.paymentStatus = PAYMENT_STATUS.FAILURE;
         this.paymentCompletedAt = null;
@@ -75,5 +78,9 @@ public class PaymentEntity extends BaseTimeEntity {
 
     public void updateSecret(String secret) {
         this.secret = secret;
+    }
+
+    public void updateDueDate(LocalDateTime dueDate) {
+        this.dueDate = dueDate;
     }
 }
