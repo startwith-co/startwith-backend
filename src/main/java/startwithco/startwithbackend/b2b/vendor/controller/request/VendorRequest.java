@@ -3,6 +3,8 @@ package startwithco.startwithbackend.b2b.vendor.controller.request;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.multipart.MultipartFile;
 import startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest;
+import startwithco.startwithbackend.b2b.vendor.controller.response.VendorResponse;
+import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
 
@@ -103,6 +105,40 @@ public class VendorRequest {
         public void validateLoginVendorRequest(VendorRequest.LoginVendorRequest request) {
 
             if (request.email == null || request.password == null) {
+                throw new BadRequestException(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "요청 데이터 오류입니다.",
+                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                );
+            }
+        }
+    }
+
+    public record UpdateVendorInfoRequest(
+            Long vendorSeq,
+            String vendorName,
+            String managerName,
+            String phoneNumber,
+            String email,
+            boolean audit,
+            String accountNumber,
+            String bank,
+            String vendorExplanation,
+//            String vendorBannerImageUrl,
+            boolean weekdayAvailable,
+            LocalTime weekdayStartTime,
+            LocalTime weekdayEndTime,
+            boolean weekendAvailable,
+            LocalTime weekendStartTime,
+            LocalTime weekendEndTime,
+            boolean holidayAvailable,
+            LocalTime holidayStartTime,
+            LocalTime holidayEndTime,
+            Long orderCount,
+            Long clientCount
+    ) {
+        public void validateUpdateVendorRequest(UpdateVendorInfoRequest request) {
+            if(request.vendorSeq == null) {
                 throw new BadRequestException(
                         HttpStatus.BAD_REQUEST.value(),
                         "요청 데이터 오류입니다.",

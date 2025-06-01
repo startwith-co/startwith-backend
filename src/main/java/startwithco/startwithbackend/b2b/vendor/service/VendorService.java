@@ -26,6 +26,7 @@ import startwithco.startwithbackend.payment.paymentEvent.repository.PaymentEvent
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 import startwithco.startwithbackend.solution.solution.repository.SolutionEntityRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -229,5 +230,41 @@ public class VendorService {
                 ));
 
         return GetVendorInfo.fromEntity(vendorEntity);
+    }
+
+    public void updateVendor(UpdateVendorInfoRequest request, MultipartFile vendorBannerImageUrl) {
+        VendorEntity vendorEntity = vendorEntityRepository.findByVendorSeq(request.vendorSeq())
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 벤더 기업입니다.",
+                        getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
+                ));
+
+        String uploadJPGFile = commonService.uploadJPGFile(vendorBannerImageUrl);
+
+        vendorEntity.update(
+                request.vendorName(),
+                request.managerName(),
+                request.phoneNumber(),
+                request.email(),
+                request.audit(),
+                request.accountNumber(),
+                request.bank(),
+                request.vendorExplanation(),
+                uploadJPGFile,
+                request.weekdayAvailable(),
+                request.weekdayStartTime(),
+                request.weekdayEndTime(),
+                request.weekendAvailable(),
+                request.weekendStartTime(),
+                request.weekendEndTime(),
+                request.holidayAvailable(),
+                request.holidayStartTime(),
+                request.holidayEndTime(),
+                request.orderCount(),
+                request.clientCount()
+        );
+
+         vendorEntityRepository.save(vendorEntity);
     }
 }
