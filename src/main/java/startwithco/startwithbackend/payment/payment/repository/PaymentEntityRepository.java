@@ -13,4 +13,10 @@ public interface PaymentEntityRepository {
     Optional<PaymentEntity> findBySecret(String secret);
 
     Optional<PaymentEntity> findByOrderId(String orderId);
+
+    List<PaymentEntity> findAllByConsumerSeqAndPaymentStatus(Long consumerSeq, String paymentStatus, int start, int end);
+
+    Long countDONEStatusByVendorSeq(Long vendorSeq);
+
+    Long countSETTLEDStatusByVendorSeq(Long vendorSeq);
 }

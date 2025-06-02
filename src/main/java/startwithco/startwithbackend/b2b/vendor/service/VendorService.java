@@ -20,6 +20,7 @@ import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.ConflictException;
 import startwithco.startwithbackend.exception.NotFoundException;
 import startwithco.startwithbackend.exception.ServerException;
+import startwithco.startwithbackend.payment.payment.repository.PaymentEntityRepository;
 import startwithco.startwithbackend.payment.paymentEvent.repository.PaymentEventEntityRepository;
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 import startwithco.startwithbackend.solution.solution.repository.SolutionEntityRepository;
@@ -40,6 +41,7 @@ import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.ge
 public class VendorService {
     private final VendorEntityRepository vendorEntityRepository;
     private final SolutionEntityRepository solutionEntityRepository;
+    private final PaymentEntityRepository paymentEntityRepository;
     private final CommonService commonService;
     private final BCryptPasswordEncoder encoder;
     private final RedisTemplate<String, String> redisTemplate;
@@ -233,6 +235,23 @@ public class VendorService {
                 request.clientCount()
         );
 
-         vendorEntityRepository.save(vendorEntity);
+        vendorEntityRepository.save(vendorEntity);
+    }
+
+    @Transactional(readOnly = true)
+    public GetVendorDashboardResponse getVendorDashboard(Long vendorSeq) {
+        VendorEntity vendorEntity = vendorEntityRepository.findByVendorSeq(vendorSeq)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 벤더 기업입니다.",
+                        getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
+                ));
+
+        return new GetVendorDashboardResponse(
+                vendorEntity.getVendorSeq(),
+                paymentEntityRepository.countDONEStatusByVendorSeq(vendorEntity.getVendorSeq()),
+                paymentEntityRepository.countDONEStatusByVendorSeq(vendorEntity.getVendorSeq()),
+                paymentEntityRepository.countSETTLEDStatusByVendorSeq(vendorEntity.getVendorSeq())
+        );
     }
 }

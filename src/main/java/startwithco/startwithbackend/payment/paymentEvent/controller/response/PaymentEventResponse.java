@@ -18,8 +18,7 @@ public class PaymentEventResponse {
             Long amount,
             String contractConfirmationUrl,
             String refundPolicyUrl,
-            LocalDateTime createdAt,
-            Boolean isCanceled
+            LocalDateTime createdAt
     ) {
 
     }

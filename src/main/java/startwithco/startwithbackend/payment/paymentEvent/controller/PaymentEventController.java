@@ -111,33 +111,6 @@ public class PaymentEventController {
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
     }
 
-    @DeleteMapping(
-            name = "결제 요청 취소"
-    )
-    @Operation(
-            summary = "결제 요청 취소 API",
-            description = """
-                    1. 광클 방지를 위한 disable 처리해주세요.
-                    2. 해당 결제 요청이 이미 결제 승인 완료면 결제 요청 취소가 불가능합니다.
-                    """
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
-            @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_002", description = "존재하지 않는 결제 요청입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-    })
-    public ResponseEntity<BaseResponse<String>> deletePaymentEventEntity(
-            @Valid
-            @RequestBody DeletePaymentEventRequest request
-    ) {
-        request.validate();
-
-        paymentEventService.deletePaymentEventEntity(request);
-
-        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SUCCESS"));
-    }
-
     @GetMapping(
             value = "/order",
             name = "결제하기 후 주문내역"

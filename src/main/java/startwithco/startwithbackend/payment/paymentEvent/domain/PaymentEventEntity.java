@@ -51,11 +51,4 @@ public class PaymentEventEntity extends BaseTimeEntity {
 
     @Column(name = "refund_policy_url", nullable = false)
     private String refundPolicyUrl;
-
-    @Column(name = "is_canceled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
-    private Boolean isCanceled = false;
-
-    public void updateIsCanceled(Boolean isCanceled) {
-        this.isCanceled = isCanceled;
-    }
 }

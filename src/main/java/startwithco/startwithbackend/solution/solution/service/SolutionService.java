@@ -229,7 +229,9 @@ public class SolutionService {
         for (SolutionEntity solutionEntity : solutionEntities) {
             VendorEntity vendorEntity = solutionEntity.getVendorEntity();
             Long countSolutionReview = solutionReviewEntityRepository.countBySolutionSeq(solutionEntity.getSolutionSeq());
-            Double averageStar = solutionReviewEntityRepository.averageBySolutionSeq(solutionEntity.getSolutionSeq());
+            Double averageStar = Optional.ofNullable(
+                    solutionReviewEntityRepository.averageBySolutionSeq(solutionEntity.getSolutionSeq())
+            ).orElse(0.0);
 
             response.add(new GetAllSolutionEntityResponse(
                     solutionEntity.getSolutionSeq(),

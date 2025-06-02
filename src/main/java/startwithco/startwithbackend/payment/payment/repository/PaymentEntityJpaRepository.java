@@ -35,4 +35,20 @@ public interface PaymentEntityJpaRepository extends JpaRepository<PaymentEntity,
             WHERE p.orderId = :orderId
             """)
     Optional<PaymentEntity> findByOrderId(@Param("orderId") String orderId);
+
+    @Query("""
+            SELECT COUNT(p)
+            FROM PaymentEntity p
+            WHERE p.paymentEventEntity.vendorEntity.vendorSeq = :vendorSeq
+              AND p.paymentStatus = 'DONE'
+            """)
+    Long countDONEStatusByVendorSeq(@Param("vendorSeq") Long vendorSeq);
+
+    @Query("""
+            SELECT COUNT(p)
+            FROM PaymentEntity p
+            WHERE p.paymentEventEntity.vendorEntity.vendorSeq = :vendorSeq
+              AND p.paymentStatus = 'SETTLED'
+            """)
+    Long countSETTLEDStatusByVendorSeq(Long vendorSeq);
 }

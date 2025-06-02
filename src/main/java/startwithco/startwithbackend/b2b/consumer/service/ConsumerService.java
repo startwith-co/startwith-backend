@@ -13,13 +13,21 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
 import startwithco.startwithbackend.b2b.consumer.repository.ConsumerRepository;
+import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.common.service.CommonService;
 import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.ConflictException;
 import startwithco.startwithbackend.exception.NotFoundException;
 import startwithco.startwithbackend.exception.ServerException;
+import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
+import startwithco.startwithbackend.payment.payment.repository.PaymentEntityRepository;
+import startwithco.startwithbackend.payment.paymentEvent.domain.PaymentEventEntity;
+import startwithco.startwithbackend.solution.review.repository.SolutionReviewEntityRepository;
+import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest.*;
@@ -30,6 +38,9 @@ import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.*;
 @RequiredArgsConstructor
 public class ConsumerService {
     private final ConsumerRepository consumerRepository;
+    private final PaymentEntityRepository paymentEntityRepository;
+    private final SolutionReviewEntityRepository solutionReviewEntityRepository;
+
     private final RedisTemplate<String, String> redisTemplate;
     private final BCryptPasswordEncoder encoder;
     private final CommonService commonService;
@@ -150,7 +161,7 @@ public class ConsumerService {
                         HttpStatus.NOT_FOUND.value(),
                         "존재하지 않는 이메일 입니다.",
                         getCode("존재하지 않는 이메일 입니다.", ExceptionType.NOT_FOUND
-                )));
+                        )));
     }
 
     private void validatePassword(LoginConsumerRequest request, ConsumerEntity consumerEntity) {
@@ -189,5 +200,39 @@ public class ConsumerService {
                     getCode("Redis 서버 오류가 발생했습니다.", ExceptionType.SERVER)
             );
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetConsumerDashboardResponse> getConsumerDashboard(Long consumerSeq, String paymentStatus, int start, int end) {
+        ConsumerEntity consumerEntity = consumerRepository.findByConsumerSeq(consumerSeq)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 수요 기업입니다.",
+                        getCode("존재하지 않는 수요 기업입니다.", ExceptionType.NOT_FOUND)
+                ));
+
+        List<PaymentEntity> paymentEntities
+                = paymentEntityRepository.findAllByConsumerSeqAndPaymentStatus(consumerSeq, paymentStatus, start, end);
+        List<GetConsumerDashboardResponse> response = new ArrayList<>();
+        for (PaymentEntity paymentEntity : paymentEntities) {
+            PaymentEventEntity paymentEventEntity = paymentEntity.getPaymentEventEntity();
+            SolutionEntity solutionEntity = paymentEventEntity.getSolutionEntity();
+            VendorEntity vendorEntity = paymentEventEntity.getVendorEntity();
+
+            response.add(new GetConsumerDashboardResponse(
+                    consumerEntity.getConsumerSeq(),
+                    paymentEntity.getPaymentStatus(),
+                    paymentEntity.getPaymentCompletedAt(),
+                    solutionEntity.getRepresentImageUrl(),
+                    vendorEntity.getVendorName(),
+                    solutionEntity.getSolutionSeq(),
+                    solutionEntity.getSolutionName(),
+                    paymentEntity.getMethod(),
+                    paymentEntity.getAmount(),
+                    solutionReviewEntityRepository.existsByConsumerSeqAndSolutionSeq(consumerSeq, solutionEntity.getSolutionSeq())
+            ));
+        }
+
+        return response;
     }
 }
