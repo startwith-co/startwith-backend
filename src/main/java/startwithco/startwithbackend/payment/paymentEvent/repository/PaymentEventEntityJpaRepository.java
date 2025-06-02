@@ -15,55 +15,19 @@ public interface PaymentEventEntityJpaRepository extends JpaRepository<PaymentEv
                 SELECT pe
                 FROM PaymentEventEntity pe
                 WHERE pe.paymentEventSeq = :paymentEventSeq
+                  AND pe.isCanceled = false
             """)
     Optional<PaymentEventEntity> findByPaymentEventSeq(@Param("paymentEventSeq") Long paymentEventSeq);
 
     @Query("""
-                SELECT CASE
-                         WHEN COUNT(pe) = 0 THEN true
-                         ELSE false
-                         END
+                SELECT pe, p
                 FROM PaymentEventEntity pe
+                LEFT JOIN PaymentEntity p ON p.paymentEventEntity = pe
                 WHERE pe.consumerEntity.consumerSeq = :consumerSeq
                   AND pe.vendorEntity.vendorSeq = :vendorSeq
-                  AND pe.solutionEntity.solutionSeq = :solutionSeq
-                  AND pe.paymentEventStatus = 'REQUESTED'
             """)
-    boolean canSavePaymentEventEntity(
+    List<Object[]> findAllByConsumerSeqAndVendorSeq(
             @Param("consumerSeq") Long consumerSeq,
-            @Param("vendorSeq") Long vendorSeq,
-            @Param("solutionSeq") Long solutionSeq
+            @Param("vendorSeq") Long vendorSeq
     );
-
-    @Query("""
-                SELECT COUNT(*)
-                FROM PaymentEventEntity pe
-                WHERE pe.vendorEntity.vendorSeq = :vendorSeq
-                  AND pe.paymentEventStatus = 'REQUESTED'
-            """)
-    Long countREQUESTEDPaymentEntityByVendorSeq(@Param("vendorSeq") Long vendorSeq);
-
-    @Query("""
-                SELECT COUNT(*)
-                FROM PaymentEventEntity pe
-                WHERE pe.vendorEntity.vendorSeq = :vendorSeq
-                  AND pe.paymentEventStatus = 'CONFIRMED'
-            """)
-    Long countCONFIRMEDPaymentEntityByVendorSeq(@Param("vendorSeq") Long vendorSeq);
-
-    @Query("""
-                SELECT COUNT(*)
-                FROM PaymentEventEntity pe
-                WHERE pe.vendorEntity.vendorSeq = :vendorSeq
-                  AND pe.paymentEventStatus = 'SETTLED'
-            """)
-    Long countSETTLEDPaymentEntityByVendorSeq(@Param("vendorSeq") Long vendorSeq);
-
-    @Query("""
-                SELECT pe
-                FROM PaymentEventEntity pe
-                WHERE pe.consumerEntity.consumerSeq = :consumerSeq
-                  AND (pe.paymentEventStatus = 'CONFIRMED' OR pe.paymentEventStatus = 'SETTLED')
-            """)
-    List<PaymentEventEntity> findAllByConsumerSeq(@Param("consumerSeq") Long consumerSeq);
 }

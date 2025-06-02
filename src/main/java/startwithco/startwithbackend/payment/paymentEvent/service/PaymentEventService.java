@@ -2,6 +2,7 @@ package startwithco.startwithbackend.payment.paymentEvent.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,13 +12,9 @@ import startwithco.startwithbackend.b2b.consumer.repository.ConsumerRepository;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.b2b.vendor.repository.VendorEntityRepository;
 import startwithco.startwithbackend.common.service.CommonService;
-import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.ConflictException;
-import startwithco.startwithbackend.exception.ServerException;
 import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
-import startwithco.startwithbackend.payment.payment.repository.PaymentEntityRepository;
 import startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS;
-import startwithco.startwithbackend.payment.paymentEvent.util.PAYMENT_EVENT_STATUS;
 import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 import startwithco.startwithbackend.exception.NotFoundException;
 import startwithco.startwithbackend.payment.paymentEvent.domain.PaymentEventEntity;
@@ -25,7 +22,8 @@ import startwithco.startwithbackend.payment.paymentEvent.repository.PaymentEvent
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 import startwithco.startwithbackend.solution.solution.repository.SolutionEntityRepository;
 
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
 
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.*;
 import static startwithco.startwithbackend.payment.paymentEvent.controller.request.PaymentEventRequest.*;
@@ -36,7 +34,6 @@ import static startwithco.startwithbackend.payment.paymentEvent.controller.respo
 @Slf4j
 public class PaymentEventService {
     private final PaymentEventEntityRepository paymentEventEntityRepository;
-    private final PaymentEntityRepository paymentEntityRepository;
     private final SolutionEntityRepository solutionEntityRepository;
     private final VendorEntityRepository vendorEntityRepository;
     private final ConsumerRepository consumerRepository;
@@ -66,79 +63,83 @@ public class PaymentEventService {
                         "존재하지 않는 수요 기업입니다.",
                         getCode("존재하지 않는 수요 기업입니다.", ExceptionType.NOT_FOUND)
                 ));
-        if (!paymentEventEntityRepository.canSavePaymentEventEntity(request.consumerSeq(), request.vendorSeq(), solutionEntity.getSolutionSeq())) {
-            throw new ConflictException(
-                    HttpStatus.CONFLICT.value(),
-                    "이미 동일한 솔루션에 대한 결제 요청이 진행 중입니다.",
-                    getCode("이미 동일한 솔루션에 대한 결제 요청이 진행 중입니다.", ExceptionType.CONFLICT)
-            );
-        }
 
         String s3ContractConfirmationUrl = commonService.uploadPDFFile(contractConfirmationUrl);
         String s3RefundPolicyUrl = commonService.uploadPDFFile(refundPolicyUrl);
-        String orderId = UUID.randomUUID().toString();
         Long tax = (long) (request.amount() * 0.1);
         Long actualAmount = request.amount() + tax;
 
-        PaymentEventEntity paymentEventEntity = PaymentEventEntity.builder()
-                .vendorEntity(vendorEntity)
-                .consumerEntity(consumerEntity)
-                .solutionEntity(solutionEntity)
-                .paymentEventName(request.paymentEventName())
-                .amount(request.amount())
-                .tax(tax)
-                .actualAmount(actualAmount)
-                .contractConfirmationUrl(s3ContractConfirmationUrl)
-                .refundPolicyUrl(s3RefundPolicyUrl)
-                .paymentEventStatus(PAYMENT_EVENT_STATUS.REQUESTED)
-                .orderId(orderId)
-                .build();
+        try {
+            PaymentEventEntity paymentEventEntity = PaymentEventEntity.builder()
+                    .vendorEntity(vendorEntity)
+                    .consumerEntity(consumerEntity)
+                    .solutionEntity(solutionEntity)
+                    .paymentEventName(request.paymentEventName())
+                    .amount(request.amount())
+                    .tax(tax)
+                    .actualAmount(actualAmount)
+                    .contractConfirmationUrl(s3ContractConfirmationUrl)
+                    .refundPolicyUrl(s3RefundPolicyUrl)
+                    .isCanceled(false)
+                    .build();
 
-        paymentEventEntityRepository.savePaymentEventEntity(paymentEventEntity);
+            paymentEventEntityRepository.savePaymentEventEntity(paymentEventEntity);
 
-        return new SavePaymentEventEntityResponse(paymentEventEntity.getPaymentEventSeq(), paymentEventEntity.getOrderId());
+            return new SavePaymentEventEntityResponse(paymentEventEntity.getPaymentEventSeq());
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException(
+                    HttpStatus.CONTINUE.value(),
+                    "동시성 저장은 불가능합니다.",
+                    getCode("동시성 저장은 불가능합니다.", ExceptionType.CONFLICT)
+            );
+        }
     }
 
     @Transactional(readOnly = true)
-    public Object getPaymentEventEntity(Long paymentEventSeq) {
-        PaymentEventEntity paymentEventEntity = paymentEventEntityRepository.findByPaymentEventSeq(paymentEventSeq)
+    public List<Object> getPaymentEventEntity(Long consumerSeq, Long vendorSeq) {
+        vendorEntityRepository.findByVendorSeq(vendorSeq)
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
-                        "존재하지 않는 결제 요청입니다.",
-                        getCode("존재하지 않는 결제 요청입니다.", ExceptionType.NOT_FOUND)
+                        "존재하지 않는 벤더 기업입니다.",
+                        getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
+                ));
+        consumerRepository.findByConsumerSeq(consumerSeq)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 수요 기업입니다.",
+                        getCode("존재하지 않는 수요 기업입니다.", ExceptionType.NOT_FOUND)
                 ));
 
-        if (paymentEventEntity.getPaymentEventStatus() == PAYMENT_EVENT_STATUS.CONFIRMED ||
-                paymentEventEntity.getPaymentEventStatus() == PAYMENT_EVENT_STATUS.SETTLED) {
-            PaymentEntity paymentEntity = paymentEntityRepository.findSUCCESSByPaymentEventSeq(paymentEventSeq)
-                    .orElseThrow(() -> new ServerException(
-                            HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                            "구매 확정, 정산 완료 결제 요청이지만 결제 승인된 정보가 없습니다.",
-                            getCode("구매 확정, 정산 완료 결제 요청이지만 결제 승인된 정보가 없습니다.", ExceptionType.SERVER)
-                    ));
+        List<Object[]> rows = paymentEventEntityRepository.findAllByConsumerSeqAndVendorSeq(consumerSeq, vendorSeq);
+        List<Object> result = new ArrayList<>();
+        for (Object[] row : rows) {
+            PaymentEventEntity event = (PaymentEventEntity) row[0];
+            PaymentEntity payment = (PaymentEntity) row[1];
 
-            return new GetCONFIRMEDPaymentEventEntityResponse(
-                    paymentEventEntity.getPaymentEventSeq(),
-                    paymentEventEntity.getPaymentEventName(),
-                    paymentEventEntity.getSolutionEntity().getCategory(),
-                    paymentEventEntity.getActualAmount(),
-                    paymentEventEntity.getPaymentEventStatus(),
-                    paymentEventEntity.getCreatedAt(),
-                    paymentEntity.getPaymentCompletedAt().plusDays(1)
-            );
-        } else {
-            return new GetREQUESTEDPaymentEventEntityResponse(
-                    paymentEventEntity.getPaymentEventSeq(),
-                    paymentEventEntity.getPaymentEventName(),
-                    paymentEventEntity.getSolutionEntity().getCategory(),
-                    paymentEventEntity.getAmount(),
-                    paymentEventEntity.getPaymentEventStatus(),
-                    paymentEventEntity.getContractConfirmationUrl(),
-                    paymentEventEntity.getRefundPolicyUrl(),
-                    paymentEventEntity.getOrderId(),
-                    paymentEventEntity.getCreatedAt()
-            );
+            if (payment != null && payment.getPaymentStatus() == PAYMENT_STATUS.DONE) {
+                result.add(new GetCONFIRMEDPaymentEventEntityResponse(
+                        event.getPaymentEventSeq(),
+                        event.getPaymentEventName(),
+                        event.getSolutionEntity().getCategory(),
+                        payment.getAmount(),
+                        event.getCreatedAt(),
+                        payment.getDueDate()
+                ));
+            } else {
+                result.add(new GetREQUESTEDPaymentEventEntityResponse(
+                        event.getPaymentEventSeq(),
+                        event.getPaymentEventName(),
+                        event.getSolutionEntity().getCategory(),
+                        event.getAmount(),
+                        event.getContractConfirmationUrl(),
+                        event.getRefundPolicyUrl(),
+                        event.getCreatedAt(),
+                        event.getIsCanceled()
+                ));
+            }
         }
+
+        return result;
     }
 
     @Transactional
@@ -149,21 +150,8 @@ public class PaymentEventService {
                         "존재하지 않는 결제 요청입니다.",
                         getCode("존재하지 않는 결제 요청입니다.", ExceptionType.NOT_FOUND)
                 ));
-        paymentEntityRepository.findSUCCESSByPaymentEventSeq(request.paymentEventSeq())
-                .ifPresent(entity -> {
-                    throw new BadRequestException(
-                            HttpStatus.BAD_REQUEST.value(),
-                            "이미 결제 승인된 결제 요청입니다.",
-                            getCode("이미 결제 승인된 결제 요청입니다.", ExceptionType.BAD_REQUEST)
-                    );
-                });
-        paymentEntityRepository.findINPROGRESSByPaymentEventSeq(request.paymentEventSeq())
-                .ifPresent(paymentEntity -> {
-                    paymentEntity.updatePaymentStatus(PAYMENT_STATUS.CANCELLED);
-                    paymentEntityRepository.savePaymentEntity(paymentEntity);
-                });
 
-        paymentEventEntity.updatePaymentEventStatus(PAYMENT_EVENT_STATUS.CANCELLED);
+        paymentEventEntity.updateIsCanceled(true);
         paymentEventEntityRepository.savePaymentEventEntity(paymentEventEntity);
     }
 
@@ -175,13 +163,6 @@ public class PaymentEventService {
                         "존재하지 않는 결제 요청입니다.",
                         getCode("존재하지 않는 결제 요청입니다.", ExceptionType.NOT_FOUND)
                 ));
-        if (paymentEventEntity.getPaymentEventStatus() != PAYMENT_EVENT_STATUS.REQUESTED) {
-            throw new BadRequestException(
-                    HttpStatus.BAD_REQUEST.value(),
-                    "이미 결제 승인된 결제 요청입니다.",
-                    getCode("이미 결제 승인된 결제 요청입니다.", ExceptionType.BAD_REQUEST)
-            );
-        }
 
         SolutionEntity solutionEntity = paymentEventEntity.getSolutionEntity();
         VendorEntity vendorEntity = solutionEntity.getVendorEntity();
@@ -189,7 +170,6 @@ public class PaymentEventService {
 
         return new GetPaymentEventEntityOrderResponse(
                 paymentEventEntity.getPaymentEventSeq(),
-                paymentEventEntity.getOrderId(),
                 paymentEventEntity.getPaymentEventName(),
                 solutionEntity.getCategory(),
                 vendorEntity.getVendorName(),

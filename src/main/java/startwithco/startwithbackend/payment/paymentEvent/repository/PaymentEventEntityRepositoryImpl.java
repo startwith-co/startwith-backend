@@ -22,28 +22,9 @@ public class PaymentEventEntityRepositoryImpl implements PaymentEventEntityRepos
         return repository.findByPaymentEventSeq(paymentEventSeq);
     }
 
-    @Override
-    public boolean canSavePaymentEventEntity(Long consumerSeq, Long vendorSeq, Long solutionSeq) {
-        return repository.canSavePaymentEventEntity(consumerSeq, vendorSeq, solutionSeq);
-    }
 
     @Override
-    public Long countREQUESTEDPaymentEntityByVendorSeq(Long vendorSeq) {
-        return repository.countREQUESTEDPaymentEntityByVendorSeq(vendorSeq);
-    }
-
-    @Override
-    public Long countCONFIRMEDPaymentEntityByVendorSeq(Long vendorSeq) {
-        return repository.countCONFIRMEDPaymentEntityByVendorSeq(vendorSeq);
-    }
-
-    @Override
-    public Long countSETTLEDPaymentEntityByVendorSeq(Long vendorSeq) {
-        return repository.countSETTLEDPaymentEntityByVendorSeq(vendorSeq);
-    }
-
-    @Override
-    public List<PaymentEventEntity> findAllByConsumerSeq(Long consumerSeq) {
-        return repository.findAllByConsumerSeq(consumerSeq);
+    public List<Object[]> findAllByConsumerSeqAndVendorSeq(Long consumerSeq, Long vendorSeq) {
+        return repository.findAllByConsumerSeqAndVendorSeq(consumerSeq, vendorSeq);
     }
 }

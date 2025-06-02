@@ -2,7 +2,6 @@ package startwithco.startwithbackend.payment.payment.controller.response;
 
 import startwithco.startwithbackend.payment.payment.util.METHOD;
 import startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS;
-import startwithco.startwithbackend.payment.paymentEvent.util.PAYMENT_EVENT_STATUS;
 
 import java.time.LocalDateTime;
 
@@ -43,7 +42,6 @@ public class PaymentResponse {
     public record GetTossPaymentApprovalResponse(
             String orderId,
             Long amount,
-            PAYMENT_EVENT_STATUS paymentEventStatus,
             PAYMENT_STATUS paymentStatus,
             METHOD method
     ) {

@@ -57,31 +57,47 @@ public class PaymentEntity extends BaseTimeEntity {
     @Column(name = "due_date", nullable = true)
     private LocalDateTime dueDate;
 
-    public void updateFailureStatus() {
-        this.paymentStatus = PAYMENT_STATUS.FAILURE;
-        this.paymentCompletedAt = null;
-    }
-
-    public void updateSuccessStatus(LocalDateTime paymentCompletedAt) {
-        this.paymentStatus = PAYMENT_STATUS.SUCCESS;
+    public void updateCardDONEStatus(LocalDateTime paymentCompletedAt) {
+        this.paymentStatus = PAYMENT_STATUS.DONE;
+        this.method = METHOD.CARD;
+        this.secret = null;
         this.paymentCompletedAt = paymentCompletedAt;
         this.autoConfirmScheduledAt = paymentCompletedAt.plusDays(7);
         this.dueDate = paymentCompletedAt.plusDays(1);
     }
 
-    public void updatePaymentStatus(PAYMENT_STATUS paymentStatus) {
-        this.paymentStatus = paymentStatus;
-    }
-
-    public void updateMethod(METHOD method) {
-        this.method = method;
-    }
-
-    public void updateSecret(String secret) {
+    public void updateVirtualWAITING_FOR_DEPOSITStatus(LocalDateTime requestedAt, String secret) {
+        this.paymentStatus = PAYMENT_STATUS.WAITING_FOR_DEPOSIT;
+        this.method = METHOD.VIRTUAL_ACCOUNT;
         this.secret = secret;
+        this.paymentCompletedAt = null;
+        this.autoConfirmScheduledAt = null;
+        this.dueDate = requestedAt.plusDays(1);
     }
 
-    public void updateDueDate(LocalDateTime dueDate) {
-        this.dueDate = dueDate;
+    public void updateVirtualDONEStatus(LocalDateTime paymentCompletedAt) {
+        this.paymentStatus = PAYMENT_STATUS.DONE;
+        this.method = METHOD.VIRTUAL_ACCOUNT;
+        this.paymentCompletedAt = paymentCompletedAt;
+        this.autoConfirmScheduledAt = paymentCompletedAt.plusDays(7);
+    }
+
+    public void updateFAILUREStatus() {
+        this.paymentStatus = PAYMENT_STATUS.FAILED;
+        this.method = null;
+        this.secret = null;
+        this.paymentCompletedAt = null;
+        this.autoConfirmScheduledAt = null;
+        this.dueDate = null;
+    }
+
+    public void updateCANCELStatus(LocalDateTime paymentCompletedAt) {
+        this.paymentStatus = PAYMENT_STATUS.CANCELLED;
+        this.paymentCompletedAt = paymentCompletedAt;
+    }
+
+    public void updateCancelStatus() {
+        this.paymentStatus = PAYMENT_STATUS.CANCELLED;
+        this.paymentCompletedAt = LocalDateTime.now();
     }
 }

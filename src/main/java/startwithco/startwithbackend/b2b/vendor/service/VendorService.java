@@ -12,8 +12,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest;
-import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
 import startwithco.startwithbackend.b2b.vendor.controller.request.VendorRequest;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.b2b.vendor.repository.VendorEntityRepository;
@@ -26,7 +24,6 @@ import startwithco.startwithbackend.payment.paymentEvent.repository.PaymentEvent
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 import startwithco.startwithbackend.solution.solution.repository.SolutionEntityRepository;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -43,7 +40,6 @@ import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.ge
 public class VendorService {
     private final VendorEntityRepository vendorEntityRepository;
     private final SolutionEntityRepository solutionEntityRepository;
-    private final PaymentEventEntityRepository paymentEventEntityRepository;
     private final CommonService commonService;
     private final BCryptPasswordEncoder encoder;
     private final RedisTemplate<String, String> redisTemplate;
@@ -119,34 +115,6 @@ public class VendorService {
                             getCode("이미 가입한 이메일 입니다.", ExceptionType.CONFLICT)
                     );
                 });
-    }
-
-    @Transactional(readOnly = true)
-    public GetVendorSettlementManagementStatusResponse getVendorSettlementManagementStatus(Long vendorSeq) {
-        vendorEntityRepository.findByVendorSeq(vendorSeq)
-                .orElseThrow(() -> new NotFoundException(
-                        HttpStatus.NOT_FOUND.value(),
-                        "존재하지 않는 벤더 기업입니다.",
-                        getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
-                ));
-
-        Long requested = paymentEventEntityRepository.countREQUESTEDPaymentEntityByVendorSeq(vendorSeq);
-        Long confirmed = paymentEventEntityRepository.countCONFIRMEDPaymentEntityByVendorSeq(vendorSeq);
-        Long settled = paymentEventEntityRepository.countSETTLEDPaymentEntityByVendorSeq(vendorSeq);
-
-        return new GetVendorSettlementManagementStatusResponse(vendorSeq, requested, confirmed, settled);
-    }
-
-    @Transactional(readOnly = true)
-    public List<GetVendorSettlementManagementProgressResponse> getVendorSettlementManagementProgress(Long vendorSeq, String paymentEventStatus, int start, int end) {
-        vendorEntityRepository.findByVendorSeq(vendorSeq)
-                .orElseThrow(() -> new NotFoundException(
-                        HttpStatus.NOT_FOUND.value(),
-                        "존재하지 않는 벤더 기업입니다.",
-                        getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
-                ));
-
-        return vendorEntityRepository.getVendorSettlementManagementProgressCustom(vendorSeq, paymentEventStatus, start, end);
     }
 
     @Transactional

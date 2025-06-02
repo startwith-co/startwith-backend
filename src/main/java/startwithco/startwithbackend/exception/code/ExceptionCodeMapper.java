@@ -13,17 +13,15 @@ public class ExceptionCodeMapper {
     static {
         // BadRequestException
         BAD_REQUEST_MAP.put("요청 데이터 오류입니다.", "BAD_REQUEST_EXCEPTION_001");
-        BAD_REQUEST_MAP.put("결제 요청이 REQUEST 상태가 아닙니다.", "BAD_REQUEST_EXCEPTION_002");
         BAD_REQUEST_MAP.put("결제 금액이 TOSS PAYMENT 승인 금액과 다릅니다.", "BAD_REQUEST_EXCEPTION_003");
-        BAD_REQUEST_MAP.put("해당 결제 요청은 승인할 수 없습니다. 유효하지 않은 주문이거나 이미 처리된 결제입니다.", "BAD_REQUEST_EXCEPTION_004");
-        BAD_REQUEST_MAP.put("이미 결제 승인된 결제 요청입니다.", "BAD_REQUEST_EXCEPTION_005");
         BAD_REQUEST_MAP.put("인증코드가 일치하지 않습니다.", "BAD_REQUEST_EXCEPTION_006");
         BAD_REQUEST_MAP.put("비밀번호가 일치하지 않습니다.", "BAD_REQUEST_EXCEPTION_007");
+        BAD_REQUEST_MAP.put("해당 결제 요청은 승인할 수 없습니다. 결제 승인 진행 중입니다.", "BAD_REQUEST_EXCEPTION_008");
+        BAD_REQUEST_MAP.put("지원하지 않는 결제 수단입니다.", "BAD_REQUEST_EXCEPTION_009");
 
         // ConflictException
         CONFLICT_MAP.put("중복된 이메일입니다.", "CONFLICT_EXCEPTION_001");
         CONFLICT_MAP.put("동시성 저장은 불가능합니다.", "CONFLICT_EXCEPTION_002");
-        CONFLICT_MAP.put("이미 동일한 솔루션에 대한 결제 요청이 진행 중입니다.", "CONFLICT_EXCEPTION_003");
         CONFLICT_MAP.put("해당 벤더의 해당 카테고리 솔루션이 이미 존재합니다.", "CONFLICT_EXCEPTION_004");
         CONFLICT_MAP.put("같은 솔루션에 리뷰는 한 번만 작성할 수 있습니다.", "CONFLICT_EXCEPTION_005");
 

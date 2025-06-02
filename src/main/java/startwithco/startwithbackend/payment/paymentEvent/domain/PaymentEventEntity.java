@@ -8,13 +8,10 @@ import lombok.experimental.SuperBuilder;
 import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.base.BaseTimeEntity;
-import startwithco.startwithbackend.payment.paymentEvent.util.PAYMENT_EVENT_STATUS;
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 
 @Entity
-@Table(
-        name = "PAYMENT_EVENT_ENTITY"
-)
+@Table(name = "PAYMENT_EVENT_ENTITY")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -55,18 +52,10 @@ public class PaymentEventEntity extends BaseTimeEntity {
     @Column(name = "refund_policy_url", nullable = false)
     private String refundPolicyUrl;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "payment_event_status", nullable = false)
-    private PAYMENT_EVENT_STATUS paymentEventStatus;
+    @Column(name = "is_canceled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean isCanceled = false;
 
-    @Column(name = "order_id", nullable = false, unique = true)
-    private String orderId;
-
-    public void updatePaymentEventStatus(PAYMENT_EVENT_STATUS paymentEventStatus) {
-        this.paymentEventStatus = paymentEventStatus;
-    }
-
-    public void updatePaymentEventOrderId(String orderId) {
-        this.orderId = orderId;
+    public void updateIsCanceled(Boolean isCanceled) {
+        this.isCanceled = isCanceled;
     }
 }

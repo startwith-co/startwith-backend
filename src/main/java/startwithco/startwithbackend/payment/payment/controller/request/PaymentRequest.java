@@ -27,6 +27,12 @@ public class PaymentRequest {
         }
     }
 
+    public record TossPaymentCardCallBackRequest(
+            String status
+    ) {
+
+    }
+
     public record TossPaymentDepositCallBackRequest(
             String createdAt,
             String secret,

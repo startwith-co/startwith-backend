@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -19,21 +20,6 @@ public class PaymentEntityRepositoryImpl implements PaymentEntityRepository {
     @Override
     public boolean canApproveTossPayment(String orderId, Long paymentEventSeq) {
         return repository.canApproveTossPayment(orderId, paymentEventSeq);
-    }
-
-    @Override
-    public Optional<PaymentEntity> findSUCCESSByPaymentEventSeq(Long paymentEventSeq) {
-        return repository.findSUCCESSByPaymentEventSeq(paymentEventSeq);
-    }
-
-    @Override
-    public boolean canSavePaymentEntity(Long paymentEventSeq) {
-        return repository.canSavePaymentEntity(paymentEventSeq);
-    }
-
-    @Override
-    public Optional<PaymentEntity> findINPROGRESSByPaymentEventSeq(Long paymentEventSeq) {
-        return repository.findINPROGRESSByPaymentEventSeq(paymentEventSeq);
     }
 
     @Override
