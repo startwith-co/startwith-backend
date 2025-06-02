@@ -2,13 +2,18 @@ package startwithco.startwithbackend.b2b.consumer.controller.response;
 
 import lombok.Builder;
 import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
+import startwithco.startwithbackend.payment.payment.util.METHOD;
+import startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS;
+
+import java.time.LocalDateTime;
 
 public class ConsumerResponse {
     public record LoginConsumerResponse(
             String accessToken,
             String refreshToken,
             Long consumerSeq
-    ) {}
+    ) {
+    }
 
     @Builder
     public record GetConsumerInfo(
@@ -29,5 +34,20 @@ public class ConsumerResponse {
                     .consumerImageUrl(consumerEntity.getConsumerImageUrl())
                     .build();
         }
+    }
+
+    public record GetConsumerDashboardResponse(
+            Long consumerSeq,
+            PAYMENT_STATUS paymentStatus,
+            LocalDateTime paymentCompletedAt,
+            String representImageUrl,
+            String vendorName,
+            Long solutionSeq,
+            String solutionName,
+            METHOD method,
+            Long amount,
+            boolean existReview
+    ) {
+
     }
 }

@@ -18,7 +18,8 @@ public class VendorResponse {
             String accessToken,
             String refreshToken,
             Long vendorSeq
-    ) {}
+    ) {
+    }
 
     @Builder
     public record GetVendorInfo(
@@ -69,5 +70,14 @@ public class VendorResponse {
                     .clientCount(vendorEntity.getClientCount())
                     .build();
         }
+    }
+
+    public record GetVendorDashboardResponse(
+            Long vendorSeq,
+            Long CONFIRMED,
+            Long DONE,
+            Long SETTLED
+    ) {
+
     }
 }

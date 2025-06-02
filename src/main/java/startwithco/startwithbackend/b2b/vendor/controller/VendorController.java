@@ -13,10 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest;
-import startwithco.startwithbackend.b2b.consumer.controller.response.ConsumerResponse;
-import startwithco.startwithbackend.b2b.vendor.controller.request.VendorRequest;
-import startwithco.startwithbackend.b2b.vendor.controller.response.VendorResponse;
 import startwithco.startwithbackend.b2b.vendor.service.VendorService;
 import startwithco.startwithbackend.base.BaseResponse;
 import startwithco.startwithbackend.exception.BadRequestException;
@@ -52,7 +48,7 @@ public class VendorController {
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_001", description = "존재하지 않는 벤더 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
-    public ResponseEntity<BaseResponse<List<GetVendorSolutionCategoryResponse>>> getVendorSolutionCategory(@RequestParam(name = "vendorSeq") Long vendorSeq) {
+    public ResponseEntity<BaseResponse<List<GetVendorSolutionCategoryResponse>>> getVendorSolutionCategory(@RequestParam(name = "vendorSeq", required = false) Long vendorSeq) {
         if (vendorSeq == null) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
@@ -127,12 +123,12 @@ public class VendorController {
     @PostMapping(value = "/email/verify", name = "인증코드 검증")
     @Operation(summary = "Code Verify API", description = "인증코드 검증 API")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
-        @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-        @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-        @ApiResponse(responseCode = "CONFLICT_EXCEPTION_005", description = "이미 가입한 이메일 입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-        @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_006", description = "인증코드가 일치하지 않습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-        @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_006", description = "존재하지 않는 코드입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "CONFLICT_EXCEPTION_005", description = "이미 가입한 이메일 입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_006", description = "인증코드가 일치하지 않습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_006", description = "존재하지 않는 코드입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
     public ResponseEntity<BaseResponse<String>> verifyCode(@Valid @RequestBody VerifyCodeRequest request) {
 
@@ -143,7 +139,7 @@ public class VendorController {
         vendorService.validateEmail(request.email());
 
         // 코드 검증
-        commonService.verifyCode(request,"vendor");
+        commonService.verifyCode(request, "vendor");
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SUCCESS"));
     }
@@ -193,7 +189,7 @@ public class VendorController {
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
     }
 
-    @PutMapping( name = "Vendor 업데이트")
+    @PutMapping(name = "Vendor 업데이트")
     @Operation(summary = "Vendor Update API", description = "Vendor Update API")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
@@ -201,9 +197,10 @@ public class VendorController {
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_001", description = "존재하지 않는 벤더 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class)))
     })
-    public ResponseEntity<BaseResponse<String>> updateVendor(@Valid
-                                                                 @RequestPart UpdateVendorInfoRequest request,
-                                                                 @RequestPart("vendorBannerImageUrl") MultipartFile vendorBannerImageUrl) {
+    public ResponseEntity<BaseResponse<String>> updateVendor(
+            @RequestPart UpdateVendorInfoRequest request,
+            @RequestPart("vendorBannerImageUrl") MultipartFile vendorBannerImageUrl
+    ) {
 
         // DTO 유효성 검사
         request.validateUpdateVendorRequest(request);
@@ -211,5 +208,37 @@ public class VendorController {
         vendorService.updateVendor(request, vendorBannerImageUrl);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "success"));
+    }
+
+    @GetMapping(
+            value = "/status",
+            name = "벤더 기업 대시보드 운영 현황"
+    )
+    @Operation(
+            summary = "벤더 기업 대시보드 운영 현황 API / 담당자(박종훈)",
+            description = """
+                    1. CONFIRMED: 구매확정
+                    2. DONE: 정산대기
+                    3. SETTLED: 정산완료
+                    """
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_001", description = "존재하지 않는 벤더 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+    })
+    public ResponseEntity<BaseResponse<GetVendorDashboardResponse>> getVendorDashboard(@RequestParam(name = "vendorSeq", required = false) Long vendorSeq) {
+        if (vendorSeq == null) {
+            throw new BadRequestException(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "요청 데이터 오류입니다.",
+                    getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
+            );
+        }
+
+        GetVendorDashboardResponse response = vendorService.getVendorDashboard(vendorSeq);
+
+        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
     }
 }

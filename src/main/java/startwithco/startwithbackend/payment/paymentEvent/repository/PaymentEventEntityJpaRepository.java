@@ -15,7 +15,6 @@ public interface PaymentEventEntityJpaRepository extends JpaRepository<PaymentEv
                 SELECT pe
                 FROM PaymentEventEntity pe
                 WHERE pe.paymentEventSeq = :paymentEventSeq
-                  AND pe.isCanceled = false
             """)
     Optional<PaymentEventEntity> findByPaymentEventSeq(@Param("paymentEventSeq") Long paymentEventSeq);
 

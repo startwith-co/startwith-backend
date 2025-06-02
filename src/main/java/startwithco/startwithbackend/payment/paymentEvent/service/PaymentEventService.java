@@ -80,7 +80,6 @@ public class PaymentEventService {
                     .actualAmount(actualAmount)
                     .contractConfirmationUrl(s3ContractConfirmationUrl)
                     .refundPolicyUrl(s3RefundPolicyUrl)
-                    .isCanceled(false)
                     .build();
 
             paymentEventEntityRepository.savePaymentEventEntity(paymentEventEntity);
@@ -133,26 +132,12 @@ public class PaymentEventService {
                         event.getAmount(),
                         event.getContractConfirmationUrl(),
                         event.getRefundPolicyUrl(),
-                        event.getCreatedAt(),
-                        event.getIsCanceled()
+                        event.getCreatedAt()
                 ));
             }
         }
 
         return result;
-    }
-
-    @Transactional
-    public void deletePaymentEventEntity(DeletePaymentEventRequest request) {
-        PaymentEventEntity paymentEventEntity = paymentEventEntityRepository.findByPaymentEventSeq(request.paymentEventSeq())
-                .orElseThrow(() -> new NotFoundException(
-                        HttpStatus.NOT_FOUND.value(),
-                        "존재하지 않는 결제 요청입니다.",
-                        getCode("존재하지 않는 결제 요청입니다.", ExceptionType.NOT_FOUND)
-                ));
-
-        paymentEventEntity.updateIsCanceled(true);
-        paymentEventEntityRepository.savePaymentEventEntity(paymentEventEntity);
     }
 
     @Transactional(readOnly = true)
