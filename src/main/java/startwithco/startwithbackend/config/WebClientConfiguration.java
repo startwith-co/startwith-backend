@@ -17,4 +17,13 @@ public class WebClientConfiguration {
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
     }
+
+    @Bean
+    @Qualifier("frontWebClient")
+    public WebClient frontWebClient() {
+        return WebClient.builder()
+                .baseUrl("https://frontend.example.com") // 프론트 API base URL로 변경
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .build();
+    }
 }

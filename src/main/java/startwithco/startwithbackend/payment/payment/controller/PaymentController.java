@@ -30,39 +30,6 @@ import static startwithco.startwithbackend.payment.payment.controller.response.P
 public class PaymentController {
     private final PaymentService paymentService;
 
-    @GetMapping(
-            name = "결제 승인된 결제 상태 확인"
-    )
-    @Operation(
-            summary = "결제 승인된 결제 상태 확인 API",
-            description = """
-                    1. 결제 승인된 결제의 상태를 확인할 수 있는 API 입니다.
-                    2. Param의 orderId의 경우 결제 승인 API 결제 승인 성공 시 UNIQUE 하게 반환되는 값입니다.
-                    3. paymentEventStatus: REQUESTED(결제 요청), CANCELLED(결제 요청 취소), CONFIRMED(구매 확정), SETTLED(정산 완료)
-                    4. method: CARD(카드 결제), VIRTUAL_ACCOUNT(가상 계좌)
-                    5. paymentStatus: IN_PROGRESS(결제 승인 중), SUCCESS(결제 승인 성공), FAILURE(결제 승인 실패), CANCELLED(결제 요청 취소), REFUNDED(환불 처리)
-                    """
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
-            @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_002", description = "존재하지 않는 결제 요청입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-    })
-    public ResponseEntity<BaseResponse<GetTossPaymentApprovalResponse>> getTossPaymentApproval(@RequestParam(value = "orderId", required = false) String orderId) {
-        if (orderId == null || orderId.isEmpty()) {
-            throw new BadRequestException(
-                    HttpStatus.BAD_REQUEST.value(),
-                    "요청 데이터 오류입니다.",
-                    getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
-            );
-        }
-
-        GetTossPaymentApprovalResponse response = paymentService.getTossPaymentApproval(orderId);
-
-        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
-    }
-
     @PostMapping(
             name = "토스페이먼츠 PG사 연동 결제 승인 (가상계좌, 카드 결제)"
     )
@@ -71,16 +38,13 @@ public class PaymentController {
             description = """
                     1. 광클 방지를 위한 disable 처리해주세요.
                     2. amount의 경우 부가세 포함한 가격을 보내야합니다.
-                    3. 만약 결제 요청의 상태가 REQUEST가 아닐 경우 결제가 진행되지 않습니다.
-                    4. paymentKey의 경우 SuccessURL에서 받은 값, orderId의 경우 결제 요청 조회에서 오는 orderId 값을 넘겨주시면 됩니다.
-                    5. SERVER - TOSS 사이 간 orderId로 멱등성 처리가 돼 있습니다.
-                    6. 만약 결제 승인 오류가 나게 되면 중복 결제 방지를 위해 해당 결제의 PaymentEvent에 **orderId가 새롭게 발급됩니다.**
-                    7. 결제 승인 과정에서 요청 시간 만료와 같은 상황으로 인해 결제 실패 처리가 될 수 있습니다.
-                    8. 따라서 **결제 승인하기 전 반드시 결제 요청 조회 후 확인된 orderId로 결제 승인 해야합니다.**
-                    7. 카드 결제, 가상 계좌 결제 승인 모두 이 API를 사용하지만 Response의 method("카드", "가상계좌")에 따라 반환값이 다릅니다.
-                    8. 카드 결제 Response: TossCardPaymentApprovalResponse, 가상 계좌 Response: TossVirtualAccountPaymentResponse 입니다.
-                    9. 가상계좌 개발자 센터: https://docs.tosspayments.com/guides/v2/payment-window/integration-virtual-account
-                    10. 카드 결제 개발자 센터: https://docs.tosspayments.com/guides/payment/integration
+                    3. paymentKey의 경우 SuccessURL에서 받은 값, orderId의 경우 UUID 값을 생성해서 넘겨주셔야합니다.
+                    4. SERVER - TOSS 사이 간 orderId로 멱등성 처리가 돼 있습니다. 때문에 이전 결제 요청에서 결제 실패가 발생했을 경우 새로운 orderId 값을 만들어주셔야합니다.
+                    5. 결제 실패 상황의 경우 웹훅 이벤트 URL 참고해주세요. (카드 결제: PAYMENT_STATUS_CHANGED, 가상 계좌: DEPOSIT_CALLBACK)
+                    6. 가상 계좌의 경우 토스페이먼츠의 웹훅으로 인한 상태 변경 이후 즉시 클라이언트로 결과값 반환 예정입니다. **(FE 배포 후 웹훅 URL 생성 필요)**
+                    7. 가상계좌 개발자 센터: https://docs.tosspayments.com/guides/v2/payment-window/integration-virtual-account
+                    8. 카드 결제 개발자 센터: https://docs.tosspayments.com/guides/payment/integration
+                    9. 웹훅 이벤트: https://docs.tosspayments.com/reference/using-api/webhook-events#payment_status_changed
                     """
     )
     @ApiResponses(value = {
@@ -88,13 +52,10 @@ public class PaymentController {
             @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_002", description = "존재하지 않는 결제 요청입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_002", description = "결제 요청이 REQUEST 상태가 아닙니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_003", description = "결제 금액이 TOSS PAYMENT 승인 금액과 다릅니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_004", description = "해당 결제 요청은 승인할 수 없습니다. 유효하지 않은 주문이거나 이미 처리된 결제입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "SERVER_EXCEPTION_005", description = "중복된 결제 데이터가 존재합니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_008", description = "해당 결제 요청은 승인할 수 없습니다. 결제 승인 진행 중입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_009", description = "지원하지 않는 결제 수단입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "SERVER_EXCEPTION_003", description = "결제 응답 파싱 중 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "SERVER_EXCEPTION_006", description = "토스페이먼츠 결제 승인 실패", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "SERVER_EXCEPTION_007", description = "WebClient 응답 에러가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
     public Mono<ResponseEntity<BaseResponse<?>>> tossPaymentApproval(@RequestBody TossPaymentApprovalRequest request) {
         request.validate();
@@ -113,10 +74,6 @@ public class PaymentController {
                     1. 광클 방지를 위한 disable 처리해주세요.
                     2. 플랫폼 환불 정책 상 부분 환불은 불가능 합니다.
                     3. 환불의 경우 24이내 3가지(카드 결제 취소, 가상 계좌 입금 전, 가상 계좌 입금 후)가 존재합니다.
-                    4. 아래는 환불 가능한 결제 상태 입니다. **결제 승인된 결제 상태 확인 API를 통해 결제 승인된 데이터의 상태를 확인할 수 있습니다.**
-                        - 카드 결제: METHOD(CARD), PAYMENT_STATUS(SUCCESS), PAYMENT_EVENT_STATUS(CONFIRMED)
-                        - 가상 계좌 입금 후: METHOD(VIRTUAL_ACCOUNT), PAYMENT_STATUS(SUCCESS), PAYMENT_EVENT_STATUS(CONFIRMED)
-                        - 가상 계좌 입금 전: METHOD(VIRTUAL_ACCOUNT), PAYMENT_STATUS(IN_PROGRESS), PAYMENT_EVENT_STATUS(REQUESTED)
                     5. 가상 계좌 입금 전의 경우 결제 승인이 이루어지지 않았기 때문에 가상 계좌 요청 24시간 이내를 기준으로 계산합니다.
                     6. 24시간이 지난 가상 계좌 입금의 경우 서버에서 자동으로 결제 취소 처리합니다.
                     7. 카드 결제 취소와 가상 계좌 입금 전의 경우 paymentEventSeq 값만 넘겨주시면 됩니다.

@@ -127,38 +127,6 @@ public class ConsumerController {
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SUCCESS"));
     }
 
-    @GetMapping(
-            value = "/dashboard",
-            name = "수요 고객 대시보드 조회"
-    )
-    @Operation(
-            summary = "수요 고객 대시보드 조회 API / 담당자(박종훈)",
-            description = """
-                    1. paymentEventStatus: CONFIRMED(구매 확정), SETTLED(정산 완료)
-                    2. method: CARD(카드 결제), VIRTUAL_ACCOUNT(가상 계좌)
-                    """
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
-            @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_004", description = "존재하지 않는 수요 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "SERVER_EXCEPTION_004", description = "구매 확정, 정산 완료 결제 요청이지만 결제 승인된 정보가 없습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-    })
-    public ResponseEntity<BaseResponse<List<GetConsumerDashboardResponse>>> getConsumerDashboard(@RequestParam(value = "consumerSeq", required = false) Long consumerSeq) {
-        if (consumerSeq == null) {
-            throw new BadRequestException(
-                    HttpStatus.BAD_REQUEST.value(),
-                    "요청 데이터 오류입니다.",
-                    getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
-            );
-        }
-
-        List<GetConsumerDashboardResponse> response = consumerService.getConsumerDashboard(consumerSeq);
-
-        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
-    }
-
     @PostMapping(value = "/login", name = "Consumer 로그인")
     @Operation(summary = "Consumer Login API", description = "Consumer Login API")
     @ApiResponses(value = {

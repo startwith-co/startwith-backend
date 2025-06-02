@@ -13,6 +13,4 @@ public interface VendorEntityRepository {
     Optional<VendorEntity> findByEmail(String email);
 
     void save(VendorEntity vendorEntity);
-
-    List<GetVendorSettlementManagementProgressResponse> getVendorSettlementManagementProgressCustom(Long vendorSeq, String paymentEventStatus, int start, int end);
 }
