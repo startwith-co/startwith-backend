@@ -18,6 +18,7 @@ public class ExceptionCodeMapper {
         BAD_REQUEST_MAP.put("비밀번호가 일치하지 않습니다.", "BAD_REQUEST_EXCEPTION_007");
         BAD_REQUEST_MAP.put("해당 결제 요청은 승인할 수 없습니다. 결제 승인 진행 중입니다.", "BAD_REQUEST_EXCEPTION_008");
         BAD_REQUEST_MAP.put("지원하지 않는 결제 수단입니다.", "BAD_REQUEST_EXCEPTION_009");
+        BAD_REQUEST_MAP.put("웹훅 서명 검증에 실패했습니다.", "BAD_REQUEST_EXCEPTION_010");
 
         // ConflictException
         CONFLICT_MAP.put("중복된 이메일입니다.", "CONFLICT_EXCEPTION_001");
@@ -46,6 +47,7 @@ public class ExceptionCodeMapper {
         SERVER_MAP.put("WebClient 응답 에러가 발생했습니다.", "SERVER_EXCEPTION_007");
         SERVER_MAP.put("무통장 입금 전 결제가 저장되지 않았습니다.", "SERVER_EXCEPTION_008");
         SERVER_MAP.put("환불이 불가능한 결제입니다.", "SERVER_EXCEPTION_009");
+        SERVER_MAP.put("웹훅 처리 중 서버 오류가 발생했습니다.", "SERVER_EXCEPTION_010");
 
         // UnauthorizedException
     }
