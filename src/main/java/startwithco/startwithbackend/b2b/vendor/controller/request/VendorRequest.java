@@ -17,7 +17,6 @@ public class VendorRequest {
 
     public record SaveVendorRequest(
             String vendorName,
-            MultipartFile businessLicenseImage,
             String managerName,
             String phoneNumber,
             String email,
