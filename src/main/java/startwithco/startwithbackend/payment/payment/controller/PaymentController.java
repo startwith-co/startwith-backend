@@ -1,5 +1,6 @@
 package startwithco.startwithbackend.payment.payment.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -8,16 +9,26 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 import startwithco.startwithbackend.base.BaseResponse;
 import startwithco.startwithbackend.exception.BadRequestException;
+import startwithco.startwithbackend.exception.ServerException;
 import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
 import startwithco.startwithbackend.exception.handler.GlobalExceptionHandler;
 import startwithco.startwithbackend.payment.payment.service.PaymentService;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Base64;
+
+import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.*;
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.getCode;
 import static startwithco.startwithbackend.payment.payment.controller.request.PaymentRequest.*;
 import static startwithco.startwithbackend.payment.payment.controller.response.PaymentResponse.*;
@@ -29,6 +40,9 @@ import static startwithco.startwithbackend.payment.payment.controller.response.P
 @Tag(name = "토스페이먼츠 PG사", description = "담당자(박종훈)")
 public class PaymentController {
     private final PaymentService paymentService;
+
+    @Value("${toss.payment.secret-key}")
+    private String tossPaymentSecretKey;
 
     @PostMapping(
             name = "토스페이먼츠 PG사 연동 결제 승인 (가상계좌, 카드 결제)"
@@ -131,10 +145,49 @@ public class PaymentController {
             @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "SERVER_EXCEPTION_008", description = "무통장 입금 전 결제가 저장되지 않았습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_010", description = "웹훅 서명 검증에 실패했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "SERVER_EXCEPTION_010", description = "웹훅 처리 중 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
-    public ResponseEntity<BaseResponse<String>> tossPaymentDepositCallBack(@RequestBody TossPaymentDepositCallBackRequest request) {
-        paymentService.tossPaymentDepositCallBack(request);
+    public ResponseEntity<BaseResponse<String>> tossPaymentDepositCallBack(
+            @RequestBody String rawBody,
+            @RequestHeader("tosspayments-webhook-transmission-time") String transmissionTime,
+            @RequestHeader("tosspayments-webhook-signature") String signature,
+            @RequestHeader(value = "tosspayments-webhook-transmission-id", required = false) String transmissionId,
+            @RequestHeader(value = "tosspayments-webhook-transmission-retried-count", required = false) String retryCount
+    ) {
+        String secretKey = tossPaymentSecretKey;
 
-        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SUCCESS"));
+        try {
+            String payloadToSign = rawBody + ":" + transmissionTime;
+            Mac hmac = Mac.getInstance("HmacSHA256");
+            SecretKeySpec keySpec = new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+            hmac.init(keySpec);
+            byte[] rawHmac = hmac.doFinal(payloadToSign.getBytes(StandardCharsets.UTF_8));
+            String expectedSignature = Base64.getEncoder().encodeToString(rawHmac);
+
+            // 서명 목록 중 하나라도 일치하면 통과
+            boolean isValid = Arrays.stream(signature.split(","))
+                    .map(s -> s.replace("v1:", "").trim())
+                    .anyMatch(expectedSignature::equals);
+
+            if (!isValid) {
+                throw new BadRequestException(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "웹훅 서명 검증에 실패했습니다.",
+                        getCode("웹훅 서명 검증에 실패했습니다.", ExceptionType.BAD_REQUEST)
+                );
+            }
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            TossPaymentDepositCallBackRequest parsedRequest = objectMapper.readValue(rawBody, TossPaymentDepositCallBackRequest.class);
+            paymentService.tossPaymentDepositCallBack(parsedRequest);
+            return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SUCCESS"));
+        } catch (Exception e) {
+            throw new ServerException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "웹훅 처리 중 서버 오류가 발생했습니다.",
+                    getCode("웹훅 처리 중 서버 오류가 발생했습니다.", ExceptionType.SERVER)
+            );
+        }
     }
 }
