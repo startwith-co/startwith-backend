@@ -13,4 +13,6 @@ public interface VendorEntityRepository {
     Optional<VendorEntity> findByEmail(String email);
 
     void save(VendorEntity vendorEntity);
+
+    boolean existsByVendorSeq(Long vendorSeq);
 }

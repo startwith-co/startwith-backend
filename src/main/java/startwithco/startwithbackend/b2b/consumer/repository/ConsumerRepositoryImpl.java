@@ -8,7 +8,7 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
-public class ConsumerRepositoryImpl implements ConsumerRepository{
+public class ConsumerRepositoryImpl implements ConsumerRepository {
 
     private final ConsumerJpaRepository consumerJpaRepository;
 
@@ -25,5 +25,10 @@ public class ConsumerRepositoryImpl implements ConsumerRepository{
     @Override
     public Optional<ConsumerEntity> findByConsumerSeq(Long solutionSeq) {
         return consumerJpaRepository.findByConsumerSeq(solutionSeq);
+    }
+
+    @Override
+    public boolean existsByConsumerSeq(Long consumerSeq) {
+        return consumerJpaRepository.existsByConsumerSeq(consumerSeq);
     }
 }
