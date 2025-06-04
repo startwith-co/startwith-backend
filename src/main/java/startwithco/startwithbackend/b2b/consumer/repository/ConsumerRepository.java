@@ -11,4 +11,6 @@ public interface ConsumerRepository {
     void save(ConsumerEntity consumerEntity);
 
     Optional<ConsumerEntity> findByConsumerSeq(Long solutionSeq);
+
+    boolean existsByConsumerSeq(Long consumerSeq);
 }

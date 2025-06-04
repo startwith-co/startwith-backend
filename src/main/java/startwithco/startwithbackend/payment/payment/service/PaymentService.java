@@ -193,7 +193,7 @@ public class PaymentService {
                 holderName
         ).subscribe();
 
-        paymentEntity.updateCancelStatus();
+        paymentEntity.updateCANCELStatus(LocalDateTime.now());
         paymentEntityRepository.savePaymentEntity(paymentEntity);
     }
 

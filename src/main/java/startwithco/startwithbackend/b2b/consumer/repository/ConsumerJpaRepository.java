@@ -16,4 +16,14 @@ public interface ConsumerJpaRepository extends JpaRepository<ConsumerEntity, Lon
 
     @Query("SELECT c FROM ConsumerEntity c WHERE c.consumerSeq = :consumerSeq")
     Optional<ConsumerEntity> findByConsumerSeq(@Param("consumerSeq") Long consumerSeq);
+
+    @Query("""
+            SELECT CASE
+                    WHEN COUNT(c) > 0 THEN true
+                    ELSE false
+                  END
+            FROM ConsumerEntity c
+            WHERE c.consumerSeq = :consumerSeq
+            """)
+    boolean existsByConsumerSeq(Long consumerSeq);
 }

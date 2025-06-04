@@ -95,9 +95,4 @@ public class PaymentEntity extends BaseTimeEntity {
         this.paymentStatus = PAYMENT_STATUS.CANCELLED;
         this.paymentCompletedAt = paymentCompletedAt;
     }
-
-    public void updateCancelStatus() {
-        this.paymentStatus = PAYMENT_STATUS.CANCELLED;
-        this.paymentCompletedAt = LocalDateTime.now();
-    }
 }

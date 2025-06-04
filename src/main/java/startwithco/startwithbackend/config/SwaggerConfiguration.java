@@ -48,6 +48,7 @@ public class SwaggerConfiguration {
                         4. 필요한 API 혹은 데이터가 있을 경우 말씀해주세요.
                         5. 각각의 API Description에 빠져있는 EXCEPTION이 있을 경우 말씀해주세요.
                         6. **/api/payment-service/payment/deposit-callback** API는 **절대** 사용하시면 안됩니다.
+                        7. 모든 이미지 파일의 형식은 **JPG**입니다.
                         """
                 )
                 .version("1.0.0");

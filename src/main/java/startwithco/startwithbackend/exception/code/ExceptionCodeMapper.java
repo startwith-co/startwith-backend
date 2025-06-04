@@ -37,6 +37,8 @@ public class ExceptionCodeMapper {
         NOT_FOUND_MAP.put("수요 기업이 해당 솔루션에 작성한 리뷰가 없습니다.", "NOT_FOUND_EXCEPTION_007");
         NOT_FOUND_MAP.put("해당 기업이 작성한 카테고리 솔루션이 존재하지 않습니다.", "NOT_FOUND_EXCEPTION_008");
         NOT_FOUND_MAP.put("존재하지 않는 이메일 입니다.", "NOT_FOUND_EXCEPTION_009");
+        NOT_FOUND_MAP.put("전송자가 수요/벤더 기업에 존재하지 않습니다.", "NOT_FOUND_EXCEPTION_010");
+        NOT_FOUND_MAP.put("수신자가 수요/벤더 기업에 존재하지 않습니다.", "NOT_FOUND_EXCEPTION_011");
 
         // ServerException
         SERVER_MAP.put("내부 서버 오류가 발생했습니다.", "SERVER_EXCEPTION_001");
