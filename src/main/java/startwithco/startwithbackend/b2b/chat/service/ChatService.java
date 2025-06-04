@@ -49,7 +49,7 @@ public class ChatService {
             );
         }
 
-        String s3FileUrl = commonService.uploadJPGFile(file);
+        String s3FileUrl = commonService.uploadPDFFile(file);
         ChatEntity chatEntity = ChatEntity.builder()
                 .senderSeq(request.senderSeq())
                 .receiverSeq(request.receiverSeq())
