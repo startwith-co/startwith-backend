@@ -7,10 +7,10 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import startwithco.startwithbackend.base.BaseTimeEntity;
 
+import java.time.LocalDateTime;
+
 @Entity
-@Table(
-        name = "TOSS_PAYMENT_DAILY_SNAPSHOT_ENTITY"
-)
+@Table(name = "TOSS_PAYMENT_DAILY_SNAPSHOT_ENTITY")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -21,30 +21,36 @@ public class TossPaymentDailySnapshotEntity extends BaseTimeEntity {
     @Column(name = "toss_payment_daily_snapshot_seq")
     private Long tossPaymentDailySnapshotSeq;
 
+    @Column(name = "order_id", nullable = false, unique = true)
+    private String orderId;
+
     @Column(name = "payment_key", nullable = false)
     private String paymentKey;
 
-    @Column(name = "order_id", nullable = false)
-    private String orderId;
+    @Column(name = "transaction_id", nullable = false)
+    private String transactionId;
 
     @Column(name = "method", nullable = false)
     private String method;
 
-    @Column(name = "total_amount", nullable = false)
-    private Long totalAmount;
+    @Column(name = "approved_at", nullable = false)
+    private String approvedAt;
 
-    @Column(name = "balance_amount", nullable = false)
-    private Long balanceAmount;         // 남은 금액
+    @Column(name = "amount", nullable = false)
+    private Long amount;
 
-    @Column(name = "supplied_amount", nullable = false)
-    private Long suppliedAmount;        // 공급가액
+    @Column(name = "fee", nullable = false)
+    private Long fee;
 
-    @Column(name = "vat", nullable = false)
-    private Long vat;                   // 부가세
+    @Column(name = "pay_out_amount", nullable = false)
+    private Long payOutAmount;
 
-    @Column(name = "currency", nullable = false)
-    private String currency;
+    @Column(name = "settlement_amount", nullable = false)
+    private Long settlementAmount;
 
-    @Column(name = "receipt_url", nullable = false)
-    private String receiptUrl;
+    @Column(name = "settlement_at", nullable = true)
+    private LocalDateTime settlementAt;
+
+    @Column(name = "is_settled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean isSettled;
 }

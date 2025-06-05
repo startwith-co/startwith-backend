@@ -39,6 +39,9 @@ public class PaymentController {
                     4. SERVER - TOSS 사이 간 orderId로 멱등성 처리가 돼 있습니다. 때문에 이전 결제 요청에서 결제 실패가 발생했을 경우 새로운 orderId 값을 만들어주셔야합니다.
                     5. 결제 실패 상황의 경우 웹훅 이벤트 URL 참고해주세요. (카드 결제: PAYMENT_STATUS_CHANGED, 가상 계좌: DEPOSIT_CALLBACK)
                     6. 가상 계좌의 경우 토스페이먼츠의 웹훅으로 인한 상태 변경 이후 즉시 클라이언트로 결과값 반환 예정입니다. **(FE 배포 후 웹훅 URL 생성 필요)**
+                    7. 넘어가는 method 값에 따라 Response가 다릅니다.
+                        - "카드": TossCardPaymentApprovalResponse
+                        - "가상계좌": TossVirtualAccountPaymentResponse
                     7. 가상계좌 개발자 센터: https://docs.tosspayments.com/guides/v2/payment-window/integration-virtual-account
                     8. 카드 결제 개발자 센터: https://docs.tosspayments.com/guides/payment/integration
                     9. 웹훅 이벤트: https://docs.tosspayments.com/reference/using-api/webhook-events#payment_status_changed

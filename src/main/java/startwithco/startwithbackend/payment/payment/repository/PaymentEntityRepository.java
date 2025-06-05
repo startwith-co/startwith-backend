@@ -19,4 +19,6 @@ public interface PaymentEntityRepository {
     Long countDONEStatusByVendorSeq(Long vendorSeq);
 
     Long countSETTLEDStatusByVendorSeq(Long vendorSeq);
+
+    List<PaymentEntity> findAllByVendorSeqAndPaymentStatus(Long vendorSeq, String paymentStatus, int start, int end);
 }

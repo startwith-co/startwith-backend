@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
 import startwithco.startwithbackend.b2b.vendor.controller.request.VendorRequest;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.b2b.vendor.repository.VendorEntityRepository;
@@ -20,8 +21,11 @@ import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.ConflictException;
 import startwithco.startwithbackend.exception.NotFoundException;
 import startwithco.startwithbackend.exception.ServerException;
+import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
 import startwithco.startwithbackend.payment.payment.repository.PaymentEntityRepository;
 import startwithco.startwithbackend.payment.paymentEvent.repository.PaymentEventEntityRepository;
+import startwithco.startwithbackend.payment.snapshot.entity.TossPaymentDailySnapshotEntity;
+import startwithco.startwithbackend.payment.snapshot.repository.TossPaymentDailySnapshotEntityRepository;
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 import startwithco.startwithbackend.solution.solution.repository.SolutionEntityRepository;
 
@@ -42,8 +46,12 @@ public class VendorService {
     private final VendorEntityRepository vendorEntityRepository;
     private final SolutionEntityRepository solutionEntityRepository;
     private final PaymentEntityRepository paymentEntityRepository;
+    private final TossPaymentDailySnapshotEntityRepository tossPaymentDailySnapshotEntityRepository;
+
     private final CommonService commonService;
+
     private final BCryptPasswordEncoder encoder;
+
     private final RedisTemplate<String, String> redisTemplate;
 
     @Value("${jwt.secret}")
@@ -253,5 +261,59 @@ public class VendorService {
                 paymentEntityRepository.countDONEStatusByVendorSeq(vendorEntity.getVendorSeq()),
                 paymentEntityRepository.countSETTLEDStatusByVendorSeq(vendorEntity.getVendorSeq())
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<Object> getVendorDashboardList(Long vendorSeq, String paymentStatus, int start, int end) {
+        vendorEntityRepository.findByVendorSeq(vendorSeq)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 벤더 기업입니다.",
+                        getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
+                ));
+
+        List<PaymentEntity> paymentEntities
+                = paymentEntityRepository.findAllByVendorSeqAndPaymentStatus(vendorSeq, paymentStatus, start, end);
+
+        List<Object> response = new ArrayList<>();
+        for (PaymentEntity paymentEntity : paymentEntities) {
+            TossPaymentDailySnapshotEntity tossPaymentDailySnapshotEntity
+                    = tossPaymentDailySnapshotEntityRepository.findByOrderId(paymentEntity.getOrderId()).orElse(null);
+            VendorEntity vendorEntity = paymentEntity.getPaymentEventEntity().getVendorEntity();
+            SolutionEntity solutionEntity = paymentEntity.getPaymentEventEntity().getSolutionEntity();
+            ConsumerEntity consumerEntity = paymentEntity.getPaymentEventEntity().getConsumerEntity();
+
+            if (tossPaymentDailySnapshotEntity == null) {
+                GetVendorDashboardDONEListResponse doneListResponse = new GetVendorDashboardDONEListResponse(
+                        vendorEntity.getVendorSeq(),
+                        paymentEntity.getPaymentStatus(),
+                        solutionEntity.getSolutionSeq(),
+                        solutionEntity.getSolutionName(),
+                        paymentEntity.getAmount(),
+                        paymentEntity.getAutoConfirmScheduledAt(),
+                        paymentEntity.getAutoConfirmScheduledAt(),
+                        consumerEntity.getConsumerSeq(),
+                        consumerEntity.getConsumerName()
+                );
+
+                response.add(doneListResponse);
+            } else {
+                GetVendorDashboardSETTELEDListResponse settledListResponse = new GetVendorDashboardSETTELEDListResponse(
+                        vendorEntity.getVendorSeq(),
+                        paymentEntity.getPaymentStatus(),
+                        solutionEntity.getSolutionSeq(),
+                        solutionEntity.getSolutionName(),
+                        paymentEntity.getAmount(),
+                        paymentEntity.getAutoConfirmScheduledAt(),
+                        tossPaymentDailySnapshotEntity.getSettlementAmount(),
+                        consumerEntity.getConsumerSeq(),
+                        consumerEntity.getConsumerName()
+                );
+
+                response.add(settledListResponse);
+            }
+        }
+
+        return response;
     }
 }
