@@ -169,16 +169,16 @@ public class SolutionController {
 
     @GetMapping(
             value = "/list",
-            name = "전체 솔루션 조회"
+            name = "전체 솔루션 조회 (필터링, 키워드 검색)"
     )
     @Operation(
-            summary = "전체 솔루션 조회 API",
+            summary = "전체 솔루션 조회 (필터링, 키워드 검색) API",
             description = """
                     1. category: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY
                     2. Param 값의 경우 전부 NULL 허용입니다.
                     3. NULL로 들어온 값은 필터링하지 않습니다.
                     4. budget의 경우 (전체, 500,000원 미만, 500,000~1,000,000원 미만, 1,000,000원~3,000,000원 미만, 3,000,000원~5,000,000원 미만, 5,000,000원~10,000,000원 미만, 10,000,000원 이상) 문자 그대로 보내주세요. Default의 경우 "전체" 보내주시면 됩니다.
-                    5. start와 end는 시작과 끝의 인덱스 번호입니다. default: start = 0, end = 10
+                    5. start와 end는 시작과 끝의 인덱스 번호입니다. default: start = 0, end = 15
                     """
     )
     @ApiResponses(value = {
@@ -191,8 +191,9 @@ public class SolutionController {
             @RequestParam(value = "category", required = false) String category,
             @RequestParam(value = "industry", required = false) String industry,
             @RequestParam(value = "budget", required = false, defaultValue = "전체") String budget,
+            @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "start", defaultValue = "0") int start,
-            @RequestParam(value = "end", defaultValue = "10") int end
+            @RequestParam(value = "end", defaultValue = "15") int end
     ) {
         if (category != null) {
             try {
@@ -207,7 +208,7 @@ public class SolutionController {
         }
 
         CATEGORY categoryEnum = (category != null) ? CATEGORY.valueOf(category) : null;
-        List<GetAllSolutionEntityResponse> response = solutionService.getAllSolutionEntity(specialist, categoryEnum, industry, budget, start, end);
+        List<GetAllSolutionEntityResponse> response = solutionService.getAllSolutionEntity(specialist, categoryEnum, industry, budget, keyword, start, end);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
     }

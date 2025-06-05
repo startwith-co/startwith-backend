@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
+import startwithco.startwithbackend.solution.keyword.domain.QSolutionKeywordEntity;
 import startwithco.startwithbackend.solution.solution.domain.QSolutionEntity;
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 import startwithco.startwithbackend.solution.solution.util.CATEGORY;
@@ -55,8 +56,9 @@ public class SolutionEntityRepositoryImpl implements SolutionEntityRepository {
     }
 
     @Override
-    public List<SolutionEntity> findBySpecialistAndCategoryAndIndustryAndBudget(String specialist, CATEGORY category, String industry, String budget, int start, int end) {
+    public List<SolutionEntity> findBySpecialistAndCategoryAndIndustryAndBudgetAndKeyword(String specialist, CATEGORY category, String industry, String budget, String keyword, int start, int end) {
         QSolutionEntity qSolutionEntity = QSolutionEntity.solutionEntity;
+        QSolutionKeywordEntity qSolutionKeywordEntity = QSolutionKeywordEntity.solutionKeywordEntity;
 
         BooleanBuilder builder = new BooleanBuilder();
         if (specialist != null && !specialist.isBlank()) {
@@ -101,8 +103,15 @@ public class SolutionEntityRepositoryImpl implements SolutionEntityRepository {
             }
         }
 
+        if (keyword != null && !keyword.isBlank()) {
+            builder.and(qSolutionKeywordEntity.keyword.containsIgnoreCase(keyword));
+        }
+
         return queryFactory
-                .selectFrom(qSolutionEntity)
+                .select(qSolutionEntity)
+                .from(qSolutionKeywordEntity)
+                .join(qSolutionKeywordEntity.solutionEntity, qSolutionEntity)
+                .join(qSolutionEntity.vendorEntity).fetchJoin()
                 .where(builder)
                 .offset(start)
                 .limit(end - start)
