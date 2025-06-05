@@ -24,7 +24,7 @@ public class PaymentEntity extends BaseTimeEntity {
     @Column(name = "payment_seq")
     private Long paymentSeq;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payment_event_seq", nullable = false)
     private PaymentEventEntity paymentEventEntity;
 

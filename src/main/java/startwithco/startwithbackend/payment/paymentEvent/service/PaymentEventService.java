@@ -119,6 +119,7 @@ public class PaymentEventService {
                 result.add(new GetCONFIRMEDPaymentEventEntityResponse(
                         event.getPaymentEventSeq(),
                         event.getPaymentEventName(),
+                        payment.getOrderId(),
                         event.getSolutionEntity().getCategory(),
                         payment.getAmount(),
                         event.getCreatedAt(),

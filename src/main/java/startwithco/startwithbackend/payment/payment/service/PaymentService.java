@@ -3,12 +3,14 @@ package startwithco.startwithbackend.payment.payment.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 import startwithco.startwithbackend.common.service.CommonService;
 import startwithco.startwithbackend.exception.BadRequestException;
+import startwithco.startwithbackend.exception.ConflictException;
 import startwithco.startwithbackend.exception.NotFoundException;
 import startwithco.startwithbackend.exception.ServerException;
 import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
@@ -65,7 +67,15 @@ public class PaymentService {
                 .paymentStatus(PAYMENT_STATUS.IN_PROGRESS)
                 .build();
 
-        paymentEntityRepository.savePaymentEntity(paymentEntity);
+        try {
+            paymentEntityRepository.savePaymentEntity(paymentEntity);
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException(
+                    HttpStatus.CONFLICT.value(),
+                    "이미 해당 결제 요청에 대한 결제 정보가 존재합니다. 새롭게 결제 요청을 진행해야합니다.",
+                    getCode("이미 해당 결제 요청에 대한 결제 정보가 존재합니다. 새롭게 결제 요청을 진행해야합니다.", ExceptionType.CONFLICT)
+            );
+        }
 
         return commonService.executeTossPaymentApproval(
                 request.paymentKey(),

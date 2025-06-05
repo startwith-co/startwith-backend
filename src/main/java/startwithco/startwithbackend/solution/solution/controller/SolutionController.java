@@ -44,11 +44,11 @@ public class SolutionController {
     @Operation(
             summary = "솔루션 생성 API",
             description = """
-                    1. 광클 방지를 위한 disable 처리해주세요.\n
-                    2. 중복 가능한 데이터의 경우 ','로 이어서 String으로 보내주세요. EX) 소기업,중기업,중견기업\n
-                    3. category: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY\n
-                    4. DIRECTION: INCREASE, DECREASE\n
-                    5. amount는 1보다 작을 수 없습니다.\n
+                    1. 광클 방지를 위한 disable 처리해주세요.
+                    2. 중복 가능한 데이터의 경우 ','로 이어서 String으로 보내주세요. EX) 소기업,중기업,중견기업
+                    3. category: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY
+                    4. DIRECTION: INCREASE, DECREASE
+                    5. amount는 1보다 작을 수 없습니다.
                     """
     )
     @ApiResponses(value = {
@@ -88,11 +88,11 @@ public class SolutionController {
     @Operation(
             summary = "솔루션 수정 API",
             description = """
-                    1. 광클 방지를 위한 disable 처리해주세요.\n
-                    2. 중복 가능한 데이터의 경우 ','로 이어서 String으로 보내주세요. EX) 소기업,중기업,중견기업\n
-                    3. category: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY\n
-                    4. DIRECTION: INCREASE, DECREASE\n
-                    5. amount는 1보다 작을 수 없습니다.\n
+                    1. 광클 방지를 위한 disable 처리해주세요.
+                    2. 중복 가능한 데이터의 경우 ','로 이어서 String으로 보내주세요. EX) 소기업,중기업,중견기업
+                    3. category: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY
+                    4. DIRECTION: INCREASE, DECREASE
+                    5. amount는 1보다 작을 수 없습니다.
                     """
     )
     @ApiResponses(value = {
