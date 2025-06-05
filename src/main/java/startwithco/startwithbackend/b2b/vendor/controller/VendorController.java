@@ -209,36 +209,4 @@ public class VendorController {
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "success"));
     }
-
-    @GetMapping(
-            value = "/status",
-            name = "벤더 기업 대시보드 운영 현황"
-    )
-    @Operation(
-            summary = "벤더 기업 대시보드 운영 현황 API / 담당자(박종훈)",
-            description = """
-                    1. CONFIRMED: 구매확정
-                    2. DONE: 정산대기
-                    3. SETTLED: 정산완료
-                    """
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
-            @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_001", description = "존재하지 않는 벤더 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-    })
-    public ResponseEntity<BaseResponse<GetVendorDashboardResponse>> getVendorDashboard(@RequestParam(name = "vendorSeq", required = false) Long vendorSeq) {
-        if (vendorSeq == null) {
-            throw new BadRequestException(
-                    HttpStatus.BAD_REQUEST.value(),
-                    "요청 데이터 오류입니다.",
-                    getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
-            );
-        }
-
-        GetVendorDashboardResponse response = vendorService.getVendorDashboard(vendorSeq);
-
-        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
-    }
 }

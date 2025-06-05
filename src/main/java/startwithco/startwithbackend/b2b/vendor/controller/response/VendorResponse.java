@@ -2,8 +2,10 @@ package startwithco.startwithbackend.b2b.vendor.controller.response;
 
 import lombok.Builder;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
+import startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS;
 import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 public class VendorResponse {
@@ -77,6 +79,34 @@ public class VendorResponse {
             Long CONFIRMED,
             Long DONE,
             Long SETTLED
+    ) {
+
+    }
+
+    public record GetVendorDashboardDONEListResponse(
+            Long vendorSeq,
+            PAYMENT_STATUS paymentStatus,
+            Long solutionSeq,
+            String solutionName,
+            Long solutionAmount,
+            LocalDateTime settlementDueDate,
+            LocalDateTime settlementAmount,
+            Long consumerSeq,
+            String consumerName
+    ) {
+
+    }
+
+    public record GetVendorDashboardSETTELEDListResponse(
+            Long vendorSeq,
+            PAYMENT_STATUS paymentStatus,
+            Long solutionSeq,
+            String solutionName,
+            Long solutionAmount,
+            LocalDateTime settlementDueDate,
+            Long settlementAmount,
+            Long consumerSeq,
+            String consumerName
     ) {
 
     }

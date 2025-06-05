@@ -4,12 +4,14 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import startwithco.startwithbackend.b2b.consumer.domain.QConsumerEntity;
 import startwithco.startwithbackend.b2b.vendor.domain.QVendorEntity;
 import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
 import startwithco.startwithbackend.payment.payment.domain.QPaymentEntity;
 import startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS;
 import startwithco.startwithbackend.payment.paymentEvent.domain.QPaymentEventEntity;
+import startwithco.startwithbackend.payment.snapshot.entity.QTossPaymentDailySnapshotEntity;
 import startwithco.startwithbackend.solution.solution.domain.QSolutionEntity;
 
 import java.util.List;
@@ -81,5 +83,39 @@ public class PaymentEntityRepositoryImpl implements PaymentEntityRepository {
     @Override
     public Long countSETTLEDStatusByVendorSeq(Long vendorSeq) {
         return repository.countSETTLEDStatusByVendorSeq(vendorSeq);
+    }
+
+    @Override
+    public List<PaymentEntity> findAllByVendorSeqAndPaymentStatus(Long vendorSeq, String paymentStatus, int start, int end) {
+        QPaymentEntity qPaymentEntity = QPaymentEntity.paymentEntity;
+        QPaymentEventEntity qPaymentEventEntity = QPaymentEventEntity.paymentEventEntity;
+        QVendorEntity qVendorEntity = QVendorEntity.vendorEntity;
+        QConsumerEntity qConsumerEntity = QConsumerEntity.consumerEntity;
+        QSolutionEntity qSolutionEntity = QSolutionEntity.solutionEntity;
+
+        BooleanBuilder builder = new BooleanBuilder();
+        builder.and(qPaymentEventEntity.vendorEntity.vendorSeq.eq(vendorSeq));
+
+        if (paymentStatus != null) {
+            PAYMENT_STATUS status = PAYMENT_STATUS.valueOf(paymentStatus);
+            builder.and(qPaymentEntity.paymentStatus.eq(status));
+        } else {
+            builder.and(
+                    qPaymentEntity.paymentStatus.eq(PAYMENT_STATUS.DONE)
+                            .or(qPaymentEntity.paymentStatus.eq(PAYMENT_STATUS.SETTLED))
+            );
+        }
+
+        return queryFactory
+                .selectFrom(qPaymentEntity)
+                .join(qPaymentEntity.paymentEventEntity, qPaymentEventEntity).fetchJoin()
+                .join(qPaymentEventEntity.vendorEntity, qVendorEntity).fetchJoin()
+                .join(qPaymentEventEntity.consumerEntity, qConsumerEntity).fetchJoin()
+                .join(qPaymentEventEntity.solutionEntity, qSolutionEntity).fetchJoin()
+                .where(builder)
+                .orderBy(qPaymentEntity.paymentCompletedAt.desc())
+                .offset(start)
+                .limit(end - start)
+                .fetch();
     }
 }

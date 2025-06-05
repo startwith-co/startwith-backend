@@ -138,7 +138,7 @@ public class ConsumerController {
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_007", description = "비밀번호가 일치하지 않습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "SERVER_EXCEPTION_010", description = "Redis 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
-    public ResponseEntity<BaseResponse<LoginConsumerResponse>> loginConsumer(@Valid @RequestBody LoginConsumerRequest request) {
+    public ResponseEntity<BaseResponse<LoginConsumerResponse>> loginConsumer(@Valid @RequestBody ConsumerRequest.LoginConsumerRequest request) {
 
         // DTO 유효성 검사
         request.validateLoginConsumerRequest(request);
@@ -182,8 +182,8 @@ public class ConsumerController {
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_004", description = "존재하지 않는 수요 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
     public ResponseEntity<BaseResponse<String>> updateConsumer(@Valid
-                                                             @RequestPart UpdateConsumerInfoRequest request,
-                                                             @RequestPart("consumerImageUrl") MultipartFile consumerImageUrl) {
+                                                               @RequestPart ConsumerRequest.UpdateConsumerInfoRequest request,
+                                                               @RequestPart("consumerImageUrl") MultipartFile consumerImageUrl) {
 
         // DTO 유효성 검사
         request.validateUpdateConsumerRequest(request);
@@ -192,73 +192,4 @@ public class ConsumerController {
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "success"));
     }
-
-    @GetMapping(
-            value = "/dashboard",
-            name = "수요 기업 대시보드 조회"
-    )
-    @Operation(
-            summary = "수요 기업 대시보드 조회 API / 담당자(박종훈)",
-            description = """
-                    1. paymentStatus: DONE(구매 확정), SETTLED(정산 완료)
-                    2. paymentStatus가 NULL일 경우 DONE, SETTLED 전부 반환합니다.
-                    3. 결제 승인 일자 기준 내림차순 정렬합니다.
-                    """
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
-            @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_004", description = "존재하지 않는 수요 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-    })
-    public ResponseEntity<BaseResponse<List<GetConsumerDashboardResponse>>> getConsumerDashBoard(
-            @RequestParam(value = "consumerSeq", required = false) Long consumerSeq,
-            @RequestParam(value = "paymentStatus", required = false) String paymentStatus,
-            @RequestParam(value = "start", defaultValue = "0") int start,
-            @RequestParam(value = "end", defaultValue = "4") int end
-    ) {
-        if (consumerSeq == null) {
-            throw new BadRequestException(
-                    HttpStatus.BAD_REQUEST.value(),
-                    "요청 데이터 오류입니다.",
-                    getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
-            );
-        }
-
-        if (paymentStatus != null) {
-            try {
-                PAYMENT_STATUS.valueOf(paymentStatus);
-            } catch (IllegalArgumentException e) {
-                throw new BadRequestException(
-                        HttpStatus.BAD_REQUEST.value(),
-                        "요청 데이터 오류입니다.",
-                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
-                );
-            }
-        }
-
-        List<GetConsumerDashboardResponse> response = consumerService.getConsumerDashboard(consumerSeq, paymentStatus, start, end);
-
-        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
-    }
-    @PostMapping(value = "/resetLink", name = "Consumer 비번 리셋 링크")
-    @Operation(summary = "Consumer reset Link API", description = "Consumer reset Link API")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
-            @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_009", description = "존재하지 않는 이메일 입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_007", description = "비밀번호가 일치하지 않습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "SERVER_EXCEPTION_010", description = "Redis 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-    })
-    public ResponseEntity<BaseResponse<String>> resetLinkConsumer(@Valid @RequestBody ResetLinkRequest request) {
-
-        // DTO 유효성 검사
-        request.validateResetLinkRequest(request);
-
-        String link = consumerService.resetLink(request);
-
-        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), link));
-    }
-
 }
