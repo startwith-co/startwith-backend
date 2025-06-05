@@ -5,5 +5,7 @@ import startwithco.startwithbackend.payment.snapshot.entity.TossPaymentDailySnap
 import java.util.Optional;
 
 public interface TossPaymentDailySnapshotEntityRepository {
+    TossPaymentDailySnapshotEntity saveTossPaymentDailySnapshot(TossPaymentDailySnapshotEntity tossPaymentDailySnapshotEntity);
+
     Optional<TossPaymentDailySnapshotEntity> findByOrderId(String orderId);
 }
