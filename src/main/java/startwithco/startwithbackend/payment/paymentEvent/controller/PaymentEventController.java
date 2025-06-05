@@ -42,6 +42,7 @@ public class PaymentEventController {
             description = """
                     1. 광클 방지를 위한 disable 처리해주세요.
                     2. amount는 1보다 작을 수 없습니다.
+                    3. 만약 해당 결제 요청을 통해 결제 승인을 진행한 경우 다시 결제를 진행하려면 새로운 결제 요청하기를 생성해야합니다.
                     """
     )
     @ApiResponses(value = {
@@ -80,11 +81,10 @@ public class PaymentEventController {
     @Operation(
             summary = "결제 요청하기 조회 API",
             description = """
-                    1. 광클 방지를 위한 disable 처리해주세요.
-                    2. category: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY
-                    3. 결제 승인되지 않았을 때의 Response
+                    1. category: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY
+                    2. 결제 승인되지 않았을 때의 Response
                         - GetCONFIRMEDPaymentEventEntityResponse
-                    4. 결제 승인 됐을 때의 Response
+                    3. 결제 승인 됐을 때의 Response
                         - GetREQUESTEDPaymentEventEntityResponse
                     """
     )

@@ -26,6 +26,7 @@ public class PaymentEventResponse {
     public record GetCONFIRMEDPaymentEventEntityResponse(
             Long paymentEventSeq,
             String paymentEventName,
+            String orderId,
             CATEGORY category,
             Long amount,
             LocalDateTime createdAt,
