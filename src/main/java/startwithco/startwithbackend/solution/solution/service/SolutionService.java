@@ -221,9 +221,9 @@ public class SolutionService {
     }
 
     @Transactional(readOnly = true)
-    public List<GetAllSolutionEntityResponse> getAllSolutionEntity(String specialist, CATEGORY category, String industry, String budget, int start, int end) {
+    public List<GetAllSolutionEntityResponse> getAllSolutionEntity(String specialist, CATEGORY category, String industry, String budget, String keyword, int start, int end) {
         List<SolutionEntity> solutionEntities
-                = solutionEntityRepository.findBySpecialistAndCategoryAndIndustryAndBudget(specialist, category, industry, budget, start, end);
+                = solutionEntityRepository.findBySpecialistAndCategoryAndIndustryAndBudgetAndKeyword(specialist, category, industry, budget, keyword, start, end);
 
         List<GetAllSolutionEntityResponse> response = new ArrayList<>();
         for (SolutionEntity solutionEntity : solutionEntities) {
