@@ -11,6 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest;
 import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
 import startwithco.startwithbackend.b2b.consumer.repository.ConsumerRepository;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
@@ -234,5 +235,53 @@ public class ConsumerService {
         }
 
         return response;
+    }
+
+    private void saveResetToken(Long consumerSeq, String resetToken) {
+        try {
+            redisTemplate.opsForValue().set(
+                    String.valueOf(consumerSeq),
+                    resetToken,
+                    1_800_000,
+                    TimeUnit.MILLISECONDS
+            );
+        } catch (Exception e) {
+            throw new ServerException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Redis 서버 오류가 발생했습니다.",
+                    getCode("Redis 서버 오류가 발생했습니다.", ExceptionType.SERVER)
+            );
+        }
+    }
+
+    public String resetLink(ResetLinkRequest request) {
+
+        // 이메일 검증
+        ConsumerEntity consumerEntity = consumerRepository.findByEmail(request.email())
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 이메일 입니다.",
+                        getCode("존재하지 않는 이메일 입니다.", ExceptionType.NOT_FOUND
+                        )));
+
+        // consumer Name 검증
+        if(!request.consumerName().equals(consumerEntity.getConsumerName())) {
+            throw new BadRequestException(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "Consumer Name이 일치하지 않습니다.",
+                    getCode("Consumer Name이 일치하지 않습니다.", ExceptionType.BAD_REQUEST)
+            );
+        }
+
+        // 토큰 생성
+        String token = generateToken(1_800_000L, consumerEntity.getConsumerSeq());
+        //
+        saveResetToken(consumerEntity.getConsumerSeq(),token);
+
+        String resetLink = "https://euics.co.kr/resetPassword?token="+token;
+
+        commonService.sendResetLink(consumerEntity.getEmail(), resetLink);
+
+        return resetLink;
     }
 }

@@ -227,6 +227,37 @@ public class CommonService {
                 .subscribe();
     }
 
+    public void sendResetLink(String email, String link) {
+
+        String subject = "Solu 비밀번호 재설정";
+
+        Context context = new Context();
+        context.setVariable("link", link);
+
+        String htmlContent = templateEngine.process("reset-link-template", context);
+
+        try {
+            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, StandardCharsets.UTF_8.name());
+
+            helper.setTo(email);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+
+            // 로고 이미지 첨부 (cid를 사용하여 inline 삽입)
+            // 로고 생기면
+//            helper.addInline("logoImage", new ClassPathResource("static/images/logo.png"));
+
+            javaMailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            throw new ServerException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "이메일 전송 중 오류가 발생했습니다.",
+                    getCode("이메일 전송 중 오류가 발생했습니다.", ExceptionType.SERVER)
+            );
+        }
+    }
+
     public String sendAuthKey(String email) {
 
         Random random = new Random();
