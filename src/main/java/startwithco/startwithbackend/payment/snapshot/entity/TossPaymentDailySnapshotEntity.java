@@ -53,4 +53,14 @@ public class TossPaymentDailySnapshotEntity extends BaseTimeEntity {
 
     @Column(name = "is_settled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private Boolean isSettled;
+
+    public void updateApproveSettlement() {
+        this.settlementAt = LocalDateTime.now();
+        this.isSettled = true;
+    }
+
+    public void updateDeleteSettlement() {
+        this.settlementAt = null;
+        this.isSettled = false;
+    }
 }

@@ -1,6 +1,7 @@
 package startwithco.startwithbackend.payment.payment.repository;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -113,6 +114,32 @@ public class PaymentEntityRepositoryImpl implements PaymentEntityRepository {
                 .join(qPaymentEventEntity.consumerEntity, qConsumerEntity).fetchJoin()
                 .join(qPaymentEventEntity.solutionEntity, qSolutionEntity).fetchJoin()
                 .where(builder)
+                .orderBy(qPaymentEntity.paymentCompletedAt.desc())
+                .offset(start)
+                .limit(end - start)
+                .fetch();
+    }
+
+    @Override
+    public List<PaymentEntity> findAll(int start, int end) {
+        QPaymentEntity qPaymentEntity = QPaymentEntity.paymentEntity;
+        QPaymentEventEntity qPaymentEventEntity = QPaymentEventEntity.paymentEventEntity;
+        QConsumerEntity qConsumerEntity = QConsumerEntity.consumerEntity;
+        QVendorEntity qVendorEntity = QVendorEntity.vendorEntity;
+        QSolutionEntity qSolutionEntity = QSolutionEntity.solutionEntity;
+        QTossPaymentDailySnapshotEntity qTossPaymentDailySnapshotEntity = QTossPaymentDailySnapshotEntity.tossPaymentDailySnapshotEntity;
+
+        return queryFactory
+                .selectFrom(qPaymentEntity)
+                .join(qPaymentEntity.paymentEventEntity, qPaymentEventEntity).fetchJoin()
+                .join(qPaymentEventEntity.consumerEntity, qConsumerEntity).fetchJoin()
+                .join(qPaymentEventEntity.vendorEntity, qVendorEntity).fetchJoin()
+                .join(qPaymentEventEntity.solutionEntity, qSolutionEntity).fetchJoin()
+                .where(qPaymentEntity.orderId.in(
+                        JPAExpressions
+                                .select(qTossPaymentDailySnapshotEntity.orderId)
+                                .from(qTossPaymentDailySnapshotEntity)
+                ))
                 .orderBy(qPaymentEntity.paymentCompletedAt.desc())
                 .offset(start)
                 .limit(end - start)
