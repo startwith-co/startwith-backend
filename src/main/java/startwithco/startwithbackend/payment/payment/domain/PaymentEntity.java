@@ -95,4 +95,14 @@ public class PaymentEntity extends BaseTimeEntity {
         this.paymentStatus = PAYMENT_STATUS.CANCELLED;
         this.paymentCompletedAt = paymentCompletedAt;
     }
+
+    public void updateSETTLEDStatus() {
+        this.paymentStatus = PAYMENT_STATUS.SETTLED;
+        this.autoConfirmScheduledAt = LocalDateTime.now();
+    }
+
+    public void updateCANCELDStatus() {
+        this.paymentStatus = PAYMENT_STATUS.DONE;
+        this.autoConfirmScheduledAt = LocalDateTime.now().plusDays(7);
+    }
 }

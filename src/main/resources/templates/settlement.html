@@ -91,24 +91,27 @@
         <td th:text="${payment.bank ?: '-'}">-</td>
         <td th:text="${payment.solutionName ?: '-'}">-</td>
         <td>
-            <!-- 정산 완료: isSettled == false일 때만 활성화 -->
+            <!-- 정산 완료 버튼 -->
             <form th:action="@{/admin/settlement/approve}" method="post" style="display:inline;">
                 <input type="hidden" name="orderId" th:value="${payment.orderId}" />
                 <input type="hidden" name="page" th:value="${currentPage}" />
-                <button type="submit" class="btn-action btn-settle"
-                        th:classappend="${payment.isSettled} ? ' btn-disabled'"
-                        th:attr="disabled=${payment.isSettled}">정산 완료</button>
+                <button type="submit"
+                        class="btn-action btn-settle"
+                        th:classappend="${payment.paymentStatus == 'SETTLED'} ? ' btn-disabled'"
+                        th:attr="disabled=${payment.paymentStatus == 'SETTLED'}">정산 완료</button>
             </form>
 
-            <!-- 취소: isSettled == true일 때만 활성화 -->
+            <!-- 정산 취소 버튼 -->
             <form th:action="@{/admin/settlement/cancel}" method="post" style="display:inline;">
                 <input type="hidden" name="orderId" th:value="${payment.orderId}" />
                 <input type="hidden" name="page" th:value="${currentPage}" />
-                <button type="submit" class="btn-action btn-cancel"
-                        th:classappend="${!payment.isSettled} ? ' btn-disabled'"
-                        th:attr="disabled=${!payment.isSettled}">취소</button>
+                <button type="submit"
+                        class="btn-action btn-cancel"
+                        th:classappend="${payment.paymentStatus != 'SETTLED'} ? ' btn-disabled'"
+                        th:attr="disabled=${payment.paymentStatus != 'SETTLED'}">취소</button>
             </form>
         </td>
+
     </tr>
     </tbody>
 </table>

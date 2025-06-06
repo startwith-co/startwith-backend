@@ -3,7 +3,6 @@ package startwithco.startwithbackend.payment.settlement.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import startwithco.startwithbackend.payment.payment.util.METHOD;
-import startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +11,7 @@ import java.time.LocalDateTime;
 public class SettlementDto {
     LocalDateTime paymentCompletedAt;
     String orderId;
-    PAYMENT_STATUS paymentStatus;
+    String paymentStatus;
     METHOD method;
     Long amount;
     Long payOutAmount;
@@ -22,5 +21,4 @@ public class SettlementDto {
     String accountNumber;
     String bank;
     String solutionName;
-    boolean isSettled;
 }

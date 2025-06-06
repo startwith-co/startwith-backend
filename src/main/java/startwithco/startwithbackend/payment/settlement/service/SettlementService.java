@@ -45,7 +45,7 @@ public class SettlementService {
             SettlementDto settlementDto = new SettlementDto(
                     paymentEntity.getPaymentCompletedAt(),
                     paymentEntity.getOrderId(),
-                    paymentEntity.getPaymentStatus(),
+                    paymentEntity.getPaymentStatus().toString(),
                     paymentEntity.getMethod(),
                     tossPaymentDailySnapshotEntity.getAmount(),
                     tossPaymentDailySnapshotEntity.getPayOutAmount(),
@@ -54,8 +54,7 @@ public class SettlementService {
                     vendorEntity.getVendorName(),
                     vendorEntity.getAccountNumber(),
                     vendorEntity.getBank(),
-                    solutionEntity.getSolutionName(),
-                    tossPaymentDailySnapshotEntity.getIsSettled()
+                    solutionEntity.getSolutionName()
             );
 
             response.add(settlementDto);
@@ -72,6 +71,15 @@ public class SettlementService {
                         "내부 서버 오류가 발생했습니다.",
                         getCode("내부 서버 오류가 발생했습니다.", ExceptionType.SERVER)
                 ));
+        PaymentEntity paymentEntity = paymentEntityRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new ServerException(
+                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                        "내부 서버 오류가 발생했습니다.",
+                        getCode("내부 서버 오류가 발생했습니다.", ExceptionType.SERVER)
+                ));
+
+        paymentEntity.updateSETTLEDStatus();
+        paymentEntityRepository.savePaymentEntity(paymentEntity);
 
         tossPaymentDailySnapshotEntity.updateApproveSettlement();
         tossPaymentDailySnapshotEntityRepository.saveTossPaymentDailySnapshot(tossPaymentDailySnapshotEntity);
@@ -85,6 +93,15 @@ public class SettlementService {
                         "내부 서버 오류가 발생했습니다.",
                         getCode("내부 서버 오류가 발생했습니다.", ExceptionType.SERVER)
                 ));
+        PaymentEntity paymentEntity = paymentEntityRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new ServerException(
+                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                        "내부 서버 오류가 발생했습니다.",
+                        getCode("내부 서버 오류가 발생했습니다.", ExceptionType.SERVER)
+                ));
+
+        paymentEntity.updateCANCELDStatus();
+        paymentEntityRepository.savePaymentEntity(paymentEntity);
 
         tossPaymentDailySnapshotEntity.updateDeleteSettlement();
         tossPaymentDailySnapshotEntityRepository.saveTossPaymentDailySnapshot(tossPaymentDailySnapshotEntity);
