@@ -189,7 +189,11 @@ public class VendorController {
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
     }
 
-    @PutMapping(name = "Vendor 업데이트")
+    @PutMapping(
+            name = "Vendor 업데이트",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @Operation(summary = "Vendor Update API", description = "Vendor Update API")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
