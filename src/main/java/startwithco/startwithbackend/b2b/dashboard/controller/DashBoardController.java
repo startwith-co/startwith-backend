@@ -25,6 +25,9 @@ import startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS;
 
 import java.util.List;
 
+import static startwithco.startwithbackend.b2b.consumer.controller.response.ConsumerResponse.*;
+import static startwithco.startwithbackend.b2b.vendor.controller.response.VendorResponse.*;
+import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.*;
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.getCode;
 
 @RestController
@@ -53,16 +56,16 @@ public class DashBoardController {
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_001", description = "존재하지 않는 벤더 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
-    public ResponseEntity<BaseResponse<VendorResponse.GetVendorDashboardResponse>> getVendorDashboard(@RequestParam(name = "vendorSeq", required = false) Long vendorSeq) {
+    public ResponseEntity<BaseResponse<GetVendorDashboardResponse>> getVendorDashboard(@RequestParam(name = "vendorSeq", required = false) Long vendorSeq) {
         if (vendorSeq == null) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
                     "요청 데이터 오류입니다.",
-                    getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                    getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
             );
         }
 
-        VendorResponse.GetVendorDashboardResponse response = vendorService.getVendorDashboard(vendorSeq);
+        GetVendorDashboardResponse response = vendorService.getVendorDashboard(vendorSeq);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
     }
@@ -82,7 +85,7 @@ public class DashBoardController {
                     """
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "SUCCESS", content = @Content(mediaType = "application/json", schema = @Schema(oneOf = {VendorResponse.GetVendorDashboardDONEListResponse.class, VendorResponse.GetVendorDashboardSETTELEDListResponse.class}))),
+            @ApiResponse(responseCode = "200", description = "SUCCESS", content = @Content(mediaType = "application/json", schema = @Schema(oneOf = {GetVendorDashboardDONEListResponse.class, GetVendorDashboardSETTELEDListResponse.class}))),
             @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_001", description = "존재하지 않는 벤더 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
@@ -97,7 +100,7 @@ public class DashBoardController {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
                     "요청 데이터 오류입니다.",
-                    getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                    getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
             );
         }
 
@@ -108,7 +111,7 @@ public class DashBoardController {
                 throw new BadRequestException(
                         HttpStatus.BAD_REQUEST.value(),
                         "요청 데이터 오류입니다.",
-                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                        getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
                 );
             }
         }
@@ -136,7 +139,7 @@ public class DashBoardController {
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_004", description = "존재하지 않는 수요 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
-    public ResponseEntity<BaseResponse<List<ConsumerResponse.GetConsumerDashboardResponse>>> getConsumerDashBoard(
+    public ResponseEntity<BaseResponse<List<GetConsumerDashboardResponse>>> getConsumerDashBoard(
             @RequestParam(value = "consumerSeq", required = false) Long consumerSeq,
             @RequestParam(value = "paymentStatus", required = false) String paymentStatus,
             @RequestParam(value = "start", defaultValue = "0") int start,
@@ -146,7 +149,7 @@ public class DashBoardController {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
                     "요청 데이터 오류입니다.",
-                    getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                    getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
             );
         }
 
@@ -157,12 +160,12 @@ public class DashBoardController {
                 throw new BadRequestException(
                         HttpStatus.BAD_REQUEST.value(),
                         "요청 데이터 오류입니다.",
-                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                        getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
                 );
             }
         }
 
-        List<ConsumerResponse.GetConsumerDashboardResponse> response = consumerService.getConsumerDashboard(consumerSeq, paymentStatus, start, end);
+        List<GetConsumerDashboardResponse> response = consumerService.getConsumerDashboard(consumerSeq, paymentStatus, start, end);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
     }
