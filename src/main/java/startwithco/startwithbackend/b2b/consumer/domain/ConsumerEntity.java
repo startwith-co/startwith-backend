@@ -41,6 +41,9 @@ public class ConsumerEntity extends BaseTimeEntity {
     @Column(name = "consumer_image_url", nullable = true)
     private String consumerImageUrl;
 
+    @Column(name = "consumer_unique_type", nullable = false)
+    private String consumerUniqueType;
+
     public void update(String consumerName, String phoneNumber, String email, String industry, String consumerImageUrl) {
         this.consumerName = consumerName;
         this.phoneNumber = phoneNumber;
