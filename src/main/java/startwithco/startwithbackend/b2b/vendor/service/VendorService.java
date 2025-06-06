@@ -32,6 +32,7 @@ import startwithco.startwithbackend.solution.solution.repository.SolutionEntityR
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static startwithco.startwithbackend.b2b.vendor.controller.request.VendorRequest.*;
@@ -101,6 +102,7 @@ public class VendorService {
                     .email(request.email())
                     .encodedPassword(encoder.encode(request.password()))
                     .businessLicenseImage(businessLicenseImage)
+                    .vendorUniqueType(UUID.randomUUID().toString())
                     .build();
 
             vendorEntityRepository.save(vendorEntity);

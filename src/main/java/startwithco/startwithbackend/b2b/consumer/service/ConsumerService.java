@@ -29,6 +29,7 @@ import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest.*;
@@ -95,6 +96,7 @@ public class ConsumerService {
                     .phoneNumber(request.phoneNum())
                     .email(request.email())
                     .industry(request.industry())
+                    .consumerUniqueType(UUID.randomUUID().toString())
                     .build();
 
             consumerRepository.save(consumerEntity);

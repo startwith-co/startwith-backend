@@ -22,7 +22,8 @@ public class ConsumerResponse {
             String phoneNumber,
             String email,
             String industry,
-            String consumerImageUrl
+            String consumerImageUrl,
+            String consumerUniqueType
     ) {
         public static GetConsumerInfo fromEntity(ConsumerEntity consumerEntity) {
             return GetConsumerInfo.builder()
@@ -32,6 +33,7 @@ public class ConsumerResponse {
                     .email(consumerEntity.getEmail())
                     .industry(consumerEntity.getIndustry())
                     .consumerImageUrl(consumerEntity.getConsumerImageUrl())
+                    .consumerUniqueType(consumerEntity.getConsumerUniqueType())
                     .build();
         }
     }

@@ -120,6 +120,8 @@ public class VendorEntity extends BaseTimeEntity {
     @Column(name = "client_count", nullable = true)
     private Long clientCount;
 
+    @Column(name = "vendor_unique_type", nullable = false)
+    private String vendorUniqueType;
 
     public void update(String vendorName, String managerName, String phoneNumber, String email, boolean audit,
                        String accountNumber, String bank, String vendorExplanation, String vendorBannerImageUrl,

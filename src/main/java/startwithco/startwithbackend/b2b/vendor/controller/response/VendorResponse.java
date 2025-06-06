@@ -45,7 +45,8 @@ public class VendorResponse {
             LocalTime holidayStartTime,
             LocalTime holidayEndTime,
             Long orderCount,
-            Long clientCount
+            Long clientCount,
+            String vendorUniqueType
     ) {
         public static GetVendorInfo fromEntity(VendorEntity vendorEntity) {
             return GetVendorInfo.builder()
@@ -70,6 +71,7 @@ public class VendorResponse {
                     .holidayEndTime(vendorEntity.getHolidayEndTime())
                     .orderCount(vendorEntity.getOrderCount())
                     .clientCount(vendorEntity.getClientCount())
+                    .vendorUniqueType(vendorEntity.getVendorUniqueType())
                     .build();
         }
     }
