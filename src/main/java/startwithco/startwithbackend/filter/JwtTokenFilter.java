@@ -1,5 +1,6 @@
 package startwithco.startwithbackend.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.*;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -15,7 +16,9 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import startwithco.startwithbackend.exception.NotFoundException;
+import startwithco.startwithbackend.exception.UnauthorizedException;
 import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
+import startwithco.startwithbackend.exception.handler.GlobalExceptionHandler;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,6 +26,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.getCode;
+import static startwithco.startwithbackend.exception.handler.GlobalExceptionHandler.*;
 
 public class JwtTokenFilter extends OncePerRequestFilter {
 
@@ -70,6 +74,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
                 Claims claims = claimsJws.getBody();
                 String username = claims.getSubject();
+                String type = claims.get("type", String.class);
 
                 UserDetails userDetails = User.withUsername(username)
                         .password("")
@@ -80,25 +85,34 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                         userDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
+                request.setAttribute("accessToken", token);
+                request.setAttribute("type", type);
                 response.setHeader("Authorization", "Bearer " + token); // Add "Bearer " to the header value
                 filterChain.doFilter(request, response);
 
             } catch (ExpiredJwtException e) {
-               throw  new NotFoundException(
-                        HttpStatus.UNAUTHORIZED.value(),
-                        "존재하지 않는 수요 기업입니다.",
-                        getCode("존재하지 않는 수요 기업입니다.", ExceptionCodeMapper.ExceptionType.UNAUTHORIZED)
-                );
+                setErrorResponse(response, HttpStatus.UNAUTHORIZED.value(), "만료된 JWT 입니다.",getCode("만료된 JWT 입니다.", ExceptionCodeMapper.ExceptionType.UNAUTHORIZED ));
+            } catch (SignatureException e) {
+                setErrorResponse(response, HttpStatus.UNAUTHORIZED.value(), "잘못된 JWT 입니다.",getCode("잘못된 JWT 입니다.", ExceptionCodeMapper.ExceptionType.UNAUTHORIZED ));
             }
-
             catch (JwtException e) {
                 SecurityContextHolder.clearContext();
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return;
             }
         } else {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
         }
+    }
+
+    private void setErrorResponse(HttpServletResponse response, int status, String message, String code) throws IOException {
+        response.setStatus(status);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        ErrorResponse errorResponse = new ErrorResponse(status, message, code);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String json = objectMapper.writeValueAsString(errorResponse);
+
+        response.getWriter().write(json);
     }
 }

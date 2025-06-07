@@ -15,6 +15,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import startwithco.startwithbackend.filter.JwtTokenFilter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -66,5 +67,37 @@ public class SecurityConfiguration {
     @Bean
     public BCryptPasswordEncoder encoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public JwtTokenFilter jwtTokenFilter() {
+        List<String> permitAllEndpoints = Arrays.asList(
+                // 토큰 검사가 필요 없는 경로 목록
+                // Swagger
+                "/swagger-ui/**",
+                "/v3/api-docs/**",
+
+                // Health Check
+                "/actuator/health",
+
+                // H2-Console
+                "/h2-console/**",
+
+                "/api/b2b-service/consumer/join",
+                "/api/b2b-service/consumer/email/send",
+                "/api/b2b-service/consumer/email/verify",
+                "/api/b2b-service/consumer/login",
+                "/api/b2b-service/consumer/resetLink",
+
+                "/api/b2b-service/vendor/join",
+                "/api/b2b-service/vendor/email/send",
+                "/api/b2b-service/vendor/email/verify",
+                "/api/b2b-service/vendor/login",
+                "/api/b2b-service/vendor/resetLink"
+
+                // 모든 URL 개방
+//                "/**"
+        );
+        return new JwtTokenFilter(jwtSecret, permitAllEndpoints);
     }
 }

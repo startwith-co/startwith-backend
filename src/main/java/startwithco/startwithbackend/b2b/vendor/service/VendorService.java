@@ -212,6 +212,7 @@ public class VendorService {
         return GetVendorInfo.fromEntity(vendorEntity);
     }
 
+    @Transactional
     public void updateVendor(UpdateVendorInfoRequest request, MultipartFile vendorBannerImageUrl) {
         VendorEntity vendorEntity = vendorEntityRepository.findByVendorSeq(request.vendorSeq())
                 .orElseThrow(() -> new NotFoundException(

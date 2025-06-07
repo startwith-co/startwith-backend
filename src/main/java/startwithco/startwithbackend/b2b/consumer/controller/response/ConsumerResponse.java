@@ -52,4 +52,12 @@ public class ConsumerResponse {
     ) {
 
     }
+
+    public record ResetLinkResponse(
+            String token,
+            String link,
+            Long consumerSeq
+    ) {
+
+    }
 }
