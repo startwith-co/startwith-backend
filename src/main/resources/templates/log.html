@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>예외 로그</title>
+    <style>
+        body {
+            font-family: "Noto Sans KR", sans-serif;
+            margin: 10px;
+        }
+
+        h2 {
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            table-layout: fixed;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 6px;
+            text-align: center;
+            font-size: 12px;
+            word-break: break-word;
+        }
+
+        th {
+            background-color: #f5f5f5;
+            font-weight: 600;
+        }
+
+        .btn-action {
+            padding: 4px 8px;
+            font-size: 11px;
+            margin: 0 2px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .btn-settle {
+            background-color: #28a745;
+            color: white;
+            border: none;
+        }
+
+        .btn-cancel {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+        }
+
+        .btn-disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .pagination {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .pagination a {
+            margin: 0 2px;
+            padding: 4px 8px;
+            text-decoration: none;
+            font-size: 12px;
+            color: #007bff;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+
+        .pagination a.disabled {
+            color: #aaa;
+            pointer-events: none;
+            border-color: #eee;
+        }
+    </style>
+</head>
+<body>
+<h2>예외 로그</h2>
+
+<!-- 에러 메시지 alert -->
+<script th:if="${errorMessage != null}" th:inline="javascript">
+    alert([[${errorMessage}]]);
+</script>
+
+<table>
+    <thead>
+    <tr>
+        <th>시간</th>
+        <th>예외 클래스명</th>
+        <th>HTTP 상태 코드</th>
+        <th>서비스 내부에서 정의한 예외 코드</th>
+        <th>예외 메시지</th>
+        <th>요청 URI</th>
+        <th>발생 Method</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="log : ${exceptionLogs}">
+        <td th:text="${log.createdAt != null ? #temporals.format(log.createdAt, 'yyyy-MM-dd HH:mm:ss') : '-'}">-</td>
+        <td th:text="${log.exceptionType ?: '-'}">-</td>
+        <td th:text="${log.httpStatus ?: '-'}">-</td>
+        <td th:text="${log.errorCode ?: '-'}">-</td>
+        <td th:text="${log.message ?: '-'}">-</td>
+        <td th:text="${log.requestUri ?: '-'}">-</td>
+        <td th:text="${log.methodName ?: '-'}">-</td>
+    </tr>
+    </tbody>
+</table>
+
+<div class="pagination">
+    <a th:href="@{/admin/logs(page=${currentPage - 1})}"
+       th:classappend="${currentPage == 0} ? ' disabled' : ''">이전</a>
+
+    <a th:href="@{/admin/logs(page=${currentPage + 1})}"
+       th:classappend="${!hasNext} ? ' disabled' : ''">다음</a>
+</div>
+</body>
+</html>
