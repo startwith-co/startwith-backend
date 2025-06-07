@@ -63,6 +63,7 @@ public class VendorController {
     }
 
     @PostMapping(
+            value = "/join",
             name = "벤더 기업 가입",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE

@@ -54,6 +54,9 @@ public class ExceptionCodeMapper {
         SERVER_MAP.put("웹훅 처리 중 서버 오류가 발생했습니다.", "SERVER_EXCEPTION_010");
 
         // UnauthorizedException
+        UNAUTHORIZED_MAP.put("만료된 JWT 입니다.", "UNAUTHORIZED_EXCEPTION_001");
+        UNAUTHORIZED_MAP.put("잘못된 JWT 입니다.", "UNAUTHORIZED_EXCEPTION_002");
+        UNAUTHORIZED_MAP.put("이미 사용한 JWT 입니다.", "UNAUTHORIZED_EXCEPTION_003");
     }
 
     public static String getCode(String message, ExceptionType type) {

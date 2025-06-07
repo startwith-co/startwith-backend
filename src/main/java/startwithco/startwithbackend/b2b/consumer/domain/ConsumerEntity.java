@@ -51,4 +51,8 @@ public class ConsumerEntity extends BaseTimeEntity {
         this.industry = industry;
         this.consumerImageUrl = consumerImageUrl;
     }
+
+    public void updatePassword(String encodedPassword) {
+        this.encodedPassword = encodedPassword;
+    }
 }

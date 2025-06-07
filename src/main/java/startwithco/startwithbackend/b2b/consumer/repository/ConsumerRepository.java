@@ -13,4 +13,6 @@ public interface ConsumerRepository {
     Optional<ConsumerEntity> findByConsumerSeq(Long solutionSeq);
 
     boolean existsByConsumerSeq(Long consumerSeq);
+
+    void saveBlackToken(String token);
 }

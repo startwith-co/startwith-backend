@@ -7,29 +7,26 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest;
 import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
 import startwithco.startwithbackend.b2b.consumer.repository.ConsumerRepository;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.common.service.CommonService;
-import startwithco.startwithbackend.exception.BadRequestException;
-import startwithco.startwithbackend.exception.ConflictException;
-import startwithco.startwithbackend.exception.NotFoundException;
-import startwithco.startwithbackend.exception.ServerException;
+import startwithco.startwithbackend.exception.*;
+import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
 import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
 import startwithco.startwithbackend.payment.payment.repository.PaymentEntityRepository;
 import startwithco.startwithbackend.payment.paymentEvent.domain.PaymentEventEntity;
 import startwithco.startwithbackend.solution.review.repository.SolutionReviewEntityRepository;
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest.*;
@@ -129,7 +126,13 @@ public class ConsumerService {
         ConsumerEntity consumerEntity = validateEmail(request);
 
         // 비밀번호 검증
-        validatePassword(request, consumerEntity);
+        if (!encoder.matches(request.password(), consumerEntity.getEncodedPassword())) {
+            throw new BadRequestException(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "비밀번호가 일치하지 않습니다.",
+                    getCode("비밀번호가 일치하지 않습니다.", ExceptionType.BAD_REQUEST)
+            );
+        }
 
         // Access 토큰 생성
         Long consumerSeq = consumerEntity.getConsumerSeq();
@@ -167,8 +170,8 @@ public class ConsumerService {
                         )));
     }
 
-    private void validatePassword(LoginConsumerRequest request, ConsumerEntity consumerEntity) {
-        if (!encoder.matches(request.password(), consumerEntity.getEncodedPassword())) {
+    private void validatePassword(String requestPassword, String password) {
+        if (!encoder.matches(requestPassword, password)) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
                     "비밀번호가 일치하지 않습니다.",
@@ -184,6 +187,7 @@ public class ConsumerService {
                 .setSubject(String.valueOf(consumerSeq))
                 .setIssuedAt(now)
                 .setExpiration(refreshExpiryDate)
+                .claim("type", "password_reset")
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
     }
@@ -256,7 +260,7 @@ public class ConsumerService {
         }
     }
 
-    public String resetLink(ResetLinkRequest request) {
+    public ResetLinkResponse resetLink(ResetLinkRequest request) {
 
         // 이메일 검증
         ConsumerEntity consumerEntity = consumerRepository.findByEmail(request.email())
@@ -267,7 +271,7 @@ public class ConsumerService {
                         )));
 
         // consumer Name 검증
-        if(!request.consumerName().equals(consumerEntity.getConsumerName())) {
+        if (!request.consumerName().equals(consumerEntity.getConsumerName())) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
                     "Consumer Name이 일치하지 않습니다.",
@@ -277,13 +281,75 @@ public class ConsumerService {
 
         // 토큰 생성
         String token = generateToken(1_800_000L, consumerEntity.getConsumerSeq());
-        //
-        saveResetToken(consumerEntity.getConsumerSeq(),token);
 
-        String resetLink = "https://euics.co.kr/resetPassword?token="+token;
+        saveResetToken(consumerEntity.getConsumerSeq(), token);
+
+        String resetLink = "http://localhost:3000/forget/reset?token=" + token;
 
         commonService.sendResetLink(consumerEntity.getEmail(), resetLink);
 
-        return resetLink;
+        return new ResetLinkResponse(token, resetLink, consumerEntity.getConsumerSeq());
+    }
+
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request, String token) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long consumerSeq = Long.parseLong(authentication.getName());
+
+        String blackToken;
+        try {
+            // 블랙리스트 조회
+            blackToken = redisTemplate.opsForValue().get(token);
+        } catch (Exception e) {
+            throw new ServerException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Redis 서버 오류가 발생했습니다.",
+                    getCode("Redis 서버 오류가 발생했습니다.", ExceptionType.SERVER)
+            );
+        }
+
+        if (blackToken != null) {
+            throw new UnauthorizedException(
+                    HttpStatus.UNAUTHORIZED.value(),
+                    "이미 사용한 JWT 입니다.",
+                    getCode("이미 사용한 JWT 입니다.", ExceptionType.UNAUTHORIZED)
+            );
+        }
+
+        // 이메일 검증
+        ConsumerEntity consumerEntity = consumerRepository.findByEmail(request.email())
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 이메일 입니다.",
+                        getCode("존재하지 않는 이메일 입니다.", ExceptionType.NOT_FOUND
+                        )));
+
+        // 토큰 seq 검증
+        if (!Objects.equals(consumerEntity.getConsumerSeq(), consumerSeq)) {
+            throw new UnauthorizedException(
+                    HttpStatus.UNAUTHORIZED.value(),
+                    "잘못된 JWT 입니다.",
+                    getCode("잘못된 JWT 입니다.", ExceptionCodeMapper.ExceptionType.UNAUTHORIZED)
+            );
+        }
+
+        // 비밀번호 검증
+        if (!encoder.matches(request.password(), consumerEntity.getEncodedPassword())) {
+            throw new BadRequestException(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "비밀번호가 일치하지 않습니다.",
+                    getCode("비밀번호가 일치하지 않습니다.", ExceptionType.BAD_REQUEST)
+            );
+        }
+
+        // 비밀번호 수정
+        consumerEntity.updatePassword(encoder.encode(request.newPassword()));
+
+        consumerRepository.save(consumerEntity);
+
+        // 한번 사용한 토큰은 블랙리스트
+        consumerRepository.saveBlackToken(token);
+
     }
 }
