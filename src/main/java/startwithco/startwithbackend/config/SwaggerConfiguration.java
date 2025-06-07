@@ -47,7 +47,6 @@ public class SwaggerConfiguration {
                         3. CODE 값에 **"UNAUTHORIZED_EXCEPTION_예외코드 설정하세요."**가 반환될 경우 *담당자*에게 말씀해주세요.
                         4. 필요한 API 혹은 데이터가 있을 경우 말씀해주세요.
                         5. 각각의 API Description에 빠져있는 EXCEPTION이 있을 경우 말씀해주세요.
-                        6. **/api/payment-service/payment/deposit-callback** API는 **절대** 사용하시면 안됩니다.
                         """
                 )
                 .version("1.0.0");
