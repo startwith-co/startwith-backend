@@ -9,10 +9,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ExceptionLogDto {
     private LocalDateTime createdAt;
-    private String exceptionType;
     private int httpStatus;
     private String errorCode;
     private String message;
     private String requestUri;
+    private String requestBody;
     private String methodName;
 }

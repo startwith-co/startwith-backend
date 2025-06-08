@@ -1,12 +1,10 @@
 package startwithco.startwithbackend.exception;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor
-public class ServerException extends RuntimeException {
-    private final int httpStatus;
-    private final String message;
-    private final String code;
+public class ServerException  extends CustomBaseException {
+    public ServerException(int httpStatus, String message, String code) {
+        super(message, httpStatus, code);
+    }
 }
