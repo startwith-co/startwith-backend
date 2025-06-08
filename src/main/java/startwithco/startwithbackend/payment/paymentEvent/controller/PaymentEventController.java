@@ -113,10 +113,10 @@ public class PaymentEventController {
 
     @GetMapping(
             value = "/order",
-            name = "결제하기 후 주문내역"
+            name = "결제 요청하기 후 주문내역"
     )
     @Operation(
-            summary = "결제하기 후 주문내역 API",
+            summary = "결제 요청하기 후 주문내역 API",
             description = """
                     1. category: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY
                     """
