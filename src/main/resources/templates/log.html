@@ -79,6 +79,18 @@
             pointer-events: none;
             border-color: #eee;
         }
+
+        pre {
+            text-align: left;
+            font-size: 11px;
+            white-space: pre-wrap;
+            background-color: #f9f9f9;
+            padding: 4px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
@@ -93,22 +105,24 @@
     <thead>
     <tr>
         <th>시간</th>
-        <th>예외 클래스명</th>
         <th>HTTP 상태 코드</th>
         <th>서비스 내부에서 정의한 예외 코드</th>
         <th>예외 메시지</th>
         <th>요청 URI</th>
+        <th>요청 REQUEST</th>
         <th>발생 Method</th>
     </tr>
     </thead>
     <tbody>
-    <tr th:each="log : ${exceptionLogs}">
+    <tr th:each="log, iterStat : ${exceptionLogs}">
         <td th:text="${log.createdAt != null ? #temporals.format(log.createdAt, 'yyyy-MM-dd HH:mm:ss') : '-'}">-</td>
-        <td th:text="${log.exceptionType ?: '-'}">-</td>
         <td th:text="${log.httpStatus ?: '-'}">-</td>
         <td th:text="${log.errorCode ?: '-'}">-</td>
         <td th:text="${log.message ?: '-'}">-</td>
         <td th:text="${log.requestUri ?: '-'}">-</td>
+        <td>
+            <pre th:utext="${log.requestBody ?: '-'}">-</pre>
+        </td>
         <td th:text="${log.methodName ?: '-'}">-</td>
     </tr>
     </tbody>
