@@ -83,20 +83,20 @@ public class SecurityConfiguration {
                 // H2-Console
                 "/h2-console/**",
 
-                "/api/b2b-service/consumer/join",
-                "/api/b2b-service/consumer/email/send",
-                "/api/b2b-service/consumer/email/verify",
-                "/api/b2b-service/consumer/login",
-                "/api/b2b-service/consumer/resetLink",
-
-                "/api/b2b-service/vendor/join",
-                "/api/b2b-service/vendor/email/send",
-                "/api/b2b-service/vendor/email/verify",
-                "/api/b2b-service/vendor/login",
-                "/api/b2b-service/vendor/resetLink"
+//                "/api/b2b-service/consumer/join",
+//                "/api/b2b-service/consumer/email/send",
+//                "/api/b2b-service/consumer/email/verify",
+//                "/api/b2b-service/consumer/login",
+//                "/api/b2b-service/consumer/resetLink",
+//
+//                "/api/b2b-service/vendor/join",
+//                "/api/b2b-service/vendor/email/send",
+//                "/api/b2b-service/vendor/email/verify",
+//                "/api/b2b-service/vendor/login",
+//                "/api/b2b-service/vendor/resetLink"
 
                 // 모든 URL 개방
-//                "/**"
+                "/**"
         );
         return new JwtTokenFilter(jwtSecret, permitAllEndpoints);
     }
