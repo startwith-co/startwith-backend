@@ -8,19 +8,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest;
+import startwithco.startwithbackend.b2b.consumer.controller.response.ConsumerResponse;
 import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
 import startwithco.startwithbackend.b2b.vendor.controller.request.VendorRequest;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.b2b.vendor.repository.VendorEntityRepository;
 import startwithco.startwithbackend.common.service.CommonService;
-import startwithco.startwithbackend.exception.BadRequestException;
-import startwithco.startwithbackend.exception.ConflictException;
-import startwithco.startwithbackend.exception.NotFoundException;
-import startwithco.startwithbackend.exception.ServerException;
+import startwithco.startwithbackend.exception.*;
+import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
 import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
 import startwithco.startwithbackend.payment.payment.repository.PaymentEntityRepository;
 import startwithco.startwithbackend.payment.paymentEvent.repository.PaymentEventEntityRepository;
@@ -29,10 +31,7 @@ import startwithco.startwithbackend.payment.snapshot.repository.TossPaymentDaily
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 import startwithco.startwithbackend.solution.solution.repository.SolutionEntityRepository;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static startwithco.startwithbackend.b2b.vendor.controller.request.VendorRequest.*;
@@ -178,6 +177,7 @@ public class VendorService {
                 .setSubject(String.valueOf(consumerSeq))
                 .setIssuedAt(now)
                 .setExpiration(refreshExpiryDate)
+                .claim("type", "password_reset")
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
     }
@@ -319,4 +319,96 @@ public class VendorService {
 
         return response;
     }
+
+    public ResetLinkResponse resetLink(ResetLinkRequest request) {
+
+        // 이메일 검증
+        VendorEntity vendorEntity = vendorEntityRepository.findByEmail(request.email())
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 이메일 입니다.",
+                        getCode("존재하지 않는 이메일 입니다.", ExceptionType.NOT_FOUND
+                        )));
+
+        // Vendor Name 검증
+        if (!request.vendorName().equals(vendorEntity.getVendorName())) {
+            throw new BadRequestException(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "Vendor Name이 일치하지 않습니다.",
+                    getCode("Vendor Name이 일치하지 않습니다.", ExceptionType.BAD_REQUEST)
+            );
+        }
+
+        // 토큰 생성
+        String token = generateToken(1_800_000L, vendorEntity.getVendorSeq());
+
+        String resetLink = "http://localhost:3000/forget/reset?token=" + token;
+
+        commonService.sendResetLink(vendorEntity.getEmail(), resetLink);
+
+        return new ResetLinkResponse(token, resetLink, vendorEntity.getVendorSeq());
+    }
+
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request, String token) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long vendorSeq = Long.parseLong(authentication.getName());
+
+        String blackToken;
+        try {
+            // 블랙리스트 조회
+            blackToken = redisTemplate.opsForValue().get(token);
+        } catch (Exception e) {
+            throw new ServerException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Redis 서버 오류가 발생했습니다.",
+                    getCode("Redis 서버 오류가 발생했습니다.", ExceptionType.SERVER)
+            );
+        }
+
+        if (blackToken != null) {
+            throw new UnauthorizedException(
+                    HttpStatus.UNAUTHORIZED.value(),
+                    "이미 사용한 JWT 입니다.",
+                    getCode("이미 사용한 JWT 입니다.", ExceptionType.UNAUTHORIZED)
+            );
+        }
+
+        // 이메일 검증
+        VendorEntity vendorEntity = vendorEntityRepository.findByEmail(request.email())
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 이메일 입니다.",
+                        getCode("존재하지 않는 이메일 입니다.", ExceptionType.NOT_FOUND
+                        )));
+
+        // 토큰 seq 검증
+        if (!Objects.equals(vendorEntity.getVendorSeq(), vendorSeq)) {
+            throw new UnauthorizedException(
+                    HttpStatus.UNAUTHORIZED.value(),
+                    "잘못된 JWT 입니다.",
+                    getCode("잘못된 JWT 입니다.", ExceptionCodeMapper.ExceptionType.UNAUTHORIZED)
+            );
+        }
+
+        // 비밀번호 검증
+        if (!encoder.matches(request.password(), vendorEntity.getEncodedPassword())) {
+            throw new BadRequestException(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "비밀번호가 일치하지 않습니다.",
+                    getCode("비밀번호가 일치하지 않습니다.", ExceptionType.BAD_REQUEST)
+            );
+        }
+
+        // 비밀번호 수정
+        vendorEntity.updatePassword(encoder.encode(request.newPassword()));
+
+        vendorEntityRepository.save(vendorEntity);
+
+        // 한번 사용한 토큰은 블랙리스트
+        vendorEntityRepository.saveBlackToken(token);
+
+    }
+
 }

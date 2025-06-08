@@ -6,20 +6,28 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest;
+import startwithco.startwithbackend.b2b.consumer.controller.response.ConsumerResponse;
 import startwithco.startwithbackend.b2b.vendor.service.VendorService;
 import startwithco.startwithbackend.base.BaseResponse;
 import startwithco.startwithbackend.exception.BadRequestException;
+import startwithco.startwithbackend.exception.UnauthorizedException;
+import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
 import startwithco.startwithbackend.exception.handler.GlobalExceptionHandler;
 import startwithco.startwithbackend.common.service.CommonService;
 
 import java.util.List;
+import java.util.Objects;
 
 import static startwithco.startwithbackend.b2b.vendor.controller.request.VendorRequest.*;
 import static startwithco.startwithbackend.b2b.vendor.controller.response.VendorResponse.*;
@@ -160,7 +168,6 @@ public class VendorController {
         // DTO 유효성 검사
         request.validateLoginVendorRequest(request);
 
-//        ConsumerResponse.LoginConsumerResponse login = consumerService.login(request);
         LoginVendorResponse login = vendorService.login(request);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), login));
@@ -211,6 +218,72 @@ public class VendorController {
         request.validateUpdateVendorRequest(request);
 
         vendorService.updateVendor(request, vendorBannerImageUrl);
+
+        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "success"));
+    }
+
+    @PostMapping(value = "/resetLink", name = "Vendor 비번 리셋 링크")
+    @Operation(summary = "Vendor reset Link API", description = "Vendor reset Link API")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_009", description = "존재하지 않는 이메일 입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "SERVER_EXCEPTION_010", description = "Redis 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_012", description = "Vendor Name이 일치하지 않습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+    })
+    public ResponseEntity<BaseResponse<ResetLinkResponse>> resetLinkVendor(@Valid @RequestBody ResetLinkRequest request) {
+
+        // DTO 유효성 검사
+        request.validateResetLinkRequest(request);
+
+        ResetLinkResponse resetLinkResponse = vendorService.resetLink(request);
+
+        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), resetLinkResponse));
+    }
+
+    @PatchMapping(value = "/resetPassword", name = "Vendor 비번 리셋 링크")
+    @Operation(summary = "Vendor reset Link API", description = "Vendor reset Link API")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_009", description = "존재하지 않는 이메일 입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "SERVER_EXCEPTION_010", description = "Redis 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "UNAUTHORIZED_EXCEPTION_003", description = "이미 사용한 JWT 입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "UNAUTHORIZED_EXCEPTION_002", description = "잘못된 JWT 입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_007", description = "비밀번호가 일치하지 않습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+    })
+    public ResponseEntity<BaseResponse<String>> resetPasswordVendor(HttpServletRequest httpServletRequest, @Valid @RequestBody ResetPasswordRequest request) {
+
+        String token = (String) httpServletRequest.getAttribute("accessToken");
+        String type = (String) httpServletRequest.getAttribute("type");
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long consumerSeq = Long.parseLong(authentication.getName());
+
+        // DTO 유효성 검사
+        request.validateResetPasswordRequest(request);
+
+        // jwt 검사
+        if (!Objects.equals(request.vendorSeq(), consumerSeq)) {
+            throw new UnauthorizedException(
+                    HttpStatus.UNAUTHORIZED.value(),
+                    "잘못된 JWT 입니다.",
+                    getCode("잘못된 JWT 입니다.", ExceptionCodeMapper.ExceptionType.UNAUTHORIZED)
+            );
+        }
+
+        // jwt 타입 검사
+        if (!Objects.equals(type,"password_reset")) {
+            throw new UnauthorizedException(
+                    HttpStatus.UNAUTHORIZED.value(),
+                    "잘못된 JWT 입니다.",
+                    getCode("잘못된 JWT 입니다.", ExceptionCodeMapper.ExceptionType.UNAUTHORIZED)
+            );
+        }
+
+        vendorService.resetPassword(request,token);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "success"));
     }
