@@ -15,4 +15,6 @@ public interface VendorEntityRepository {
     void save(VendorEntity vendorEntity);
 
     boolean existsByVendorSeq(Long vendorSeq);
+
+    void saveBlackToken(String token);
 }

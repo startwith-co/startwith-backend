@@ -243,23 +243,6 @@ public class ConsumerService {
         return response;
     }
 
-    private void saveResetToken(Long consumerSeq, String resetToken) {
-        try {
-            redisTemplate.opsForValue().set(
-                    String.valueOf(consumerSeq),
-                    resetToken,
-                    1_800_000,
-                    TimeUnit.MILLISECONDS
-            );
-        } catch (Exception e) {
-            throw new ServerException(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "Redis 서버 오류가 발생했습니다.",
-                    getCode("Redis 서버 오류가 발생했습니다.", ExceptionType.SERVER)
-            );
-        }
-    }
-
     public ResetLinkResponse resetLink(ResetLinkRequest request) {
 
         // 이메일 검증
@@ -281,8 +264,6 @@ public class ConsumerService {
 
         // 토큰 생성
         String token = generateToken(1_800_000L, consumerEntity.getConsumerSeq());
-
-        saveResetToken(consumerEntity.getConsumerSeq(), token);
 
         String resetLink = "http://localhost:3000/forget/reset?token=" + token;
 

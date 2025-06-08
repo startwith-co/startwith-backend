@@ -20,6 +20,7 @@ public class ExceptionCodeMapper {
         BAD_REQUEST_MAP.put("지원하지 않는 결제 수단입니다.", "BAD_REQUEST_EXCEPTION_009");
         BAD_REQUEST_MAP.put("웹훅 서명 검증에 실패했습니다.", "BAD_REQUEST_EXCEPTION_010");
         BAD_REQUEST_MAP.put("Consumer Name이 일치하지 않습니다.", "BAD_REQUEST_EXCEPTION_011");
+        BAD_REQUEST_MAP.put("Vendor Name이 일치하지 않습니다.", "BAD_REQUEST_EXCEPTION_012");
 
         // ConflictException
         CONFLICT_MAP.put("중복된 이메일입니다.", "CONFLICT_EXCEPTION_001");

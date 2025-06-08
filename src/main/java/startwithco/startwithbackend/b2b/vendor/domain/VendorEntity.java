@@ -150,4 +150,8 @@ public class VendorEntity extends BaseTimeEntity {
         this.orderCount = orderCount;
         this.clientCount = clientCount;
     }
+
+    public void updatePassword(String encodedPassword) {
+        this.encodedPassword = encodedPassword;
+    }
 }

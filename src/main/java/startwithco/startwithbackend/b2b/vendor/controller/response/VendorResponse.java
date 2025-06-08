@@ -112,4 +112,12 @@ public class VendorResponse {
     ) {
 
     }
+
+    public record ResetLinkResponse(
+            String token,
+            String link,
+            Long consumerSeq
+    ) {
+
+    }
 }

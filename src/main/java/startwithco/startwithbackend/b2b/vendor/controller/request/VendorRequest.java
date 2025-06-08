@@ -147,4 +147,47 @@ public class VendorRequest {
         }
     }
 
+    public record ResetLinkRequest(
+            String email,
+            String vendorName
+    ) {
+
+        public void validateResetLinkRequest(ResetLinkRequest request) {
+            if (request.email == null) {
+                throw new BadRequestException(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "요청 데이터 오류입니다.",
+                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                );
+            }
+        }
+    }
+
+    public record ResetPasswordRequest(
+            Long vendorSeq,
+            String email,
+            String password,
+            String newPassword,
+            String confirmPassword
+    ) {
+
+        public void validateResetPasswordRequest(ResetPasswordRequest request) {
+            if (request.vendorSeq == null ||request.email == null || request.newPassword == null || request.confirmPassword == null) {
+                throw new BadRequestException(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "요청 데이터 오류입니다.",
+                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                );
+            }
+
+            if (!request.confirmPassword.equals(request.newPassword)) {
+                throw new BadRequestException(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "요청 데이터 오류입니다.",
+                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                );
+            }
+        }
+    }
+
 }
