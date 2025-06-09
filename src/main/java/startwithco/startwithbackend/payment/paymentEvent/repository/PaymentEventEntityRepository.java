@@ -9,7 +9,5 @@ public interface PaymentEventEntityRepository {
 
     Optional<PaymentEventEntity> findByPaymentEventSeq(Long paymentEventSeq);
 
-    Optional<Object[]> findObjectByPaymentEventUniqueType(String paymentEventUniqueType);
-
     Optional<PaymentEventEntity> findByPaymentEventUniqueType(String paymentEventUniqueType);
 }
