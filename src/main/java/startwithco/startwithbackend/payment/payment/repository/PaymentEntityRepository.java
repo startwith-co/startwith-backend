@@ -23,4 +23,6 @@ public interface PaymentEntityRepository {
     List<PaymentEntity> findAllByVendorSeqAndPaymentStatus(Long vendorSeq, String paymentStatus, int start, int end);
 
     List<PaymentEntity> findAll(int start, int end);
+
+    Optional<PaymentEntity> findByPaymentEventUniqueType(String paymentEventUniqueType);
 }

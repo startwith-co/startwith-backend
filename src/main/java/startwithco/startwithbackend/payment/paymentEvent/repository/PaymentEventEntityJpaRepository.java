@@ -18,14 +18,6 @@ public interface PaymentEventEntityJpaRepository extends JpaRepository<PaymentEv
     Optional<PaymentEventEntity> findByPaymentEventSeq(@Param("paymentEventSeq") Long paymentEventSeq);
 
     @Query("""
-            SELECT pe, p
-            FROM PaymentEventEntity pe
-            LEFT JOIN PaymentEntity p ON p.paymentEventEntity = pe
-            WHERE pe.paymentEventUniqueType = :paymentEventUniqueType
-            """)
-    Optional<Object[]> findObjectByPaymentEventUniqueType(@Param("paymentEventUniqueType") String paymentEventUniqueType);
-
-    @Query("""
             SELECT pe
             FROM PaymentEventEntity pe
             WHERE pe.paymentEventUniqueType = :paymentEventUniqueType

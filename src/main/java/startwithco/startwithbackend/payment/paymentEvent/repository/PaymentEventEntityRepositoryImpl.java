@@ -21,12 +21,6 @@ public class PaymentEventEntityRepositoryImpl implements PaymentEventEntityRepos
         return repository.findByPaymentEventSeq(paymentEventSeq);
     }
 
-
-    @Override
-    public Optional<Object[]> findObjectByPaymentEventUniqueType(String paymentEventUniqueType) {
-        return repository.findObjectByPaymentEventUniqueType(paymentEventUniqueType);
-    }
-
     @Override
     public Optional<PaymentEventEntity> findByPaymentEventUniqueType(String paymentEventUniqueType) {
         return repository.findByPaymentEventUniqueType(paymentEventUniqueType);

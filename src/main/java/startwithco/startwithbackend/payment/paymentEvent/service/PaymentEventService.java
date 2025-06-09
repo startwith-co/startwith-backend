@@ -14,6 +14,7 @@ import startwithco.startwithbackend.b2b.vendor.repository.VendorEntityRepository
 import startwithco.startwithbackend.common.service.CommonService;
 import startwithco.startwithbackend.exception.ConflictException;
 import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
+import startwithco.startwithbackend.payment.payment.repository.PaymentEntityRepository;
 import startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS;
 import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 import startwithco.startwithbackend.exception.NotFoundException;
@@ -31,6 +32,7 @@ import static startwithco.startwithbackend.payment.paymentEvent.controller.respo
 @Slf4j
 public class PaymentEventService {
     private final PaymentEventEntityRepository paymentEventEntityRepository;
+    private final PaymentEntityRepository paymentEntityRepository;
     private final SolutionEntityRepository solutionEntityRepository;
     private final VendorEntityRepository vendorEntityRepository;
     private final ConsumerRepository consumerRepository;
@@ -94,35 +96,35 @@ public class PaymentEventService {
 
     @Transactional(readOnly = true)
     public Object getPaymentEventEntity(String paymentEventUniqueType) {
-        Object[] row = paymentEventEntityRepository.findObjectByPaymentEventUniqueType(paymentEventUniqueType)
+        PaymentEventEntity paymentEventEntity = paymentEventEntityRepository.findByPaymentEventUniqueType(paymentEventUniqueType)
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
                         "존재하지 않는 결제 요청입니다.",
                         getCode("존재하지 않는 결제 요청입니다.", ExceptionType.NOT_FOUND)
                 ));
 
-        PaymentEventEntity event = (PaymentEventEntity) row[0];
-        PaymentEntity payment = (PaymentEntity) row[1];
+        PaymentEntity paymentEntity = paymentEntityRepository.findByPaymentEventUniqueType(paymentEventUniqueType)
+                .orElse(null);
 
-        if (payment != null && (payment.getPaymentStatus() == PAYMENT_STATUS.DONE || payment.getPaymentStatus() == PAYMENT_STATUS.SETTLED)) {
+        if (paymentEntity != null && (paymentEntity.getPaymentStatus() == PAYMENT_STATUS.DONE || paymentEntity.getPaymentStatus() == PAYMENT_STATUS.SETTLED)) {
             return new GetCONFIRMEDPaymentEventEntityResponse(
-                    event.getPaymentEventSeq(),
-                    event.getPaymentEventName(),
-                    payment.getOrderId(),
-                    event.getSolutionEntity().getCategory(),
-                    payment.getAmount(),
-                    event.getCreatedAt(),
-                    payment.getDueDate()
+                    paymentEventEntity.getPaymentEventSeq(),
+                    paymentEventEntity.getPaymentEventName(),
+                    paymentEntity.getOrderId(),
+                    paymentEventEntity.getSolutionEntity().getCategory(),
+                    paymentEventEntity.getAmount(),
+                    paymentEventEntity.getCreatedAt(),
+                    paymentEntity.getDueDate()
             );
         } else {
             return new GetREQUESTEDPaymentEventEntityResponse(
-                    event.getPaymentEventSeq(),
-                    event.getPaymentEventName(),
-                    event.getSolutionEntity().getCategory(),
-                    event.getAmount(),
-                    event.getContractConfirmationUrl(),
-                    event.getRefundPolicyUrl(),
-                    event.getCreatedAt()
+                    paymentEventEntity.getPaymentEventSeq(),
+                    paymentEventEntity.getPaymentEventName(),
+                    paymentEventEntity.getSolutionEntity().getCategory(),
+                    paymentEventEntity.getAmount(),
+                    paymentEventEntity.getContractConfirmationUrl(),
+                    paymentEventEntity.getRefundPolicyUrl(),
+                    paymentEventEntity.getCreatedAt()
             );
         }
     }

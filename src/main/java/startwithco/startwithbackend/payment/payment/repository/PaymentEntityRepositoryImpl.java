@@ -145,4 +145,9 @@ public class PaymentEntityRepositoryImpl implements PaymentEntityRepository {
                 .limit(end - start)
                 .fetch();
     }
+
+    @Override
+    public Optional<PaymentEntity> findByPaymentEventUniqueType(String paymentEventUniqueType) {
+        return repository.findByPaymentEventUniqueType(paymentEventUniqueType);
+    }
 }
