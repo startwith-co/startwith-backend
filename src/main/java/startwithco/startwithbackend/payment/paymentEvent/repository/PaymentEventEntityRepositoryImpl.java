@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import startwithco.startwithbackend.payment.paymentEvent.domain.PaymentEventEntity;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -24,7 +23,12 @@ public class PaymentEventEntityRepositoryImpl implements PaymentEventEntityRepos
 
 
     @Override
-    public List<Object[]> findAllByConsumerSeqAndVendorSeq(Long consumerSeq, Long vendorSeq) {
-        return repository.findAllByConsumerSeqAndVendorSeq(consumerSeq, vendorSeq);
+    public Object[] findObjectByPaymentEventUniqueType(String paymentEventUniqueType) {
+        return repository.findObjectByPaymentEventUniqueType(paymentEventUniqueType);
+    }
+
+    @Override
+    public Optional<PaymentEventEntity> findByPaymentEventUniqueType(String paymentEventUniqueType) {
+        return repository.findByPaymentEventUniqueType(paymentEventUniqueType);
     }
 }

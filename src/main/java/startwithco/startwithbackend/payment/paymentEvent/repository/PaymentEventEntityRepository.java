@@ -10,5 +10,7 @@ public interface PaymentEventEntityRepository {
 
     Optional<PaymentEventEntity> findByPaymentEventSeq(Long paymentEventSeq);
 
-    List<Object[]> findAllByConsumerSeqAndVendorSeq(Long consumerSeq, Long vendorSeq);
+    Object[] findObjectByPaymentEventUniqueType(String paymentEventUniqueType);
+
+    Optional<PaymentEventEntity> findByPaymentEventUniqueType(String paymentEventUniqueType);
 }
