@@ -24,6 +24,7 @@ import startwithco.startwithbackend.solution.solution.repository.SolutionEntityR
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.*;
 import static startwithco.startwithbackend.payment.paymentEvent.controller.request.PaymentEventRequest.*;
@@ -80,14 +81,15 @@ public class PaymentEventService {
                     .actualAmount(actualAmount)
                     .contractConfirmationUrl(s3ContractConfirmationUrl)
                     .refundPolicyUrl(s3RefundPolicyUrl)
+                    .paymentEventUniqueType(UUID.randomUUID().toString())
                     .build();
 
             paymentEventEntityRepository.savePaymentEventEntity(paymentEventEntity);
 
-            return new SavePaymentEventEntityResponse(paymentEventEntity.getPaymentEventSeq());
+            return new SavePaymentEventEntityResponse(paymentEventEntity.getPaymentEventSeq(), paymentEventEntity.getPaymentEventUniqueType());
         } catch (DataIntegrityViolationException e) {
             throw new ConflictException(
-                    HttpStatus.CONTINUE.value(),
+                    HttpStatus.CONFLICT.value(),
                     "동시성 저장은 불가능합니다.",
                     getCode("동시성 저장은 불가능합니다.", ExceptionType.CONFLICT)
             );
@@ -95,50 +97,39 @@ public class PaymentEventService {
     }
 
     @Transactional(readOnly = true)
-    public List<Object> getPaymentEventEntity(Long consumerSeq, Long vendorSeq) {
-        vendorEntityRepository.findByVendorSeq(vendorSeq)
+    public Object getPaymentEventEntity(String paymentEventUniqueType) {
+        paymentEventEntityRepository.findByPaymentEventUniqueType(paymentEventUniqueType)
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
-                        "존재하지 않는 벤더 기업입니다.",
-                        getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
-                ));
-        consumerRepository.findByConsumerSeq(consumerSeq)
-                .orElseThrow(() -> new NotFoundException(
-                        HttpStatus.NOT_FOUND.value(),
-                        "존재하지 않는 수요 기업입니다.",
-                        getCode("존재하지 않는 수요 기업입니다.", ExceptionType.NOT_FOUND)
+                        "존재하지 않는 결제 요청입니다.",
+                        getCode("존재하지 않는 결제 요청입니다.", ExceptionType.NOT_FOUND)
                 ));
 
-        List<Object[]> rows = paymentEventEntityRepository.findAllByConsumerSeqAndVendorSeq(consumerSeq, vendorSeq);
-        List<Object> result = new ArrayList<>();
-        for (Object[] row : rows) {
-            PaymentEventEntity event = (PaymentEventEntity) row[0];
-            PaymentEntity payment = (PaymentEntity) row[1];
+        Object[] row = paymentEventEntityRepository.findObjectByPaymentEventUniqueType(paymentEventUniqueType);
+        PaymentEventEntity event = (PaymentEventEntity) row[0];
+        PaymentEntity payment = (PaymentEntity) row[1];
 
-            if (payment != null && payment.getPaymentStatus() == PAYMENT_STATUS.DONE) {
-                result.add(new GetCONFIRMEDPaymentEventEntityResponse(
-                        event.getPaymentEventSeq(),
-                        event.getPaymentEventName(),
-                        payment.getOrderId(),
-                        event.getSolutionEntity().getCategory(),
-                        payment.getAmount(),
-                        event.getCreatedAt(),
-                        payment.getDueDate()
-                ));
-            } else {
-                result.add(new GetREQUESTEDPaymentEventEntityResponse(
-                        event.getPaymentEventSeq(),
-                        event.getPaymentEventName(),
-                        event.getSolutionEntity().getCategory(),
-                        event.getAmount(),
-                        event.getContractConfirmationUrl(),
-                        event.getRefundPolicyUrl(),
-                        event.getCreatedAt()
-                ));
-            }
+        if (payment != null && (payment.getPaymentStatus() == PAYMENT_STATUS.DONE || payment.getPaymentStatus() == PAYMENT_STATUS.SETTLED)) {
+            return new GetCONFIRMEDPaymentEventEntityResponse(
+                    event.getPaymentEventSeq(),
+                    event.getPaymentEventName(),
+                    payment.getOrderId(),
+                    event.getSolutionEntity().getCategory(),
+                    payment.getAmount(),
+                    event.getCreatedAt(),
+                    payment.getDueDate()
+            );
+        } else {
+            return new GetREQUESTEDPaymentEventEntityResponse(
+                    event.getPaymentEventSeq(),
+                    event.getPaymentEventName(),
+                    event.getSolutionEntity().getCategory(),
+                    event.getAmount(),
+                    event.getContractConfirmationUrl(),
+                    event.getRefundPolicyUrl(),
+                    event.getCreatedAt()
+            );
         }
-
-        return result;
     }
 
     @Transactional(readOnly = true)
