@@ -94,14 +94,13 @@ public class PaymentEventService {
 
     @Transactional(readOnly = true)
     public Object getPaymentEventEntity(String paymentEventUniqueType) {
-        paymentEventEntityRepository.findByPaymentEventUniqueType(paymentEventUniqueType)
+        Object[] row = paymentEventEntityRepository.findObjectByPaymentEventUniqueType(paymentEventUniqueType)
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
                         "존재하지 않는 결제 요청입니다.",
                         getCode("존재하지 않는 결제 요청입니다.", ExceptionType.NOT_FOUND)
                 ));
 
-        Object[] row = paymentEventEntityRepository.findObjectByPaymentEventUniqueType(paymentEventUniqueType);
         PaymentEventEntity event = (PaymentEventEntity) row[0];
         PaymentEntity payment = (PaymentEntity) row[1];
 

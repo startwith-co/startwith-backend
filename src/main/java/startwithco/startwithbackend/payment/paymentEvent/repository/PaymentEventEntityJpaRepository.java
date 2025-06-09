@@ -23,7 +23,7 @@ public interface PaymentEventEntityJpaRepository extends JpaRepository<PaymentEv
             LEFT JOIN PaymentEntity p ON p.paymentEventEntity = pe
             WHERE pe.paymentEventUniqueType = :paymentEventUniqueType
             """)
-    Object[] findObjectByPaymentEventUniqueType(@Param("paymentEventUniqueType") String paymentEventUniqueType);
+    Optional<Object[]> findObjectByPaymentEventUniqueType(@Param("paymentEventUniqueType") String paymentEventUniqueType);
 
     @Query("""
             SELECT pe
