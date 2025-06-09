@@ -79,7 +79,7 @@ public class PaymentEventController {
             summary = "결제 요청하기 조회 API",
             description = """
                     1. category: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY
-                    2. 결제 승인 유무의 경우 orderId의 존재 여부로 확인하면 됩니다. 
+                    2. 결제 승인 유무의 경우 orderId의 존재 여부로 확인하면 됩니다.
                     2. 결제 승인되지 않았을 때(orderId X)의 Response
                         - GetCONFIRMEDPaymentEventEntityResponse
                     3. 결제 승인 됐을 때(orderId O)의 Response
@@ -92,9 +92,7 @@ public class PaymentEventController {
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_002", description = "존재하지 않는 결제 요청입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
-    public ResponseEntity<BaseResponse<Object>> getPaymentEventEntity(
-            @RequestParam(value = "paymentUniqueType", required = false) String paymentUniqueType
-    ) {
+    public ResponseEntity<BaseResponse<Object>> getPaymentEventEntity(@RequestParam(value = "paymentUniqueType", required = false) String paymentUniqueType) {
         if (paymentUniqueType == null || paymentUniqueType.isEmpty()) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),

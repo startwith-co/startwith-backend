@@ -22,10 +22,6 @@ import startwithco.startwithbackend.payment.paymentEvent.repository.PaymentEvent
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 import startwithco.startwithbackend.solution.solution.repository.SolutionEntityRepository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.*;
 import static startwithco.startwithbackend.payment.paymentEvent.controller.request.PaymentEventRequest.*;
 import static startwithco.startwithbackend.payment.paymentEvent.controller.response.PaymentEventResponse.*;
@@ -70,20 +66,20 @@ public class PaymentEventService {
         Long tax = (long) (request.amount() * 0.1);
         Long actualAmount = request.amount() + tax;
 
-        try {
-            PaymentEventEntity paymentEventEntity = PaymentEventEntity.builder()
-                    .vendorEntity(vendorEntity)
-                    .consumerEntity(consumerEntity)
-                    .solutionEntity(solutionEntity)
-                    .paymentEventName(request.paymentEventName())
-                    .amount(request.amount())
-                    .tax(tax)
-                    .actualAmount(actualAmount)
-                    .contractConfirmationUrl(s3ContractConfirmationUrl)
-                    .refundPolicyUrl(s3RefundPolicyUrl)
-                    .paymentEventUniqueType(UUID.randomUUID().toString())
-                    .build();
+        PaymentEventEntity paymentEventEntity = PaymentEventEntity.builder()
+                .vendorEntity(vendorEntity)
+                .consumerEntity(consumerEntity)
+                .solutionEntity(solutionEntity)
+                .paymentEventName(request.paymentEventName())
+                .amount(request.amount())
+                .tax(tax)
+                .actualAmount(actualAmount)
+                .contractConfirmationUrl(s3ContractConfirmationUrl)
+                .refundPolicyUrl(s3RefundPolicyUrl)
+                .paymentEventUniqueType(request.paymentEventUniqueType())
+                .build();
 
+        try {
             paymentEventEntityRepository.savePaymentEventEntity(paymentEventEntity);
 
             return new SavePaymentEventEntityResponse(paymentEventEntity.getPaymentEventSeq(), paymentEventEntity.getPaymentEventUniqueType());
