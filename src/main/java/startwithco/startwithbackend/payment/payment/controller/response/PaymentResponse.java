@@ -39,4 +39,17 @@ public class PaymentResponse {
     ) {
 
     }
+
+    public record TossEasyPayPaymentApprovalResponse(
+            String orderId,
+            String orderName,
+            String paymentKey,
+            String method,
+            Integer totalAmount,
+            LocalDateTime approvedAt,
+            String receiptUrl,
+            CATEGORY category
+    ) {
+
+    }
 }

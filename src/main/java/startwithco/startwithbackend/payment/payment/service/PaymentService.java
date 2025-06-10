@@ -132,6 +132,24 @@ public class PaymentService {
                     ));
                 }
 
+                if ("간편결제".equals(method)) {
+                    LocalDateTime approvedAt = OffsetDateTime.parse(json.path("approvedAt").asText()).toLocalDateTime();
+
+                    paymentEntity.updateEasyPayDONEStatus(approvedAt);
+                    paymentEntityRepository.savePaymentEntity(paymentEntity);
+
+                    return Mono.just(new TossEasyPayPaymentApprovalResponse(
+                            json.path("orderId").asText(),
+                            json.path("orderName").asText(),
+                            json.path("paymentKey").asText(),
+                            method,
+                            json.path("totalAmount").asInt(),
+                            approvedAt,
+                            json.path("receipt").path("url").asText(null),
+                            paymentEventEntity.getSolutionEntity().getCategory()
+                    ));
+                }
+
                 return Mono.error(new ServerException(
                         HttpStatus.INTERNAL_SERVER_ERROR.value(),
                         "지원하지 않는 결제 수단입니다.",
