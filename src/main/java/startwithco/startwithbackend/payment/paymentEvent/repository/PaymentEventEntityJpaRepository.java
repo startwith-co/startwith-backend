@@ -13,6 +13,7 @@ public interface PaymentEventEntityJpaRepository extends JpaRepository<PaymentEv
     @Query("""
             SELECT pe
             FROM PaymentEventEntity pe
+            JOIN FETCH pe.solutionEntity s
             WHERE pe.paymentEventSeq = :paymentEventSeq
             """)
     Optional<PaymentEventEntity> findByPaymentEventSeq(@Param("paymentEventSeq") Long paymentEventSeq);

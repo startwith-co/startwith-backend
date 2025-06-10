@@ -101,7 +101,8 @@ public class PaymentService {
                             card.path("issuerCode").asText(null),
                             card.path("number").asText(null),
                             card.path("cardType").asText(null),
-                            json.path("receipt").path("url").asText()
+                            json.path("receipt").path("url").asText(),
+                            paymentEventEntity.getSolutionEntity().getCategory()
                     ));
                 }
 
@@ -126,7 +127,8 @@ public class PaymentService {
                             requestedAt.plusDays(1),
                             json.path("cashReceipt").path("receiptUrl").asText(null),
                             secret,
-                            json.path("receipt").path("url").asText()
+                            json.path("receipt").path("url").asText(),
+                            paymentEventEntity.getSolutionEntity().getCategory()
                     ));
                 }
 
