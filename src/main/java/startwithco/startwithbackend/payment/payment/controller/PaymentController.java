@@ -41,6 +41,7 @@ public class PaymentController {
                     6. 넘어가는 method 값에 따라 Response가 다릅니다.
                         - "카드": TossCardPaymentApprovalResponse
                         - "가상계좌": TossVirtualAccountPaymentResponse
+                        - "간편결제": TossEasyPayPaymentApprovalResponse
                     7. 가상계좌 개발자 센터: https://docs.tosspayments.com/guides/v2/payment-window/integration-virtual-account
                     8. 카드 결제 개발자 센터: https://docs.tosspayments.com/guides/v2/payment-window/integration
                     9. 웹훅 이벤트: https://docs.tosspayments.com/reference/using-api/webhook-events#payment_status_changed
