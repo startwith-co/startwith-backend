@@ -133,9 +133,7 @@ public class PaymentService {
                 }
 
                 if ("간편결제".equals(method)) {
-                    LocalDateTime approvedAt = OffsetDateTime.parse(json.path("approvedAt").asText()).toLocalDateTime();
-
-                    paymentEntity.updateEasyPayDONEStatus(approvedAt);
+                    paymentEntity.updateEasyPayDONEStatus();
                     paymentEntityRepository.savePaymentEntity(paymentEntity);
 
                     return Mono.just(new TossEasyPayPaymentApprovalResponse(
@@ -144,7 +142,7 @@ public class PaymentService {
                             json.path("paymentKey").asText(),
                             method,
                             json.path("totalAmount").asInt(),
-                            approvedAt,
+                            LocalDateTime.now(),
                             json.path("receipt").path("url").asText(null),
                             paymentEventEntity.getSolutionEntity().getCategory()
                     ));

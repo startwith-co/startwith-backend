@@ -75,11 +75,11 @@ public class PaymentEntity extends BaseTimeEntity {
         this.dueDate = requestedAt.plusDays(1);
     }
 
-    public void updateEasyPayDONEStatus(LocalDateTime paymentCompletedAt) {
+    public void updateEasyPayDONEStatus() {
         this.paymentStatus = PAYMENT_STATUS.DONE;
         this.method = METHOD.EASY_PAY;
         this.secret = null;
-        this.paymentCompletedAt = paymentCompletedAt;
+        this.paymentCompletedAt = LocalDateTime.now();
         this.autoConfirmScheduledAt = paymentCompletedAt.plusDays(7);
         this.dueDate = paymentCompletedAt.plusDays(1);
     }
