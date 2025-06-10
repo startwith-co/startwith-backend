@@ -17,7 +17,7 @@ public class PaymentRequest {
             Long amount
     ) {
         public void validate() {
-            if (paymentEventSeq == null || isBlank(paymentKey) || isBlank(orderId) || amount <= 0) {
+            if (paymentEventSeq == null || isBlank(paymentKey) || isBlank(orderId) || amount == null || amount <= 0) {
                 throw new BadRequestException(
                         HttpStatus.BAD_REQUEST.value(),
                         "요청 데이터 오류입니다.",
