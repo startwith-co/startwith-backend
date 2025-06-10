@@ -157,8 +157,8 @@ public class PaymentService {
             } catch (Exception e) {
                 return Mono.error(new ServerException(
                         HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                        "결제 승인 응답 처리 중 오류가 발생했습니다.",
-                        getCode("결제 승인 응답 처리 중 오류가 발생했습니다.", ExceptionType.SERVER)
+                        e.getMessage(),
+                        getCode(e.getMessage(), ExceptionType.SERVER)
                 ));
             }
         }).onErrorResume(e -> {
@@ -247,12 +247,6 @@ public class PaymentService {
                 paymentEntityRepository.savePaymentEntity(paymentEntity);
             }
         }
-
-        /*
-         * TODO
-         *  프론트 웹훅 전송
-         *  commonService.notifyFrontOfVirtualAccountStatus(paymentEntity);
-         * */
     }
 
 }
