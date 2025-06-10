@@ -139,10 +139,22 @@ public class CommonService {
                 })
                 .doOnSuccess(json -> log.info("✅ 결제 승인 성공"))
                 .doOnError(WebClientResponseException.class, err -> {
+                    String responseBody = err.getResponseBodyAsString();
+                    String errorMessage = "TOSS 결제 승인 실패";
+
+                    try {
+                        JsonNode errorJson = objectMapper.readTree(responseBody);
+                        if (errorJson.has("message")) {
+                            errorMessage = errorJson.get("message").asText();
+                        }
+                    } catch (Exception parseError) {
+                        log.warn("⚠️ Toss 오류 응답 파싱 실패: {}", responseBody);
+                    }
+
                     throw new ServerException(
                             HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                            err.getMessage(),
-                            getCode(err.getMessage(), ExceptionType.SERVER)
+                            errorMessage,
+                            getCode(errorMessage, ExceptionType.SERVER)
                     );
                 })
                 .onErrorResume(err -> {
