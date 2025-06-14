@@ -6,7 +6,8 @@ import java.time.LocalDateTime;
 
 public class PaymentEventResponse {
     public record SavePaymentEventEntityResponse(
-            Long paymentEventSeq
+            Long paymentEventSeq,
+            String paymentEventUniqueType
     ) {
 
     }

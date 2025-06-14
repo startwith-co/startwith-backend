@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
+import startwithco.startwithbackend.payment.paymentEvent.domain.PaymentEventEntity;
 
 import java.util.Optional;
 
@@ -51,4 +52,13 @@ public interface PaymentEntityJpaRepository extends JpaRepository<PaymentEntity,
               AND p.paymentStatus = 'SETTLED'
             """)
     Long countSETTLEDStatusByVendorSeq(Long vendorSeq);
+
+    @Query("""
+            SELECT p
+            FROM PaymentEntity p
+            JOIN FETCH p.paymentEventEntity pe
+            JOIN FETCH p.paymentEventEntity.solutionEntity s
+            WHERE pe.paymentEventUniqueType = :paymentEventUniqueType
+            """)
+    Optional<PaymentEntity> findByPaymentEventUniqueType(@Param("paymentEventUniqueType") String paymentEventUniqueType);
 }

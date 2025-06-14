@@ -19,9 +19,6 @@ public class ExceptionLogEntity extends BaseTimeEntity {
     @Column(name = "exception_log_seq")
     private Long exceptionLogSeq;
 
-    @Column(name = "exception_type", nullable = false)
-    private String exceptionType;
-
     @Column(name = "http_status", nullable = false)
     private int httpStatus;
 
@@ -34,6 +31,9 @@ public class ExceptionLogEntity extends BaseTimeEntity {
 
     @Column(name = "request_uri", nullable = false)
     private String requestUri;
+
+    @Column(name = "request_body", nullable = false, columnDefinition = "LONGTEXT")
+    private String requestBody;
 
     @Lob
     @Column(name = "method_name", nullable = false, columnDefinition = "LONGTEXT")

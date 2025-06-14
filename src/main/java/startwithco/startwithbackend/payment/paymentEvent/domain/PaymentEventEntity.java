@@ -51,4 +51,7 @@ public class PaymentEventEntity extends BaseTimeEntity {
 
     @Column(name = "refund_policy_url", nullable = false)
     private String refundPolicyUrl;
+
+    @Column(name = "payment_event_unique_type", unique = true, nullable = false)
+    private String paymentEventUniqueType;
 }

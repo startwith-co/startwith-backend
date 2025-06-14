@@ -101,7 +101,8 @@ public class PaymentService {
                             card.path("issuerCode").asText(null),
                             card.path("number").asText(null),
                             card.path("cardType").asText(null),
-                            json.path("receipt").path("url").asText()
+                            json.path("receipt").path("url").asText(),
+                            paymentEventEntity.getSolutionEntity().getCategory()
                     ));
                 }
 
@@ -126,7 +127,24 @@ public class PaymentService {
                             requestedAt.plusDays(1),
                             json.path("cashReceipt").path("receiptUrl").asText(null),
                             secret,
-                            json.path("receipt").path("url").asText()
+                            json.path("receipt").path("url").asText(),
+                            paymentEventEntity.getSolutionEntity().getCategory()
+                    ));
+                }
+
+                if ("간편결제".equals(method)) {
+                    paymentEntity.updateEasyPayDONEStatus();
+                    paymentEntityRepository.savePaymentEntity(paymentEntity);
+
+                    return Mono.just(new TossEasyPayPaymentApprovalResponse(
+                            json.path("orderId").asText(),
+                            json.path("orderName").asText(),
+                            json.path("paymentKey").asText(),
+                            method,
+                            json.path("totalAmount").asInt(),
+                            LocalDateTime.now(),
+                            json.path("receipt").path("url").asText(null),
+                            paymentEventEntity.getSolutionEntity().getCategory()
                     ));
                 }
 
@@ -139,8 +157,8 @@ public class PaymentService {
             } catch (Exception e) {
                 return Mono.error(new ServerException(
                         HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                        "결제 승인 응답 처리 중 오류가 발생했습니다.",
-                        getCode("결제 승인 응답 처리 중 오류가 발생했습니다.", ExceptionType.SERVER)
+                        e.getMessage(),
+                        getCode(e.getMessage(), ExceptionType.SERVER)
                 ));
             }
         }).onErrorResume(e -> {
@@ -229,12 +247,6 @@ public class PaymentService {
                 paymentEntityRepository.savePaymentEntity(paymentEntity);
             }
         }
-
-        /*
-         * TODO
-         *  프론트 웹훅 전송
-         *  commonService.notifyFrontOfVirtualAccountStatus(paymentEntity);
-         * */
     }
 
 }

@@ -1,7 +1,6 @@
 package startwithco.startwithbackend.payment.payment.controller.response;
 
-import startwithco.startwithbackend.payment.payment.util.METHOD;
-import startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS;
+import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 
 import java.time.LocalDateTime;
 
@@ -16,7 +15,8 @@ public class PaymentResponse {
             String cardCompany,
             String cardNumber,
             String cardType,
-            String receiptUrl
+            String receiptUrl,
+            CATEGORY category
     ) {
 
     }
@@ -34,16 +34,21 @@ public class PaymentResponse {
             LocalDateTime dueDate,
             String cashReceiptUrl,
             String secret,
-            String receiptUrl
+            String receiptUrl,
+            CATEGORY category
     ) {
 
     }
 
-    public record GetTossPaymentApprovalResponse(
+    public record TossEasyPayPaymentApprovalResponse(
             String orderId,
-            Long amount,
-            PAYMENT_STATUS paymentStatus,
-            METHOD method
+            String orderName,
+            String paymentKey,
+            String method,
+            Integer totalAmount,
+            LocalDateTime approvedAt,
+            String receiptUrl,
+            CATEGORY category
     ) {
 
     }
