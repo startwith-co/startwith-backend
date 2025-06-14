@@ -11,7 +11,9 @@ public class ConsumerResponse {
     public record LoginConsumerResponse(
             String accessToken,
             String refreshToken,
-            Long consumerSeq
+            Long consumerSeq,
+            String consumerUniqueType,
+            String consumerName
     ) {
     }
 
