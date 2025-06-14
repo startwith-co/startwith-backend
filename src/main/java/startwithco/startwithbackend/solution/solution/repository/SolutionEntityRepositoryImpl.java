@@ -2,6 +2,7 @@ package startwithco.startwithbackend.solution.solution.repository;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
@@ -12,7 +13,9 @@ import startwithco.startwithbackend.solution.solution.domain.QSolutionEntity;
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.getCode;
@@ -22,6 +25,7 @@ import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.ge
 public class SolutionEntityRepositoryImpl implements SolutionEntityRepository {
     private final SolutionEntityJpaRepository repository;
     private final JPAQueryFactory queryFactory;
+    private final EntityManager em;
 
     public SolutionEntity saveSolutionEntity(SolutionEntity solutionEntity) {
         return repository.save(solutionEntity);
@@ -116,5 +120,22 @@ public class SolutionEntityRepositoryImpl implements SolutionEntityRepository {
                 .offset(start)
                 .limit(end - start)
                 .fetch();
+    }
+
+    @Override
+    public Map<String, List<CATEGORY>> findUsedAndUnusedCategories() {
+        List<CATEGORY> usedCategories = em.createQuery(
+                "SELECT DISTINCT s.category FROM SolutionEntity s", CATEGORY.class
+        ).getResultList();
+
+        List<CATEGORY> allCategories = Arrays.asList(CATEGORY.values());
+        List<CATEGORY> unusedCategories = allCategories.stream()
+                .filter(category -> !usedCategories.contains(category))
+                .toList();
+
+        return Map.of(
+                "used", usedCategories,
+                "unused", unusedCategories
+        );
     }
 }
