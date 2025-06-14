@@ -19,7 +19,9 @@ public class VendorResponse {
     public record LoginVendorResponse(
             String accessToken,
             String refreshToken,
-            Long vendorSeq
+            Long vendorSeq,
+            String vendorUniqueType,
+            String vendorName
     ) {
     }
 

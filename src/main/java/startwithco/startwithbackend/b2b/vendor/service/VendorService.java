@@ -148,7 +148,7 @@ public class VendorService {
         // Refresh 토큰 저장
         saveRefreshToken(consumerSeq, refreshToken);
 
-        return new LoginVendorResponse(accessToken, refreshToken, vendorEntity.getVendorSeq());
+        return new LoginVendorResponse(accessToken, refreshToken, vendorEntity.getVendorSeq(),vendorEntity.getVendorUniqueType(), vendorEntity.getVendorName());
     }
 
     private VendorEntity validateEmail(VendorRequest.LoginVendorRequest request) {
