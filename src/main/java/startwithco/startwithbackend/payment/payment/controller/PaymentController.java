@@ -77,7 +77,7 @@ public class PaymentController {
                     3. 환불의 경우 24이내 3가지(카드 결제 취소, 가상 계좌 입금 전, 가상 계좌 입금 후)가 존재합니다.
                     5. 가상 계좌 입금 전의 경우 결제 승인이 이루어지지 않았기 때문에 가상 계좌 요청 24시간 이내를 기준으로 계산합니다.
                     6. 24시간이 지난 가상 계좌 입금의 경우 서버에서 자동으로 결제 취소 처리합니다.
-                    7. 카드 결제 취소와 가상 계좌 입금 전의 경우 paymentEventSeq 값만 넘겨주시면 됩니다.
+                    7. **카드 결제 취소와 가상 계좌 입금 전의 경우 paymentEventSeq 값만 넘겨주시면 됩니다.**
                     8. 가상 계좌 입금 후의 경우 bankCode(은행, 증권사 코드), accountNumber(환불 받을 계좌 번호), holderName(예금주)를 같이 넘겨야합니다.
                     9. 다음 은행 코드 중 하나를 사용해야 하며, 문자열 형태로 전달됩니다.
                        - 03: IBK기업은행
@@ -122,7 +122,11 @@ public class PaymentController {
 
     @PostMapping(
             value = "/deposit-callback"
-    ) public ResponseEntity<BaseResponse<String>> tossPaymentDepositCallBack(@RequestBody TossPaymentDepositCallBackRequest request) {
+    )
+    @Operation(
+            hidden = true
+    )
+    public ResponseEntity<BaseResponse<String>> tossPaymentDepositCallBack(@RequestBody TossPaymentDepositCallBackRequest request) {
         paymentService.tossPaymentDepositCallBack(request);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SUCCESS"));
