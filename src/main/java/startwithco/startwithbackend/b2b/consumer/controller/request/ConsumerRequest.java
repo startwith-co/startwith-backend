@@ -93,7 +93,6 @@ public class ConsumerRequest {
     public record ResetPasswordRequest(
             Long consumerSeq,
             String email,
-            String password,
             String newPassword,
             String confirmPassword
     ) {
