@@ -166,7 +166,6 @@ public class VendorRequest {
     public record ResetPasswordRequest(
             Long vendorSeq,
             String email,
-            String password,
             String newPassword,
             String confirmPassword
     ) {

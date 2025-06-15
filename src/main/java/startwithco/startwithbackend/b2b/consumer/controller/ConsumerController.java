@@ -218,8 +218,8 @@ public class ConsumerController {
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), resetLinkResponse));
     }
 
-    @PatchMapping(value = "/resetPassword", name = "Consumer 비번 리셋 링크")
-    @Operation(summary = "Consumer reset Link API", description = "Consumer reset Link API")
+    @PatchMapping(value = "/resetPassword", name = "Consumer 비번 리셋")
+    @Operation(summary = "Consumer reset API", description = "Consumer reset API")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
@@ -228,7 +228,6 @@ public class ConsumerController {
             @ApiResponse(responseCode = "SERVER_EXCEPTION_010", description = "Redis 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "UNAUTHORIZED_EXCEPTION_003", description = "이미 사용한 JWT 입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "UNAUTHORIZED_EXCEPTION_002", description = "잘못된 JWT 입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_007", description = "비밀번호가 일치하지 않습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
     public ResponseEntity<BaseResponse<String>> resetPasswordConsumer(HttpServletRequest httpServletRequest, @Valid @RequestBody ResetPasswordRequest request) {
 

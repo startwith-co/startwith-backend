@@ -392,15 +392,6 @@ public class VendorService {
             );
         }
 
-        // 비밀번호 검증
-        if (!encoder.matches(request.password(), vendorEntity.getEncodedPassword())) {
-            throw new BadRequestException(
-                    HttpStatus.BAD_REQUEST.value(),
-                    "비밀번호가 일치하지 않습니다.",
-                    getCode("비밀번호가 일치하지 않습니다.", ExceptionType.BAD_REQUEST)
-            );
-        }
-
         // 비밀번호 수정
         vendorEntity.updatePassword(encoder.encode(request.newPassword()));
 
