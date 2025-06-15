@@ -13,13 +13,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import startwithco.startwithbackend.b2b.consumer.controller.response.ConsumerResponse;
 import startwithco.startwithbackend.b2b.consumer.service.ConsumerService;
-import startwithco.startwithbackend.b2b.vendor.controller.response.VendorResponse;
 import startwithco.startwithbackend.b2b.vendor.service.VendorService;
 import startwithco.startwithbackend.base.BaseResponse;
 import startwithco.startwithbackend.exception.BadRequestException;
-import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
 import startwithco.startwithbackend.exception.handler.GlobalExceptionHandler;
 import startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS;
 
