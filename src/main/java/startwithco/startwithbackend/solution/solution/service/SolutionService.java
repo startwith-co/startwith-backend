@@ -216,6 +216,7 @@ public class SolutionService {
         return new GetSolutionEntityResponse(
                 solutionEntity.getSolutionSeq(),
                 solutionEntity.getRepresentImageUrl(),
+                solutionEntity.getDescriptionPdfUrl(),
                 solutionEntity.getSolutionName(),
                 solutionEntity.getSolutionDetail(),
                 solutionEntity.getAmount(),
