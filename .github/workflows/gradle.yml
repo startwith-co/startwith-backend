@@ -100,7 +100,7 @@ jobs:
           sudo apt-get autoremove
 
       # 배포할 서버 선택 (develop → 테스트 서버, master → 운영 서버)
-      - name: Deploy to LOCAL EC2
+      - name: Deploy to DEVELOP EC2
         if: github.base_ref == 'develop' || github.ref == 'refs/heads/develop'
         run: |
           ssh -o StrictHostKeyChecking=no -i ec2_key.pem ubuntu@${{ secrets.TEST_EC2_IP }} << 'EOF'
