@@ -1,12 +1,10 @@
 name: startwith CI/CD
 
 on:
-  push:
-    branches:
-      - develop
   pull_request:
     branches:
       - master
+      - develop
   workflow_dispatch:
 
 jobs:
@@ -30,7 +28,6 @@ jobs:
           mkdir -p /src/main/resources
           echo "${{ secrets.APPLICATION_YML_TEST }}" | base64 --decode > /src/main/resources/application.yml
           echo "${{ secrets.APPLICATION_TEST_YML }}" | base64 --decode > /src/main/resources/application-test.yml
-          find /src
 
       - name: Set YML for PRODUCTION
         if: github.base_ref == 'master'
@@ -38,7 +35,6 @@ jobs:
           mkdir -p /src/main/resources
           echo "${{ secrets.APPLICATION_YML_PRODUCTION }}" | base64 --decode > /src/main/resources/application.yml
           echo "${{ secrets.APPLICATION_PRODUCTION_YML }}" | base64 --decode > /src/main/resources/application-production.yml
-          find /src
 
       # Gradle Build
       - name: Grant execute permission for Gradle
