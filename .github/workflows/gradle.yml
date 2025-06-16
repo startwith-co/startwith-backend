@@ -53,7 +53,7 @@ jobs:
           password: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Build and Push Docker Image (DEVELOP)
-        if: github.ref == 'refs/heads/develop'
+        if: github.base_ref == 'develop' || github.ref == 'refs/heads/develop'
         env:
           NAME: ${{ secrets.DOCKER_USERNAME }}
           REPO: startwith-develop
@@ -63,7 +63,7 @@ jobs:
           docker push $NAME/$REPO:latest
 
       - name: Build and Push Docker Image (PRODUCTION)
-        if: github.base_ref == 'master'
+        if: github.base_ref == 'master' || github.ref == 'refs/heads/master'
         env:
           NAME: ${{ secrets.DOCKER_USERNAME }}
           REPO: startwith-prod   # 운영 서버용 별도 리포지토리
@@ -101,7 +101,7 @@ jobs:
 
       # 배포할 서버 선택 (develop → 테스트 서버, master → 운영 서버)
       - name: Deploy to LOCAL EC2
-        if: github.ref == 'refs/heads/develop'
+        if: github.base_ref == 'develop' || github.ref == 'refs/heads/develop'
         run: |
           ssh -o StrictHostKeyChecking=no -i ec2_key.pem ubuntu@${{ secrets.TEST_EC2_IP }} << 'EOF'
             sudo docker ps -q --filter "name=startwith-develop" | grep -q . && sudo docker stop "startwith-develop" && sudo docker rm "startwith-develop"
@@ -110,7 +110,7 @@ jobs:
           EOF
 
       - name: Deploy to PROD EC2
-        if: github.base_ref == 'master'
+        if: github.base_ref == 'master' || github.ref == 'refs/heads/master'
         run: |
           ssh -o StrictHostKeyChecking=no -i ec2_key.pem ubuntu@${{ secrets.PROD_EC2_IP }} << 'EOF'
             sudo docker ps -q --filter "name=startwith-prod" | grep -q . && sudo docker stop "startwith-prod" && sudo docker rm "startwith-prod"
