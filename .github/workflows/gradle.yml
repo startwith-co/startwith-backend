@@ -21,20 +21,22 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # YML 파일 생성 (환경별)
+      # DEVELOP 용 YML
       - name: Set YML for DEVELOP
-        if: github.ref == 'refs/heads/develop'
+        if: github.base_ref == 'develop' || github.ref == 'refs/heads/develop'
         run: |
-          mkdir -p /src/main/resources
-          echo "${{ secrets.APPLICATION_YML_TEST }}" | base64 --decode > /src/main/resources/application.yml
-          echo "${{ secrets.APPLICATION_TEST_YML }}" | base64 --decode > /src/main/resources/application-test.yml
+          mkdir -p src/main/resources
+          echo "${{ secrets.APPLICATION_YML_TEST }}" | base64 --decode > src/main/resources/application.yml
+          echo "${{ secrets.APPLICATION_TEST_YML }}" | base64 --decode > src/main/resources/application-test.yml
 
+      # PRODUCTION 용 YML
       - name: Set YML for PRODUCTION
-        if: github.base_ref == 'master'
+        if: github.base_ref == 'master' || github.ref == 'refs/heads/master'
         run: |
-          mkdir -p /src/main/resources
-          echo "${{ secrets.APPLICATION_YML_PRODUCTION }}" | base64 --decode > /src/main/resources/application.yml
-          echo "${{ secrets.APPLICATION_PRODUCTION_YML }}" | base64 --decode > /src/main/resources/application-production.yml
+          mkdir -p src/main/resources
+          echo "${{ secrets.APPLICATION_YML_PRODUCTION }}" | base64 --decode > src/main/resources/application.yml
+          echo "${{ secrets.APPLICATION_PRODUCTION_YML }}" | base64 --decode > src/main/resources/application-production.yml
+
 
       # Gradle Build
       - name: Grant execute permission for Gradle
