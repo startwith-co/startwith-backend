@@ -17,11 +17,9 @@ import startwithco.startwithbackend.base.BaseResponse;
 import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
 import startwithco.startwithbackend.exception.handler.GlobalExceptionHandler;
-import startwithco.startwithbackend.solution.solution.controller.response.SolutionResponse;
 import startwithco.startwithbackend.solution.solution.service.SolutionService;
 import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 
-import java.io.IOException;
 import java.util.List;
 
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.getCode;
