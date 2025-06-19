@@ -104,16 +104,12 @@ jobs:
         if: github.base_ref == 'develop' || github.ref == 'refs/heads/develop'
         run: |
           ssh -o StrictHostKeyChecking=no -i ec2_key.pem ubuntu@${{ secrets.TEST_EC2_IP }} << 'EOF'
-            # 정리 작업
             sudo docker container prune -f
             sudo docker image prune -a -f
             sudo docker volume prune -f
             sudo docker network prune -f
 
-            # 기존 컨테이너 정리
             sudo docker ps -q --filter "name=startwith-develop" | grep -q . && sudo docker stop "startwith-develop" && sudo docker rm "startwith-develop"
-
-            # 이미지 pull 및 컨테이너 재실행
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/startwith-develop:latest
             sudo docker run -d --name startwith-develop --rm -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/startwith-develop:latest
           EOF
@@ -122,16 +118,12 @@ jobs:
         if: github.base_ref == 'master' || github.ref == 'refs/heads/master'
         run: |
           ssh -o StrictHostKeyChecking=no -i ec2_key.pem ubuntu@${{ secrets.PROD_EC2_IP }} << 'EOF'
-            # 정리 작업
             sudo docker container prune -f
             sudo docker image prune -a -f
             sudo docker volume prune -f
             sudo docker network prune -f
 
-            # 기존 컨테이너 정리
             sudo docker ps -q --filter "name=startwith-prod" | grep -q . && sudo docker stop "startwith-prod" && sudo docker rm "startwith-prod"
-
-            # 이미지 pull 및 컨테이너 재실행
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/startwith-prod:latest
             sudo docker run -d --name startwith-prod --rm -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/startwith-prod:latest
           EOF
