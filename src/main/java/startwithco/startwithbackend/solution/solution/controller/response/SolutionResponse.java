@@ -15,6 +15,7 @@ public class SolutionResponse {
     public record GetSolutionEntityResponse(
             Long solutionSeq,
             String representImageUrl,
+            String descriptionPdfUrl,
             String solutionName,
             String solutionDetail,
             Long amount,
