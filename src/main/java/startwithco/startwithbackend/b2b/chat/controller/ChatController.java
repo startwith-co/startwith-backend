@@ -15,13 +15,11 @@ import org.springframework.web.multipart.MultipartFile;
 import startwithco.startwithbackend.b2b.chat.service.ChatService;
 import startwithco.startwithbackend.base.BaseResponse;
 import startwithco.startwithbackend.exception.BadRequestException;
-import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
 import startwithco.startwithbackend.exception.handler.GlobalExceptionHandler;
-
-import java.util.List;
 
 import static startwithco.startwithbackend.b2b.chat.controller.request.ChatRequest.*;
 import static startwithco.startwithbackend.b2b.chat.controller.response.ChatResponse.*;
+import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.*;
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.getCode;
 
 @RestController
@@ -54,7 +52,7 @@ public class ChatController {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
                     "요청 데이터 오류입니다.",
-                    getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                    getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
             );
         }
 
@@ -73,22 +71,19 @@ public class ChatController {
             @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_010", description = "전송자가 수요/벤더 기업에 존재하지 않습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_011", description = "수신자가 수요/벤더 기업에 존재하지 않습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
-    public ResponseEntity<BaseResponse<List<GetChatEntityFile>>> getChatEntityFile(
-            @RequestParam(value = "senderSeq", required = false) Long senderSeq,
-            @RequestParam(value = "receiverSeq", required = false) Long receiverSeq
-    ) {
-        if (senderSeq == null || receiverSeq == null) {
+    public ResponseEntity<BaseResponse<GetChatEntityFile>> getChatEntityFile(
+            @RequestParam(value = "chatUniqueType", required = false) String chatUniqueType
+    ) throws BadRequestException {
+        if (chatUniqueType == null) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
                     "요청 데이터 오류입니다.",
-                    getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                    getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
             );
         }
 
-        List<GetChatEntityFile> response = chatService.getChatEntityFile(senderSeq, receiverSeq);
+        GetChatEntityFile response = chatService.getChatEntityFile(chatUniqueType);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
     }

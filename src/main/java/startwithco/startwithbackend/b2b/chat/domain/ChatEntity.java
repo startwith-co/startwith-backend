@@ -31,4 +31,7 @@ public class ChatEntity extends BaseTimeEntity {
 
     @Column(name = "file_url", nullable = false)
     private String fileUrl;
+
+    @Column(name = "chat_unique_type", nullable = false, unique = true)
+    private String chatUniqueType;
 }
