@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import startwithco.startwithbackend.b2b.chat.domain.ChatEntity;
 
-import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -18,7 +18,7 @@ public class ChatEntityRepositoryImpl implements ChatEntityRepository {
     }
 
     @Override
-    public List<ChatEntity> findAllBySenderSeqAndReceiverSeq(Long senderSeq, Long receiverSeq) {
-        return repository.findAllBySenderSeqAndReceiverSeq(senderSeq, receiverSeq);
+    public Optional<ChatEntity> findByChatUniqueType(String chatUniqueType) {
+        return repository.findByChatUniqueType(chatUniqueType);
     }
 }

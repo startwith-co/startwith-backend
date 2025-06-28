@@ -9,10 +9,11 @@ import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.ge
 public class ChatRequest {
     public record SaveChatRequest(
             Long senderSeq,
-            Long receiverSeq
+            Long receiverSeq,
+            String chatUniqueType
     ) {
         public void validate() {
-            if (senderSeq == null || receiverSeq == null) {
+            if (senderSeq == null || receiverSeq == null || chatUniqueType == null) {
                 throw new BadRequestException(
                         HttpStatus.BAD_REQUEST.value(),
                         "요청 데이터 오류입니다.",
