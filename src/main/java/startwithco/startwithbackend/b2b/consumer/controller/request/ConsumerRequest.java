@@ -58,7 +58,6 @@ public class ConsumerRequest {
             Long consumerSeq,
             String consumerName,
             String phoneNumber,
-            String encodedPassword,
             String email,
             String industry
     ) {
