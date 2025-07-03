@@ -46,6 +46,7 @@ public class ConsumerResponse {
             LocalDateTime paymentCompletedAt,
             String representImageUrl,
             String vendorName,
+            String vendorUniqueType,
             Long solutionSeq,
             String solutionName,
             METHOD method,
