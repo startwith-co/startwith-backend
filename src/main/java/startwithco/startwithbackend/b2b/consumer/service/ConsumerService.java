@@ -299,13 +299,12 @@ public class ConsumerService {
             );
         }
 
-        // 이메일 검증
-        ConsumerEntity consumerEntity = consumerRepository.findByEmail(request.email())
+        ConsumerEntity consumerEntity = consumerRepository.findByConsumerSeq(consumerSeq)
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
-                        "존재하지 않는 이메일 입니다.",
-                        getCode("존재하지 않는 이메일 입니다.", ExceptionType.NOT_FOUND
-                        )));
+                        "존재하지 않는 수요 기업입니다.",
+                        getCode("존재하지 않는 수요 기업입니다.", ExceptionType.NOT_FOUND)
+                ));
 
         // 토큰 seq 검증
         if (!Objects.equals(consumerEntity.getConsumerSeq(), consumerSeq)) {
