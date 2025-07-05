@@ -90,14 +90,12 @@ public class ConsumerRequest {
     }
 
     public record ResetPasswordRequest(
-            Long consumerSeq,
-            String email,
             String newPassword,
             String confirmPassword
     ) {
 
         public void validateResetPasswordRequest(ResetPasswordRequest request) {
-            if (request.consumerSeq == null ||request.email == null || request.newPassword == null || request.confirmPassword == null) {
+            if (request.newPassword == null || request.confirmPassword == null) {
                 throw new BadRequestException(
                         HttpStatus.BAD_REQUEST.value(),
                         "요청 데이터 오류입니다.",
