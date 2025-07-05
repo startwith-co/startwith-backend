@@ -42,6 +42,7 @@ public class ExceptionCodeMapper {
         NOT_FOUND_MAP.put("전송자가 수요/벤더 기업에 존재하지 않습니다.", "NOT_FOUND_EXCEPTION_010");
         NOT_FOUND_MAP.put("수신자가 수요/벤더 기업에 존재하지 않습니다.", "NOT_FOUND_EXCEPTION_011");
         NOT_FOUND_MAP.put("존재하지 않는 사용자입니다.", "NOT_FOUND_EXCEPTION_012");
+        NOT_FOUND_MAP.put("존재하지 않는 채팅 Unique Type 입니다.", "NOT_FOUND_EXCEPTION_013");
 
         // ServerException
         SERVER_MAP.put("내부 서버 오류가 발생했습니다.", "SERVER_EXCEPTION_001");

@@ -12,9 +12,11 @@ import startwithco.startwithbackend.b2b.consumer.repository.ConsumerRepository;
 import startwithco.startwithbackend.b2b.vendor.repository.VendorEntityRepository;
 import startwithco.startwithbackend.common.service.CommonService;
 import startwithco.startwithbackend.exception.BadRequestException;
+import startwithco.startwithbackend.exception.NotFoundException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static startwithco.startwithbackend.b2b.chat.controller.request.ChatRequest.*;
 import static startwithco.startwithbackend.b2b.chat.controller.response.ChatResponse.*;
@@ -49,48 +51,32 @@ public class ChatService {
             );
         }
 
-        String s3FileUrl = commonService.uploadPDFFile(file);
+        String s3FileUrl = null;
+        if (Objects.equals(file.getContentType(), "application/pdf")) {
+            s3FileUrl = commonService.uploadPDFFile(file);
+        } else {
+            s3FileUrl = commonService.uploadJPGFile(file);
+        }
+
         ChatEntity chatEntity = ChatEntity.builder()
                 .senderSeq(request.senderSeq())
                 .receiverSeq(request.receiverSeq())
                 .fileUrl(s3FileUrl)
+                .chatUniqueType(request.chatUniqueType())
                 .build();
 
         chatEntityRepository.saveChatEntity(chatEntity);
     }
 
     @Transactional(readOnly = true)
-    public List<GetChatEntityFile> getChatEntityFile(Long senderSeq, Long receiverSeq) {
-        if (!(vendorEntityRepository.existsByVendorSeq(senderSeq)
-                || consumerRepository.existsByConsumerSeq(senderSeq))) {
-            throw new BadRequestException(
-                    HttpStatus.BAD_REQUEST.value(),
-                    "전송자가 수요/벤더 기업에 존재하지 않습니다.",
-                    getCode("전송자가 수요/벤더 기업에 존재하지 않습니다.", ExceptionType.BAD_REQUEST)
-            );
-        }
+    public GetChatEntityFile getChatEntityFile(String chatUniqueType) {
+        ChatEntity chatEntity = chatEntityRepository.findByChatUniqueType(chatUniqueType)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 채팅 Unique Type 입니다.",
+                        getCode("존재하지 않는 채팅 Unique Type 입니다.", ExceptionType.NOT_FOUND)
+                ));
 
-        if (!(vendorEntityRepository.existsByVendorSeq(receiverSeq)
-                || consumerRepository.existsByConsumerSeq(receiverSeq))) {
-            throw new BadRequestException(
-                    HttpStatus.BAD_REQUEST.value(),
-                    "수신자가 수요/벤더 기업에 존재하지 않습니다.",
-                    getCode("수신자가 수요/벤더 기업에 존재하지 않습니다.", ExceptionType.BAD_REQUEST)
-            );
-        }
-
-        List<ChatEntity> chatEntities = chatEntityRepository.findAllBySenderSeqAndReceiverSeq(senderSeq, receiverSeq);
-        List<GetChatEntityFile> response = new ArrayList<>();
-        for (ChatEntity chatEntity : chatEntities) {
-            GetChatEntityFile chatEntityFile = new GetChatEntityFile(
-                    chatEntity.getSenderSeq(),
-                    chatEntity.getReceiverSeq(),
-                    chatEntity.getFileUrl()
-            );
-
-            response.add(chatEntityFile);
-        }
-
-        return response;
+        return new GetChatEntityFile(chatEntity.getFileUrl());
     }
 }
