@@ -145,7 +145,7 @@ public class ConsumerService {
         // Refresh 토큰 저장
         saveRefreshToken(consumerSeq, refreshToken);
 
-        return new LoginConsumerResponse(accessToken, refreshToken, consumerSeq,consumerEntity.getConsumerUniqueType(), consumerEntity.getConsumerName());
+        return new LoginConsumerResponse(accessToken, refreshToken, consumerSeq, consumerEntity.getConsumerUniqueType(), consumerEntity.getConsumerName());
 
     }
 
@@ -232,6 +232,7 @@ public class ConsumerService {
                     paymentEntity.getPaymentCompletedAt(),
                     solutionEntity.getRepresentImageUrl(),
                     vendorEntity.getVendorName(),
+                    vendorEntity.getVendorUniqueType(),
                     solutionEntity.getSolutionSeq(),
                     solutionEntity.getSolutionName(),
                     paymentEntity.getMethod(),
