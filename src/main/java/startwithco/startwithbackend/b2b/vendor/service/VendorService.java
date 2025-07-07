@@ -375,13 +375,12 @@ public class VendorService {
             );
         }
 
-        // 이메일 검증
-        VendorEntity vendorEntity = vendorEntityRepository.findByEmail(request.email())
+        VendorEntity vendorEntity = vendorEntityRepository.findByVendorSeq(vendorSeq)
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
-                        "존재하지 않는 이메일 입니다.",
-                        getCode("존재하지 않는 이메일 입니다.", ExceptionType.NOT_FOUND
-                        )));
+                        "존재하지 않는 벤더 기업입니다.",
+                        getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
+                ));
 
         // 토큰 seq 검증
         if (!Objects.equals(vendorEntity.getVendorSeq(), vendorSeq)) {

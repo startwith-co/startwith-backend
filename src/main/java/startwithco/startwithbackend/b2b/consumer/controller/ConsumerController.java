@@ -224,30 +224,18 @@ public class ConsumerController {
             @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_009", description = "존재하지 않는 이메일 입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "SERVER_EXCEPTION_010", description = "Redis 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "UNAUTHORIZED_EXCEPTION_003", description = "이미 사용한 JWT 입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "UNAUTHORIZED_EXCEPTION_002", description = "잘못된 JWT 입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_004", description = "존재하지 않는 수요 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
     public ResponseEntity<BaseResponse<String>> resetPasswordConsumer(HttpServletRequest httpServletRequest, @Valid @RequestBody ResetPasswordRequest request) {
 
         String token = (String) httpServletRequest.getAttribute("accessToken");
         String type = (String) httpServletRequest.getAttribute("type");
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long consumerSeq = Long.parseLong(authentication.getName());
 
         // DTO 유효성 검사
         request.validateResetPasswordRequest(request);
-
-        // jwt 검사
-        if (!Objects.equals(request.consumerSeq(), consumerSeq)) {
-            throw new UnauthorizedException(
-                    HttpStatus.UNAUTHORIZED.value(),
-                    "잘못된 JWT 입니다.",
-                    getCode("잘못된 JWT 입니다.", ExceptionCodeMapper.ExceptionType.UNAUTHORIZED)
-            );
-        }
 
         // jwt 타입 검사
         if (!Objects.equals(type,"password_reset")) {
