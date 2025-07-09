@@ -76,6 +76,7 @@ public class SecurityConfiguration {
         List<String> permitAllEndpoints = Arrays.asList(
                 // 토큰 검사가 필요 없는 경로 목록
                 // Swagger
+                "/swagger-ui.html",
                 "/swagger-ui/**",
                 "/v3/api-docs/**",
 
