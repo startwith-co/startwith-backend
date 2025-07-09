@@ -50,6 +50,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
         // pre-flight 요청일 때, 해당 Filter 건너뜀.
         if (method.equals("OPTIONS")) {
+            response.setStatus(HttpServletResponse.SC_OK);
             return;
         }
 
