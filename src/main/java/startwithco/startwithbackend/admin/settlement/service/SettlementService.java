@@ -1,4 +1,4 @@
-package startwithco.startwithbackend.payment.settlement.service;
+package startwithco.startwithbackend.admin.settlement.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -9,7 +9,7 @@ import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.exception.ServerException;
 import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
 import startwithco.startwithbackend.payment.payment.repository.PaymentEntityRepository;
-import startwithco.startwithbackend.payment.settlement.dto.SettlementDto;
+import startwithco.startwithbackend.admin.settlement.dto.SettlementDto;
 import startwithco.startwithbackend.payment.snapshot.entity.TossPaymentDailySnapshotEntity;
 import startwithco.startwithbackend.payment.snapshot.repository.TossPaymentDailySnapshotEntityRepository;
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
