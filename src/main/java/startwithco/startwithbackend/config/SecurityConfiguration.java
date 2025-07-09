@@ -93,7 +93,9 @@ public class SecurityConfiguration {
                 "/api/b2b-service/vendor/email/send",
                 "/api/b2b-service/vendor/email/verify",
                 "/api/b2b-service/vendor/login",
-                "/api/b2b-service/vendor/resetLink"
+                "/api/b2b-service/vendor/resetLink",
+
+                "/admin/**"
 
                 // 모든 URL 개방
 //                "/**"
