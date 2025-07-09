@@ -1,12 +1,12 @@
-package startwithco.startwithbackend.payment.settlement.controller;
+package startwithco.startwithbackend.admin.settlement.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import startwithco.startwithbackend.payment.settlement.dto.SettlementDto;
-import startwithco.startwithbackend.payment.settlement.service.SettlementService;
+import startwithco.startwithbackend.admin.settlement.dto.SettlementDto;
+import startwithco.startwithbackend.admin.settlement.service.SettlementService;
 
 import java.util.List;
 

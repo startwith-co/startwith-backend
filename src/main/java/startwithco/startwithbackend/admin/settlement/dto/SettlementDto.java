@@ -1,4 +1,4 @@
-package startwithco.startwithbackend.payment.settlement.dto;
+package startwithco.startwithbackend.admin.settlement.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

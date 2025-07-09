@@ -90,7 +90,7 @@ public class SolutionEntityRepositoryImpl implements SolutionEntityRepository {
         if (!budget.equals("전체")) {
             switch (budget) {
                 case "500,000원 미만" -> builder.and(qSolutionEntity.amount.lt(500_000L));
-                case "500,000~1,000,000원 미만" ->
+                case "500,000원~1,000,000원 미만" ->
                         builder.and(qSolutionEntity.amount.goe(500_000L).and(qSolutionEntity.amount.lt(1_000_000L)));
                 case "1,000,000원~3,000,000원 미만" ->
                         builder.and(qSolutionEntity.amount.goe(1_000_000L).and(qSolutionEntity.amount.lt(3_000_000L)));
