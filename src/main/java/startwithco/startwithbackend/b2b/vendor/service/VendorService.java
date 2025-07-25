@@ -14,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import startwithco.startwithbackend.admin.settlement.dto.VendorDto;
 import startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest;
 import startwithco.startwithbackend.b2b.consumer.controller.response.ConsumerResponse;
 import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
@@ -148,7 +149,7 @@ public class VendorService {
         // Refresh 토큰 저장
         saveRefreshToken(consumerSeq, refreshToken);
 
-        return new LoginVendorResponse(accessToken, refreshToken, vendorEntity.getVendorSeq(),vendorEntity.getVendorUniqueType(), vendorEntity.getVendorName());
+        return new LoginVendorResponse(accessToken, refreshToken, vendorEntity.getVendorSeq(), vendorEntity.getVendorUniqueType(), vendorEntity.getVendorName());
     }
 
     private VendorEntity validateEmail(VendorRequest.LoginVendorRequest request) {
@@ -401,4 +402,43 @@ public class VendorService {
 
     }
 
+    @Transactional(readOnly = true)
+    public List<VendorDto> getAllVendorEntity(int start, int end) {
+        return vendorEntityRepository.getAllVendorEntity(start, end).stream()
+                .map(vendor -> VendorDto.builder()
+                        .vendorName(vendor.getVendorName())
+                        .managerName(vendor.getManagerName())
+                        .phoneNumber(vendor.getPhoneNumber())
+                        .email(vendor.getEmail())
+                        .audit(vendor.isAudit())
+                        .registerCompletedAt(vendor.getCreatedAt()) // BaseTimeEntity 상속 필드
+                        .build())
+                .toList();
+    }
+
+    @Transactional
+    public void approveVendorEntity(String email) {
+        VendorEntity vendorEntity = vendorEntityRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 벤더 기업입니다.",
+                        getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
+                ));
+
+        vendorEntity.updateAudit(true);
+        vendorEntityRepository.save(vendorEntity);
+    }
+
+    @Transactional
+    public void cancelVendorEntity(String email) {
+        VendorEntity vendorEntity = vendorEntityRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 벤더 기업입니다.",
+                        getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
+                ));
+
+        vendorEntity.updateAudit(false);
+        vendorEntityRepository.save(vendorEntity);
+    }
 }

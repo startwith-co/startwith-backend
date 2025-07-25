@@ -154,4 +154,8 @@ public class VendorEntity extends BaseTimeEntity {
     public void updatePassword(String encodedPassword) {
         this.encodedPassword = encodedPassword;
     }
+
+    public void updateAudit(boolean audit) {
+        this.audit = audit;
+    }
 }

@@ -2,7 +2,6 @@ package startwithco.startwithbackend.b2b.chat.repository;
 
 import startwithco.startwithbackend.b2b.chat.domain.ChatEntity;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface ChatEntityRepository {
