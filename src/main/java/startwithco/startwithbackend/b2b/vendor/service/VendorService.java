@@ -106,6 +106,8 @@ public class VendorService {
 
             vendorEntityRepository.save(vendorEntity);
 
+            commonService.sendVendorInfo(vendorEntity.getEmail(),vendorEntity.getVendorName());
+
         } catch (DataIntegrityViolationException e) {
             throw new ConflictException(
                     HttpStatus.CONFLICT.value(),
