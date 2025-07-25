@@ -22,7 +22,6 @@ public class SolutionRequest {
             String industry,
             String recommendedCompanySize,
             String solutionImplementationType,
-            String specialist,
 
             // 판매 정보 입력
             Long amount,
@@ -50,7 +49,6 @@ public class SolutionRequest {
                     isBlank(industry) ||
                     isBlank(recommendedCompanySize) ||
                     isBlank(solutionImplementationType) ||
-                    isBlank(specialist) ||
                     amount == null ||
                     duration == null ||
                     CollectionUtils.isEmpty(keyword)) {
@@ -77,7 +75,7 @@ public class SolutionRequest {
                 );
             }
 
-            if (amount <= 0) {
+            if (amount < 0) {
                 throw new BadRequestException(
                         HttpStatus.BAD_REQUEST.value(),
                         "요청 데이터 오류입니다.",
