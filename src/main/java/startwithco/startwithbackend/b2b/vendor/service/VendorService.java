@@ -17,6 +17,8 @@ import org.springframework.web.multipart.MultipartFile;
 import startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest;
 import startwithco.startwithbackend.b2b.consumer.controller.response.ConsumerResponse;
 import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
+import startwithco.startwithbackend.b2b.stat.domain.StatEntity;
+import startwithco.startwithbackend.b2b.stat.repository.StatEntityRepository;
 import startwithco.startwithbackend.b2b.vendor.controller.request.VendorRequest;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.b2b.vendor.repository.VendorEntityRepository;
@@ -33,6 +35,7 @@ import startwithco.startwithbackend.solution.solution.repository.SolutionEntityR
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static startwithco.startwithbackend.b2b.vendor.controller.request.VendorRequest.*;
 import static startwithco.startwithbackend.b2b.vendor.controller.response.VendorResponse.*;
@@ -47,6 +50,7 @@ public class VendorService {
     private final SolutionEntityRepository solutionEntityRepository;
     private final PaymentEntityRepository paymentEntityRepository;
     private final TossPaymentDailySnapshotEntityRepository tossPaymentDailySnapshotEntityRepository;
+    private final StatEntityRepository statRepository;
 
     private final CommonService commonService;
 
@@ -249,6 +253,20 @@ public class VendorService {
         );
 
         vendorEntityRepository.save(vendorEntity);
+
+        // 기존 StatEntity 삭제
+        statRepository.deleteAllByVendor(vendorEntity);
+
+        List<StatEntity> statEntities = request.stats().stream()
+                .map(statInfo -> StatEntity.builder()
+                        .label(statInfo.label())
+                        .percentage(statInfo.percentage())
+                        .statType(statInfo.statType())
+                        .vendor(vendorEntity)
+                        .build())
+                .collect(Collectors.toList());
+
+        statRepository.saveAll(statEntities);
     }
 
     @Transactional(readOnly = true)
