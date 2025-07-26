@@ -13,9 +13,7 @@ import startwithco.startwithbackend.solution.solution.domain.QSolutionEntity;
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.getCode;
@@ -60,20 +58,11 @@ public class SolutionEntityRepositoryImpl implements SolutionEntityRepository {
     }
 
     @Override
-    public List<SolutionEntity> findBySpecialistAndCategoryAndIndustryAndBudgetAndKeyword(String specialist, CATEGORY category, String industry, String budget, String keyword, int start, int end) {
+    public List<SolutionEntity> findByCategoryAndIndustryAndBudgetAndKeyword(CATEGORY category, String industry, String budget, String keyword, int start, int end) {
         QSolutionEntity qSolutionEntity = QSolutionEntity.solutionEntity;
         QSolutionKeywordEntity qSolutionKeywordEntity = QSolutionKeywordEntity.solutionKeywordEntity;
 
         BooleanBuilder builder = new BooleanBuilder();
-        if (specialist != null && !specialist.isBlank()) {
-            builder.andAnyOf(
-                    qSolutionEntity.specialist.eq(industry),
-                    qSolutionEntity.specialist.like(industry + ",%"),
-                    qSolutionEntity.specialist.like("%," + industry),
-                    qSolutionEntity.specialist.like("%," + industry + ",%")
-            );
-        }
-
         if (category != null) {
             builder.and(qSolutionEntity.category.eq(category));
         }
@@ -120,22 +109,5 @@ public class SolutionEntityRepositoryImpl implements SolutionEntityRepository {
                 .offset(start)
                 .limit(end - start)
                 .fetch();
-    }
-
-    @Override
-    public Map<String, List<CATEGORY>> findUsedAndUnusedCategories() {
-        List<CATEGORY> usedCategories = em.createQuery(
-                "SELECT DISTINCT s.category FROM SolutionEntity s", CATEGORY.class
-        ).getResultList();
-
-        List<CATEGORY> allCategories = Arrays.asList(CATEGORY.values());
-        List<CATEGORY> unusedCategories = allCategories.stream()
-                .filter(category -> !usedCategories.contains(category))
-                .toList();
-
-        return Map.of(
-                "used", usedCategories,
-                "unused", unusedCategories
-        );
     }
 }

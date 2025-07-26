@@ -42,11 +42,7 @@ public class SolutionController {
     @Operation(
             summary = "솔루션 생성 API",
             description = """
-                    1. 광클 방지를 위한 disable 처리해주세요.
-                    2. 중복 가능한 데이터의 경우 ','로 이어서 String으로 보내주세요. EX) 소기업,중기업,중견기업
-                    3. category: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY
-                    4. DIRECTION: INCREASE, DECREASE
-                    5. amount는 1보다 작을 수 없습니다.
+                    1. amount는 0보다 작을 수 없습니다.
                     """
     )
     @ApiResponses(value = {
@@ -86,11 +82,7 @@ public class SolutionController {
     @Operation(
             summary = "솔루션 수정 API",
             description = """
-                    1. 광클 방지를 위한 disable 처리해주세요.
-                    2. 중복 가능한 데이터의 경우 ','로 이어서 String으로 보내주세요. EX) 소기업,중기업,중견기업
-                    3. category: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY
-                    4. DIRECTION: INCREASE, DECREASE
-                    5. amount는 1보다 작을 수 없습니다.
+                    1. amount는 0보다 작을 수 없습니다.
                     """
     )
     @ApiResponses(value = {
@@ -126,10 +118,7 @@ public class SolutionController {
             name = "솔루션 조회"
     )
     @Operation(
-            summary = "솔루션 조회 API",
-            description = """
-                    1. category: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY\n
-                    """
+            summary = "솔루션 조회 API"
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
@@ -185,7 +174,6 @@ public class SolutionController {
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
     ResponseEntity<BaseResponse<List<GetAllSolutionEntityResponse>>> getAllSolutionEntity(
-            @RequestParam(value = "specialist", required = false) String specialist,
             @RequestParam(value = "category", required = false) String category,
             @RequestParam(value = "industry", required = false) String industry,
             @RequestParam(value = "budget", required = false, defaultValue = "전체") String budget,
@@ -206,7 +194,7 @@ public class SolutionController {
         }
 
         CATEGORY categoryEnum = (category != null) ? CATEGORY.valueOf(category) : null;
-        List<GetAllSolutionEntityResponse> response = solutionService.getAllSolutionEntity(specialist, categoryEnum, industry, budget, keyword, start, end);
+        List<GetAllSolutionEntityResponse> response = solutionService.getAllSolutionEntity(categoryEnum, industry, budget, keyword, start, end);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
     }

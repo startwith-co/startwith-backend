@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -26,4 +27,10 @@ public interface VendorEntityJpaRepository extends JpaRepository<VendorEntity, L
             WHERE v.vendorSeq = :vendorSeq
             """)
     boolean existsByVendorSeq(Long vendorSeq);
+
+    @Query("""
+            SELECT v FROM VendorEntity v
+            ORDER BY v.createdAt DESC
+            """)
+    List<VendorEntity> findAllByCreatedAtDesc();
 }

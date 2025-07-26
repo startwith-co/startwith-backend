@@ -16,7 +16,5 @@ public interface SolutionEntityRepository {
 
     Optional<SolutionEntity> findBySolutionSeq(Long solutionSeq);
 
-    List<SolutionEntity> findBySpecialistAndCategoryAndIndustryAndBudgetAndKeyword(String specialist, CATEGORY category, String industry, String budget, String keyword, int start, int end);
-
-    Map<String, List<CATEGORY>> findUsedAndUnusedCategories();
+    List<SolutionEntity> findByCategoryAndIndustryAndBudgetAndKeyword(CATEGORY category, String industry, String budget, String keyword, int start, int end);
 }

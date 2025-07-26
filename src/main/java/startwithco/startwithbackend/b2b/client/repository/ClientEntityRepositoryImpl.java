@@ -4,7 +4,6 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import startwithco.startwithbackend.b2b.client.domain.ClientEntity;
 import startwithco.startwithbackend.b2b.client.domain.QClientEntity;
 
 import java.util.List;
@@ -14,13 +13,7 @@ import static startwithco.startwithbackend.b2b.client.controller.response.Client
 @Repository
 @RequiredArgsConstructor
 public class ClientEntityRepositoryImpl implements ClientEntityRepository {
-    private final ClientEntityJpaRepository repository;
     private final JPAQueryFactory queryFactory;
-
-    @Override
-    public ClientEntity saveClientEntity(ClientEntity clientEntity) {
-        return repository.save(clientEntity);
-    }
 
     @Override
     public List<GetAllClientResponse> findAllByVendorSeqCustom(Long vendorSeq) {
