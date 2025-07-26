@@ -4,7 +4,9 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import startwithco.startwithbackend.b2b.client.domain.ClientEntity;
 import startwithco.startwithbackend.b2b.client.domain.QClientEntity;
+import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 
 import java.util.List;
 
@@ -14,6 +16,7 @@ import static startwithco.startwithbackend.b2b.client.controller.response.Client
 @RequiredArgsConstructor
 public class ClientEntityRepositoryImpl implements ClientEntityRepository {
     private final JPAQueryFactory queryFactory;
+    private final ClientEntityJpaRepository repository;
 
     @Override
     public List<GetAllClientResponse> findAllByVendorSeqCustom(Long vendorSeq) {
@@ -23,11 +26,20 @@ public class ClientEntityRepositoryImpl implements ClientEntityRepository {
                 .select(Projections.constructor(
                         GetAllClientResponse.class,
                         qClientEntity.clientSeq,
-                        qClientEntity.clientName,
                         qClientEntity.logoImageUrl
                 ))
                 .from(qClientEntity)
                 .where(qClientEntity.vendorEntity.vendorSeq.eq(vendorSeq))
                 .fetch();
+    }
+
+    @Override
+    public void deleteAllByVendor(VendorEntity vendor) {
+        repository.deleteAllByVendorEntity(vendor);
+    }
+
+    @Override
+    public void saveAll(List<ClientEntity> clientEntities) {
+        repository.saveAll(clientEntities);
     }
 }

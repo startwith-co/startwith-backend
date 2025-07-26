@@ -5,7 +5,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import startwithco.startwithbackend.b2b.client.repository.ClientEntityRepository;
+import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.b2b.vendor.repository.VendorEntityRepository;
+import startwithco.startwithbackend.common.service.CommonService;
 import startwithco.startwithbackend.exception.NotFoundException;
 import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
 

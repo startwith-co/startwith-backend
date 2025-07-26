@@ -14,10 +14,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import startwithco.startwithbackend.b2b.client.domain.ClientEntity;
+import startwithco.startwithbackend.b2b.client.repository.ClientEntityRepository;
 import startwithco.startwithbackend.admin.settlement.dto.VendorDto;
 import startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest;
 import startwithco.startwithbackend.b2b.consumer.controller.response.ConsumerResponse;
 import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
+import startwithco.startwithbackend.b2b.stat.domain.StatEntity;
+import startwithco.startwithbackend.b2b.stat.repository.StatEntityRepository;
 import startwithco.startwithbackend.b2b.vendor.controller.request.VendorRequest;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.b2b.vendor.repository.VendorEntityRepository;
@@ -34,6 +38,7 @@ import startwithco.startwithbackend.solution.solution.repository.SolutionEntityR
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static startwithco.startwithbackend.b2b.vendor.controller.request.VendorRequest.*;
 import static startwithco.startwithbackend.b2b.vendor.controller.response.VendorResponse.*;
@@ -48,6 +53,8 @@ public class VendorService {
     private final SolutionEntityRepository solutionEntityRepository;
     private final PaymentEntityRepository paymentEntityRepository;
     private final TossPaymentDailySnapshotEntityRepository tossPaymentDailySnapshotEntityRepository;
+    private final StatEntityRepository statRepository;
+    private final ClientEntityRepository clientRepository;
 
     private final CommonService commonService;
 
@@ -106,6 +113,8 @@ public class VendorService {
                     .build();
 
             vendorEntityRepository.save(vendorEntity);
+
+            commonService.sendVendorInfo(vendorEntity.getEmail(),vendorEntity.getVendorName());
 
         } catch (DataIntegrityViolationException e) {
             throw new ConflictException(
@@ -214,7 +223,7 @@ public class VendorService {
     }
 
     @Transactional
-    public void updateVendor(UpdateVendorInfoRequest request, MultipartFile vendorBannerImageUrl) {
+    public void updateVendor(UpdateVendorInfoRequest request, MultipartFile vendorBannerImageUrl, List<MultipartFile> clientInfos) {
         VendorEntity vendorEntity = vendorEntityRepository.findByVendorSeq(request.vendorSeq())
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
@@ -248,6 +257,38 @@ public class VendorService {
         );
 
         vendorEntityRepository.save(vendorEntity);
+
+        // 기존 StatEntity 삭제
+        statRepository.deleteAllByVendor(vendorEntity);
+
+        // stat
+        List<StatEntity> statEntities = request.stats().stream()
+                .map(statInfo -> StatEntity.builder()
+                        .label(statInfo.label())
+                        .percentage(statInfo.percentage())
+                        .statType(statInfo.statType())
+                        .vendor(vendorEntity)
+                        .build())
+                .collect(Collectors.toList());
+        // 저장
+        statRepository.saveAll(statEntities);
+
+        // 기존 client 삭제
+        clientRepository.deleteAllByVendor(vendorEntity);
+
+
+        List<String> imageUrls = commonService.uploadJPGFileList(clientInfos);
+
+        // 갱신
+        List<ClientEntity> clientEntities = imageUrls.stream()
+                .map(imageUrl -> ClientEntity.builder()
+                        .logoImageUrl(imageUrl)
+                        .vendorEntity(vendorEntity)
+                        .build())
+                .collect(Collectors.toList());
+
+        clientRepository.saveAll(clientEntities);
+
     }
 
     @Transactional(readOnly = true)

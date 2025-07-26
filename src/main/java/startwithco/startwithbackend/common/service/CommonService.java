@@ -34,10 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.UUID.randomUUID;
@@ -81,6 +78,34 @@ public class CommonService {
 
             s3client.putObject(new PutObjectRequest(bucketName, fileName, inputStream, metadata));
             return s3client.getUrl(bucketName, fileName).toString();
+        } catch (IOException e) {
+            throw new ServerException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "S3 UPLOAD 실패",
+                    getCode("S3 UPLOAD 실패", ExceptionType.SERVER)
+            );
+        }
+    }
+
+    public List<String> uploadJPGFileList(List<MultipartFile> multipartFiles) {
+        try {
+            String fileName = randomUUID().toString() + ".jpg";
+
+            List<String> imageUrls = new ArrayList<>();
+
+            for (MultipartFile multipartFile : multipartFiles) {
+                InputStream inputStream = multipartFile.getInputStream();
+
+                ObjectMetadata metadata = new ObjectMetadata();
+                metadata.setContentLength(multipartFile.getSize());
+                metadata.setContentType(multipartFile.getContentType());
+
+                s3client.putObject(new PutObjectRequest(bucketName, fileName, inputStream, metadata));
+
+                imageUrls.add(s3client.getUrl(bucketName, fileName).toString());
+            }
+
+            return imageUrls;
         } catch (IOException e) {
             throw new ServerException(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -306,6 +331,40 @@ public class CommonService {
         }
 
         return authKey;
+    }
+
+    public void sendVendorInfo(String email, String name) {
+
+        String subject = "Solu 벤더 기업 입점 심사";
+
+        // Thymeleaf 컨텍스트 설정
+        Context context = new Context();
+        context.setVariable("name", name);
+        context.setVariable("email", email);
+
+        // HTML 템플릿 렌더링
+        String htmlContent = templateEngine.process("vendor-verify", context);
+
+        try {
+            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, StandardCharsets.UTF_8.name());
+
+            helper.setTo("startwith0325@gmail.com");
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+
+            // 로고 이미지 첨부 (cid를 사용하여 inline 삽입)
+            // 로고 생기면
+//            helper.addInline("logoImage", new ClassPathResource("static/images/logo.png"));
+
+            javaMailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            throw new ServerException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "이메일 전송 중 오류가 발생했습니다.",
+                    getCode("이메일 전송 중 오류가 발생했습니다.", ExceptionType.SERVER)
+            );
+        }
     }
 
     public void saveAuthKey(String email, String authKey, String type) {

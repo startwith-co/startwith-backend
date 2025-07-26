@@ -209,13 +209,14 @@ public class VendorController {
     })
     public ResponseEntity<BaseResponse<String>> updateVendor(
             @RequestPart UpdateVendorInfoRequest request,
-            @RequestPart("vendorBannerImageUrl") MultipartFile vendorBannerImageUrl
+            @RequestPart("vendorBannerImageUrl") MultipartFile vendorBannerImageUrl,
+            @RequestPart("clientInfos") List<MultipartFile> clientInfos
     ) {
 
         // DTO 유효성 검사
         request.validateUpdateVendorRequest(request);
 
-        vendorService.updateVendor(request, vendorBannerImageUrl);
+        vendorService.updateVendor(request, vendorBannerImageUrl, clientInfos);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "success"));
     }
