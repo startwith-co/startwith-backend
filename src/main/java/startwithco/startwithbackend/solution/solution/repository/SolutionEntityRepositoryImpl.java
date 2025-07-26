@@ -97,17 +97,24 @@ public class SolutionEntityRepositoryImpl implements SolutionEntityRepository {
         }
 
         if (keyword != null && !keyword.isBlank()) {
-            builder.and(qSolutionKeywordEntity.keyword.containsIgnoreCase(keyword));
+            return queryFactory
+                    .select(qSolutionEntity)
+                    .from(qSolutionKeywordEntity)
+                    .join(qSolutionKeywordEntity.solutionEntity, qSolutionEntity)
+                    .join(qSolutionEntity.vendorEntity).fetchJoin()
+                    .where(builder)
+                    .offset(start)
+                    .limit(end - start)
+                    .fetch();
+        } else {
+            return queryFactory
+                    .select(qSolutionEntity)
+                    .from(qSolutionEntity)
+                    .join(qSolutionEntity.vendorEntity).fetchJoin()
+                    .where(builder)
+                    .offset(start)
+                    .limit(end - start)
+                    .fetch();
         }
-
-        return queryFactory
-                .select(qSolutionEntity)
-                .from(qSolutionKeywordEntity)
-                .join(qSolutionKeywordEntity.solutionEntity, qSolutionEntity)
-                .join(qSolutionEntity.vendorEntity).fetchJoin()
-                .where(builder)
-                .offset(start)
-                .limit(end - start)
-                .fetch();
     }
 }
