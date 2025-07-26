@@ -14,6 +14,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import startwithco.startwithbackend.b2b.client.domain.ClientEntity;
+import startwithco.startwithbackend.b2b.client.repository.ClientEntityRepository;
 import startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest;
 import startwithco.startwithbackend.b2b.consumer.controller.response.ConsumerResponse;
 import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
@@ -51,6 +53,7 @@ public class VendorService {
     private final PaymentEntityRepository paymentEntityRepository;
     private final TossPaymentDailySnapshotEntityRepository tossPaymentDailySnapshotEntityRepository;
     private final StatEntityRepository statRepository;
+    private final ClientEntityRepository clientRepository;
 
     private final CommonService commonService;
 
@@ -219,7 +222,7 @@ public class VendorService {
     }
 
     @Transactional
-    public void updateVendor(UpdateVendorInfoRequest request, MultipartFile vendorBannerImageUrl) {
+    public void updateVendor(UpdateVendorInfoRequest request, MultipartFile vendorBannerImageUrl, List<MultipartFile> clientInfos) {
         VendorEntity vendorEntity = vendorEntityRepository.findByVendorSeq(request.vendorSeq())
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
@@ -257,6 +260,7 @@ public class VendorService {
         // 기존 StatEntity 삭제
         statRepository.deleteAllByVendor(vendorEntity);
 
+        // stat
         List<StatEntity> statEntities = request.stats().stream()
                 .map(statInfo -> StatEntity.builder()
                         .label(statInfo.label())
@@ -265,8 +269,25 @@ public class VendorService {
                         .vendor(vendorEntity)
                         .build())
                 .collect(Collectors.toList());
-
+        // 저장
         statRepository.saveAll(statEntities);
+
+        // 기존 client 삭제
+        clientRepository.deleteAllByVendor(vendorEntity);
+
+
+        List<String> imageUrls = commonService.uploadJPGFileList(clientInfos);
+
+        // 갱신
+        List<ClientEntity> clientEntities = imageUrls.stream()
+                .map(imageUrl -> ClientEntity.builder()
+                        .logoImageUrl(imageUrl)
+                        .vendorEntity(vendorEntity)
+                        .build())
+                .collect(Collectors.toList());
+
+        clientRepository.saveAll(clientEntities);
+        
     }
 
     @Transactional(readOnly = true)

@@ -38,7 +38,6 @@ public class ClientService {
 
         String s3LogoImageUrl = commonService.uploadJPGFile(logoImageUrl);
         ClientEntity clientEntity = ClientEntity.builder()
-                .clientName(request.clientName())
                 .logoImageUrl(s3LogoImageUrl)
                 .vendorEntity(vendorEntity)
                 .build();

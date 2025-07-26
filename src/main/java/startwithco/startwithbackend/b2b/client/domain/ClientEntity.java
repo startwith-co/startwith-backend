@@ -20,9 +20,6 @@ public class ClientEntity extends BaseTimeEntity {
     @Column(name = "client_seq")
     private Long clientSeq;
 
-    @Column(name = "client_name", nullable = false)
-    private String clientName;
-
     @Column(name = "logo_image_url", nullable = false)
     private String logoImageUrl;
 

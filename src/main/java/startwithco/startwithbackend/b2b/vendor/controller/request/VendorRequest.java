@@ -137,7 +137,9 @@ public class VendorRequest {
             LocalTime holidayEndTime,
             Long orderCount,
             Long clientCount,
-            List<StatInfo> stats
+            List<StatInfo> stats,
+
+            List<MultipartFile> clientInfos
     ) {
         public void validateUpdateVendorRequest(UpdateVendorInfoRequest request) {
             if(request.vendorSeq == null) {
@@ -153,6 +155,10 @@ public class VendorRequest {
                 String label,
                 Long percentage,
                 STAT_TYPE statType
+        ) {}
+
+        public record ClientInfo (
+                MultipartFile image
         ) {}
     }
 

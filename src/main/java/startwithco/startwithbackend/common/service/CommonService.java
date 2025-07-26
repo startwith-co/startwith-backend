@@ -34,10 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.UUID.randomUUID;
@@ -81,6 +78,34 @@ public class CommonService {
 
             s3client.putObject(new PutObjectRequest(bucketName, fileName, inputStream, metadata));
             return s3client.getUrl(bucketName, fileName).toString();
+        } catch (IOException e) {
+            throw new ServerException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "S3 UPLOAD 실패",
+                    getCode("S3 UPLOAD 실패", ExceptionType.SERVER)
+            );
+        }
+    }
+
+    public List<String> uploadJPGFileList(List<MultipartFile> multipartFiles) {
+        try {
+            String fileName = randomUUID().toString() + ".jpg";
+
+            List<String> imageUrls = new ArrayList<>();
+
+            for (MultipartFile multipartFile : multipartFiles) {
+                InputStream inputStream = multipartFile.getInputStream();
+
+                ObjectMetadata metadata = new ObjectMetadata();
+                metadata.setContentLength(multipartFile.getSize());
+                metadata.setContentType(multipartFile.getContentType());
+
+                s3client.putObject(new PutObjectRequest(bucketName, fileName, inputStream, metadata));
+
+                imageUrls.add(s3client.getUrl(bucketName, fileName).toString());
+            }
+
+            return imageUrls;
         } catch (IOException e) {
             throw new ServerException(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
