@@ -48,6 +48,8 @@ public class ChatController {
             @RequestPart(value = "file", required = false) MultipartFile file,
             @RequestPart SaveChatRequest request
     ) {
+        request.validate();
+
         if (file == null || file.isEmpty()) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),

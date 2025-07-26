@@ -15,13 +15,8 @@ import static startwithco.startwithbackend.b2b.client.controller.response.Client
 @Repository
 @RequiredArgsConstructor
 public class ClientEntityRepositoryImpl implements ClientEntityRepository {
-    private final ClientEntityJpaRepository repository;
     private final JPAQueryFactory queryFactory;
-
-    @Override
-    public ClientEntity saveClientEntity(ClientEntity clientEntity) {
-        return repository.save(clientEntity);
-    }
+    private final ClientEntityJpaRepository repository;
 
     @Override
     public List<GetAllClientResponse> findAllByVendorSeqCustom(Long vendorSeq) {

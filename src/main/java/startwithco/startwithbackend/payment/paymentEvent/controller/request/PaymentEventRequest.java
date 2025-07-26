@@ -50,18 +50,4 @@ public class PaymentEventRequest {
             }
         }
     }
-
-    public record DeletePaymentEventRequest(
-            Long paymentEventSeq
-    ) {
-        public void validate() {
-            if (paymentEventSeq == null) {
-                throw new BadRequestException(
-                        HttpStatus.BAD_REQUEST.value(),
-                        "요청 데이터 오류입니다.",
-                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
-                );
-            }
-        }
-    }
 }

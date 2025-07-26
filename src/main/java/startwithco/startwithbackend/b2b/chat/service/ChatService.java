@@ -5,7 +5,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import startwithco.startwithbackend.b2b.chat.controller.response.ChatResponse;
 import startwithco.startwithbackend.b2b.chat.domain.ChatEntity;
 import startwithco.startwithbackend.b2b.chat.repository.ChatEntityRepository;
 import startwithco.startwithbackend.b2b.consumer.repository.ConsumerRepository;
@@ -14,8 +13,6 @@ import startwithco.startwithbackend.common.service.CommonService;
 import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.NotFoundException;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 import static startwithco.startwithbackend.b2b.chat.controller.request.ChatRequest.*;

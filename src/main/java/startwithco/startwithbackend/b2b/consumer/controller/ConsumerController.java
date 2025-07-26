@@ -11,11 +11,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest;
 import startwithco.startwithbackend.b2b.consumer.service.ConsumerService;
 import startwithco.startwithbackend.b2b.vendor.controller.request.VendorRequest;
 import startwithco.startwithbackend.base.BaseResponse;
@@ -24,10 +21,7 @@ import startwithco.startwithbackend.exception.UnauthorizedException;
 import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
 import startwithco.startwithbackend.common.service.CommonService;
 import startwithco.startwithbackend.exception.handler.GlobalExceptionHandler;
-import startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS;
-import startwithco.startwithbackend.payment.paymentEvent.controller.response.PaymentEventResponse;
 
-import java.util.List;
 import java.util.Objects;
 
 import static startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest.*;
