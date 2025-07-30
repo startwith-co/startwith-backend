@@ -137,9 +137,7 @@ public class VendorRequest {
             LocalTime holidayEndTime,
             Long orderCount,
             Long clientCount,
-            List<StatInfo> stats,
-
-            List<MultipartFile> clientInfos
+            List<StatInfo> stats
     ) {
         public void validateUpdateVendorRequest(UpdateVendorInfoRequest request) {
             if(request.vendorSeq == null) {
