@@ -59,7 +59,8 @@ public class ConsumerRequest {
             String consumerName,
             String phoneNumber,
             String email,
-            String industry
+            String industry,
+            String password
     ) {
 
         public void validateUpdateConsumerRequest(UpdateConsumerInfoRequest request) {
