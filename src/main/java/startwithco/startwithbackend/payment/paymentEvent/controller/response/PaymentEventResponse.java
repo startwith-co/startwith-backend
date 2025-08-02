@@ -19,7 +19,8 @@ public class PaymentEventResponse {
             Long amount,
             String contractConfirmationUrl,
             String refundPolicyUrl,
-            LocalDateTime createdAt
+            LocalDateTime createdAt,
+            Boolean deleted
     ) {
 
     }

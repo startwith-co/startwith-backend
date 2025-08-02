@@ -122,4 +122,13 @@ public class VendorResponse {
     ) {
 
     }
+
+    public record GetVendorSolutionEntitiesResponse(
+            Long solutionSeq,
+            String solutionName,
+            CATEGORY category,
+            Long amount
+    ) {
+
+    }
 }

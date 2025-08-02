@@ -89,7 +89,6 @@ public class SolutionController {
             @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_001", description = "존재하지 않는 벤더 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_005", description = "존재하지 않는 솔루션입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "CONFLICT_EXCEPTION_002", description = "동시성 저장은 불가능합니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "SERVER_EXCEPTION_002", description = "S3 UPLOAD 실패", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
@@ -115,11 +114,10 @@ public class SolutionController {
     }
 
     @GetMapping(
-            name = "솔루션 조회"
+            name = "솔루션 카테고리별 조회",
+            value = "/category"
     )
-    @Operation(
-            summary = "솔루션 조회 API"
-    )
+    @Operation(summary = "솔루션 카테고리별 조회 API")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
@@ -127,7 +125,7 @@ public class SolutionController {
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_001", description = "존재하지 않는 벤더 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_008", description = "해당 기업이 작성한 카테고리 솔루션이 존재하지 않습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
-    ResponseEntity<BaseResponse<GetSolutionEntityResponse>> getSolutionEntity(
+    ResponseEntity<BaseResponse<GetSolutionEntityResponse>> getSolutionEntityByCategory(
             @RequestParam(value = "vendorSeq", required = false) Long vendorSeq,
             @RequestParam(value = "category", required = false) String category
     ) {
@@ -149,7 +147,7 @@ public class SolutionController {
             );
         }
 
-        GetSolutionEntityResponse response = solutionService.getSolutionEntity(vendorSeq, CATEGORY.valueOf(category));
+        GetSolutionEntityResponse response = solutionService.getSolutionEntityByCategory(vendorSeq, CATEGORY.valueOf(category));
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
     }
@@ -161,11 +159,10 @@ public class SolutionController {
     @Operation(
             summary = "전체 솔루션 조회 (필터링, 키워드 검색) API",
             description = """
-                    1. category: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY
-                    2. Param 값의 경우 전부 NULL 허용입니다.
-                    3. NULL로 들어온 값은 필터링하지 않습니다.
-                    4. budget의 경우 (전체, 500,000원 미만, 500,000~1,000,000원 미만, 1,000,000원~3,000,000원 미만, 3,000,000원~5,000,000원 미만, 5,000,000원~10,000,000원 미만, 10,000,000원 이상) 문자 그대로 보내주세요. Default의 경우 "전체" 보내주시면 됩니다.
-                    5. start와 end는 시작과 끝의 인덱스 번호입니다. default: start = 0, end = 15
+                    1. Param 값의 경우 전부 NULL 허용입니다.
+                    2. NULL로 들어온 값은 필터링하지 않습니다.
+                    3. budget의 경우 (전체, 500,000원 미만, 500,000~1,000,000원 미만, 1,000,000원~3,000,000원 미만, 3,000,000원~5,000,000원 미만, 5,000,000원~10,000,000원 미만, 10,000,000원 이상) 문자 그대로 보내주세요. Default의 경우 "전체" 보내주시면 됩니다.
+                    4. start와 end는 시작과 끝의 인덱스 번호입니다. default: start = 0, end = 15
                     """
     )
     @ApiResponses(value = {
@@ -197,5 +194,50 @@ public class SolutionController {
         List<GetAllSolutionEntityResponse> response = solutionService.getAllSolutionEntity(categoryEnum, industry, budget, keyword, start, end);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
+    }
+
+    @GetMapping(name = "솔루션 조회")
+    @Operation(summary = "솔루션 조회 API")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_005", description = "존재하지 않는 솔루션입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+    })
+    ResponseEntity<BaseResponse<GetSolutionEntityResponse>> getSolutionEntity(@RequestParam(value = "solutionSeq", required = false) Long solutionSeq) {
+        if (solutionSeq == null) {
+            throw new BadRequestException(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "요청 데이터 오류입니다.",
+                    getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+            );
+        }
+
+        GetSolutionEntityResponse response = solutionService.getSolutionEntity(solutionSeq);
+
+        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
+    }
+
+    @DeleteMapping(name = "솔루션 삭제")
+    @Operation(summary = "솔루션 삭제 API")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_001", description = "존재하지 않는 벤더 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_008", description = "해당 기업이 작성한 카테고리 솔루션이 존재하지 않습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+    })
+    ResponseEntity<BaseResponse<String>> deleteSolutionEntity(@RequestParam(value = "solutionSeq", required = false) Long solutionSeq) {
+        if (solutionSeq == null) {
+            throw new BadRequestException(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "요청 데이터 오류입니다.",
+                    getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+            );
+        }
+
+        solutionService.deleteSolutionEntity(solutionSeq);
+
+        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SUCCESS"));
     }
 }

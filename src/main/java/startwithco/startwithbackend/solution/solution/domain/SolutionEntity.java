@@ -63,6 +63,9 @@ public class SolutionEntity extends BaseTimeEntity {
     @Column(name = "description_pdf_url", nullable = false)
     private String descriptionPdfUrl;
 
+    @Column(name = "deleted", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean deleted = false;
+
     public SolutionEntity updateSolutionEntity(String solutionName,
                                                String solutionDetail,
                                                CATEGORY category,
@@ -85,5 +88,9 @@ public class SolutionEntity extends BaseTimeEntity {
         this.descriptionPdfUrl = descriptionPdfUrl;
 
         return this;
+    }
+
+    public void deleteSolutionEntity() {
+        this.deleted = true;
     }
 }

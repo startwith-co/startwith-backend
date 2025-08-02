@@ -124,7 +124,8 @@ public class PaymentEventService {
                     paymentEventEntity.getAmount(),
                     paymentEventEntity.getContractConfirmationUrl(),
                     paymentEventEntity.getRefundPolicyUrl(),
-                    paymentEventEntity.getCreatedAt()
+                    paymentEventEntity.getCreatedAt(),
+                    paymentEventEntity.getSolutionEntity().getDeleted()
             );
         }
     }
@@ -139,6 +140,14 @@ public class PaymentEventService {
                 ));
 
         SolutionEntity solutionEntity = paymentEventEntity.getSolutionEntity();
+        if(solutionEntity.getDeleted()) {
+            throw new NotFoundException(
+                    HttpStatus.NOT_FOUND.value(),
+                    "존재하지 않는 솔루션입니다.",
+                    getCode("존재하지 않는 솔루션입니다.", ExceptionType.NOT_FOUND)
+            );
+        }
+
         VendorEntity vendorEntity = solutionEntity.getVendorEntity();
         ConsumerEntity consumerEntity = paymentEventEntity.getConsumerEntity();
 

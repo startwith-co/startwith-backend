@@ -181,7 +181,7 @@ public class SolutionService {
     }
 
     @Transactional(readOnly = true)
-    public GetSolutionEntityResponse getSolutionEntity(Long vendorSeq, CATEGORY category) {
+    public GetSolutionEntityResponse getSolutionEntityByCategory(Long vendorSeq, CATEGORY category) {
         vendorEntityRepository.findByVendorSeq(vendorSeq)
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
@@ -244,5 +244,48 @@ public class SolutionService {
         }
 
         return response;
+    }
+
+    @Transactional(readOnly = true)
+    public GetSolutionEntityResponse getSolutionEntity(Long solutionSeq) {
+        SolutionEntity solutionEntity = solutionEntityRepository.findBySolutionSeq(solutionSeq)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "해당 기업이 작성한 카테고리 솔루션이 존재하지 않습니다.",
+                        getCode("해당 기업이 작성한 카테고리 솔루션이 존재하지 않습니다.", ExceptionType.NOT_FOUND)
+                ));
+
+        List<String> solutionImplementationType = List.of(solutionEntity.getSolutionImplementationType().split(","));
+        List<String> industry = List.of(solutionEntity.getIndustry().split(","));
+        List<String> recommendedCompanySize = List.of(solutionEntity.getRecommendedCompanySize().split(","));
+        List<SolutionEffectResponse> solutionEffectResponse
+                = solutionEffectEntityRepository.findAllBySolutionSeqCustom(solutionEntity.getSolutionSeq());
+
+        return new GetSolutionEntityResponse(
+                solutionEntity.getSolutionSeq(),
+                solutionEntity.getRepresentImageUrl(),
+                solutionEntity.getDescriptionPdfUrl(),
+                solutionEntity.getSolutionName(),
+                solutionEntity.getSolutionDetail(),
+                solutionEntity.getAmount(),
+                solutionImplementationType,
+                solutionEntity.getDuration(),
+                industry,
+                recommendedCompanySize,
+                solutionEffectResponse
+        );
+    }
+
+    @Transactional
+    public void deleteSolutionEntity(Long solutionSeq) {
+        SolutionEntity solutionEntity = solutionEntityRepository.findBySolutionSeq(solutionSeq)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "해당 기업이 작성한 카테고리 솔루션이 존재하지 않습니다.",
+                        getCode("해당 기업이 작성한 카테고리 솔루션이 존재하지 않습니다.", ExceptionType.NOT_FOUND)
+                ));
+
+        solutionEntity.deleteSolutionEntity();
+        solutionEntityRepository.saveSolutionEntity(solutionEntity);
     }
 }
