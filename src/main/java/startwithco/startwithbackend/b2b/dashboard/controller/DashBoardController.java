@@ -40,7 +40,7 @@ public class DashBoardController {
             name = "벤더 기업 대시보드 운영 현황"
     )
     @Operation(
-            summary = "벤더 기업 대시보드 운영 현황 API / 담당자(박종훈)",
+            summary = "벤더 기업 대시보드 운영 현황 API",
             description = """
                     1. CONFIRMED: 구매확정
                     2. DONE: 정산대기
@@ -72,7 +72,7 @@ public class DashBoardController {
             name = "벤더 기업 대시보드 운영 현황"
     )
     @Operation(
-            summary = "벤더 기업 대시보드 운영 현황 API / 담당자(박종훈)",
+            summary = "벤더 기업 대시보드 운영 현황 API",
             description = """
                     1. paymentStatus: DONE(정산 대기), SETTLED(정산 완료)
                     2. paymentStatus를 보내지 않으면 DONE, SETTLED 전체 데이터 반환됩니다.
@@ -123,7 +123,7 @@ public class DashBoardController {
             name = "수요 기업 대시보드 조회"
     )
     @Operation(
-            summary = "수요 기업 대시보드 조회 API / 담당자(박종훈)",
+            summary = "수요 기업 대시보드 조회 API",
             description = """
                     1. paymentStatus: DONE(구매 확정), SETTLED(정산 완료)
                     2. paymentStatus가 NULL일 경우 DONE, SETTLED 전부 반환합니다.
