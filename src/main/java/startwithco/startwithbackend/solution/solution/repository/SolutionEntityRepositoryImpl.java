@@ -34,7 +34,8 @@ public class SolutionEntityRepositoryImpl implements SolutionEntityRepository {
         QSolutionEntity qSolutionEntity = QSolutionEntity.solutionEntity;
 
         BooleanBuilder builder = new BooleanBuilder();
-        builder.and(qSolutionEntity.vendorEntity.vendorSeq.eq(vendorSeq));
+        builder.and(qSolutionEntity.vendorEntity.vendorSeq.eq(vendorSeq))
+                .and(qSolutionEntity.deleted.isFalse());
         if (category != null) {
             builder.and(qSolutionEntity.category.eq(category));
         }
@@ -62,7 +63,8 @@ public class SolutionEntityRepositoryImpl implements SolutionEntityRepository {
         QSolutionEntity qSolutionEntity = QSolutionEntity.solutionEntity;
         QSolutionKeywordEntity qSolutionKeywordEntity = QSolutionKeywordEntity.solutionKeywordEntity;
 
-        BooleanBuilder builder = new BooleanBuilder();
+        BooleanBuilder builder = new BooleanBuilder()
+                .and(qSolutionEntity.deleted.isFalse());
         if (category != null) {
             builder.and(qSolutionEntity.category.eq(category));
         }

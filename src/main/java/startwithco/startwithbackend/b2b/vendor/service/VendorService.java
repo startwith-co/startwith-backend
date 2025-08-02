@@ -114,7 +114,7 @@ public class VendorService {
 
             vendorEntityRepository.save(vendorEntity);
 
-            commonService.sendVendorInfo(vendorEntity.getEmail(),vendorEntity.getVendorName());
+            commonService.sendVendorInfo(vendorEntity.getEmail(), vendorEntity.getVendorName());
 
         } catch (DataIntegrityViolationException e) {
             throw new ConflictException(
@@ -210,6 +210,7 @@ public class VendorService {
         }
     }
 
+    @Transactional(readOnly = true)
     public GetVendorInfo getVendorInfo(Long vendorSeq) {
 
         VendorEntity vendorEntity = vendorEntityRepository.findByVendorSeq(vendorSeq)
@@ -481,5 +482,24 @@ public class VendorService {
 
         vendorEntity.updateAudit(false);
         vendorEntityRepository.save(vendorEntity);
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetVendorSolutionEntitiesResponse> getVendorSolutionEntities(Long vendorSeq) {
+        vendorEntityRepository.findByVendorSeq(vendorSeq)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 벤더 기업입니다.",
+                        getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
+                ));
+
+        return solutionEntityRepository.findAllByVendorSeq(vendorSeq).stream()
+                .map(s -> new GetVendorSolutionEntitiesResponse(
+                        s.getSolutionSeq(),
+                        s.getSolutionName(),
+                        s.getCategory(),
+                        s.getAmount()
+                ))
+                .toList();
     }
 }
