@@ -22,7 +22,6 @@ public class StatEntityRepositoryImpl implements StatEntityRepository {
 
     @Override
     public List<StatEntity> findAllByVendor(VendorEntity vendor) {
-
         return repository.findAllByVendor(vendor);
     }
 
