@@ -78,6 +78,7 @@ public class SolutionService {
                     .duration(request.duration())
                     .representImageUrl(s3RepresentImageUrl)
                     .descriptionPdfUrl(s3DescriptionPdfUrl)
+                    .deleted(false)
                     .build();
 
             solutionEntityRepository.saveSolutionEntity(solutionEntity);
