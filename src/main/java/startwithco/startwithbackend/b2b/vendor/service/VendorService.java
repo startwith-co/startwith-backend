@@ -14,9 +14,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import startwithco.startwithbackend.b2b.client.domain.ClientEntity;
+import startwithco.startwithbackend.b2b.client.repository.ClientEntityRepository;
+import startwithco.startwithbackend.admin.settlement.dto.VendorDto;
 import startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest;
 import startwithco.startwithbackend.b2b.consumer.controller.response.ConsumerResponse;
 import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
+import startwithco.startwithbackend.b2b.stat.domain.StatEntity;
+import startwithco.startwithbackend.b2b.stat.repository.StatEntityRepository;
 import startwithco.startwithbackend.b2b.vendor.controller.request.VendorRequest;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.b2b.vendor.repository.VendorEntityRepository;
@@ -33,6 +38,7 @@ import startwithco.startwithbackend.solution.solution.repository.SolutionEntityR
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static startwithco.startwithbackend.b2b.vendor.controller.request.VendorRequest.*;
 import static startwithco.startwithbackend.b2b.vendor.controller.response.VendorResponse.*;
@@ -47,6 +53,8 @@ public class VendorService {
     private final SolutionEntityRepository solutionEntityRepository;
     private final PaymentEntityRepository paymentEntityRepository;
     private final TossPaymentDailySnapshotEntityRepository tossPaymentDailySnapshotEntityRepository;
+    private final StatEntityRepository statRepository;
+    private final ClientEntityRepository clientRepository;
 
     private final CommonService commonService;
 
@@ -106,6 +114,8 @@ public class VendorService {
 
             vendorEntityRepository.save(vendorEntity);
 
+            commonService.sendVendorInfo(vendorEntity.getEmail(), vendorEntity.getVendorName());
+
         } catch (DataIntegrityViolationException e) {
             throw new ConflictException(
                     HttpStatus.CONFLICT.value(),
@@ -148,7 +158,7 @@ public class VendorService {
         // Refresh 토큰 저장
         saveRefreshToken(consumerSeq, refreshToken);
 
-        return new LoginVendorResponse(accessToken, refreshToken, vendorEntity.getVendorSeq(),vendorEntity.getVendorUniqueType(), vendorEntity.getVendorName());
+        return new LoginVendorResponse(accessToken, refreshToken, vendorEntity.getVendorSeq(), vendorEntity.getVendorUniqueType(), vendorEntity.getVendorName());
     }
 
     private VendorEntity validateEmail(VendorRequest.LoginVendorRequest request) {
@@ -200,6 +210,7 @@ public class VendorService {
         }
     }
 
+    @Transactional(readOnly = true)
     public GetVendorInfo getVendorInfo(Long vendorSeq) {
 
         VendorEntity vendorEntity = vendorEntityRepository.findByVendorSeq(vendorSeq)
@@ -213,7 +224,7 @@ public class VendorService {
     }
 
     @Transactional
-    public void updateVendor(UpdateVendorInfoRequest request, MultipartFile vendorBannerImageUrl) {
+    public void updateVendor(UpdateVendorInfoRequest request, MultipartFile vendorBannerImageUrl, List<MultipartFile> clientInfos) {
         VendorEntity vendorEntity = vendorEntityRepository.findByVendorSeq(request.vendorSeq())
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
@@ -247,6 +258,38 @@ public class VendorService {
         );
 
         vendorEntityRepository.save(vendorEntity);
+
+        // 기존 StatEntity 삭제
+        statRepository.deleteAllByVendor(vendorEntity);
+
+        // stat
+        List<StatEntity> statEntities = request.stats().stream()
+                .map(statInfo -> StatEntity.builder()
+                        .label(statInfo.label())
+                        .percentage(statInfo.percentage())
+                        .statType(statInfo.statType())
+                        .vendor(vendorEntity)
+                        .build())
+                .collect(Collectors.toList());
+        // 저장
+        statRepository.saveAll(statEntities);
+
+        // 기존 client 삭제
+        clientRepository.deleteAllByVendor(vendorEntity);
+
+
+        List<String> imageUrls = commonService.uploadJPGFileList(clientInfos);
+
+        // 갱신
+        List<ClientEntity> clientEntities = imageUrls.stream()
+                .map(imageUrl -> ClientEntity.builder()
+                        .logoImageUrl(imageUrl)
+                        .vendorEntity(vendorEntity)
+                        .build())
+                .collect(Collectors.toList());
+
+        clientRepository.saveAll(clientEntities);
+
     }
 
     @Transactional(readOnly = true)
@@ -401,4 +444,62 @@ public class VendorService {
 
     }
 
+    @Transactional(readOnly = true)
+    public List<VendorDto> getAllVendorEntity(int start, int end) {
+        return vendorEntityRepository.getAllVendorEntity(start, end).stream()
+                .map(vendor -> VendorDto.builder()
+                        .vendorName(vendor.getVendorName())
+                        .managerName(vendor.getManagerName())
+                        .phoneNumber(vendor.getPhoneNumber())
+                        .email(vendor.getEmail())
+                        .audit(vendor.isAudit())
+                        .registerCompletedAt(vendor.getCreatedAt()) // BaseTimeEntity 상속 필드
+                        .build())
+                .toList();
+    }
+
+    @Transactional
+    public void approveVendorEntity(String email) {
+        VendorEntity vendorEntity = vendorEntityRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 벤더 기업입니다.",
+                        getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
+                ));
+
+        vendorEntity.updateAudit(true);
+        vendorEntityRepository.save(vendorEntity);
+    }
+
+    @Transactional
+    public void cancelVendorEntity(String email) {
+        VendorEntity vendorEntity = vendorEntityRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 벤더 기업입니다.",
+                        getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
+                ));
+
+        vendorEntity.updateAudit(false);
+        vendorEntityRepository.save(vendorEntity);
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetVendorSolutionEntitiesResponse> getVendorSolutionEntities(Long vendorSeq) {
+        vendorEntityRepository.findByVendorSeq(vendorSeq)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 벤더 기업입니다.",
+                        getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
+                ));
+
+        return solutionEntityRepository.findAllByVendorSeq(vendorSeq).stream()
+                .map(s -> new GetVendorSolutionEntitiesResponse(
+                        s.getSolutionSeq(),
+                        s.getSolutionName(),
+                        s.getCategory(),
+                        s.getAmount()
+                ))
+                .toList();
+    }
 }

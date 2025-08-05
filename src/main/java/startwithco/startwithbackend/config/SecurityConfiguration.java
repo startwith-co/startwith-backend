@@ -101,7 +101,7 @@ public class SecurityConfiguration {
                 "/admin/**"
 
                 // 모든 URL 개방
-//                "/**"
+                ,"/**"
         );
         return new JwtTokenFilter(jwtSecret, permitAllEndpoints);
     }

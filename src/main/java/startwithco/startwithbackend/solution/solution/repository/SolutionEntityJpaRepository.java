@@ -15,6 +15,7 @@ public interface SolutionEntityJpaRepository extends JpaRepository<SolutionEntit
             SELECT s
             FROM SolutionEntity s
             WHERE s.vendorEntity.vendorSeq = :vendorSeq
+              AND s.deleted is FALSE
             """)
     List<SolutionEntity> findAllByVendorSeq(@Param("vendorSeq") Long vendorSeq);
 
@@ -22,6 +23,7 @@ public interface SolutionEntityJpaRepository extends JpaRepository<SolutionEntit
             SELECT s
             FROM SolutionEntity s
             WHERE s.solutionSeq = :solutionSeq
+              AND s.deleted is FALSE
             """)
     Optional<SolutionEntity> findBySolutionSeq(@Param("solutionSeq") Long solutionSeq);
 }

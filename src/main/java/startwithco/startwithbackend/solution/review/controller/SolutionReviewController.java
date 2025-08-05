@@ -29,12 +29,8 @@ import static startwithco.startwithbackend.solution.review.controller.response.S
 public class SolutionReviewController {
     private final SolutionReviewService service;
 
-    @PostMapping(
-            name = "솔루션 리뷰 생성"
-    )
-    @Operation(
-            summary = "솔루션 리뷰 생성 API"
-    )
+    @PostMapping(name = "솔루션 리뷰 생성")
+    @Operation(summary = "솔루션 리뷰 생성 API")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
@@ -52,12 +48,8 @@ public class SolutionReviewController {
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
     }
 
-    @PutMapping(
-            name = "솔루션 리뷰 수정"
-    )
-    @Operation(
-            summary = "솔루션 리뷰 수정 API"
-    )
+    @PutMapping(name = "솔루션 리뷰 수정")
+    @Operation(summary = "솔루션 리뷰 수정 API")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
@@ -74,12 +66,8 @@ public class SolutionReviewController {
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SUCCESS"));
     }
 
-    @GetMapping(
-            name = "솔루션별 리뷰 조회"
-    )
-    @Operation(
-            summary = "솔루션별 리뷰 조회 API"
-    )
+    @GetMapping(name = "솔루션별 리뷰 조회")
+    @Operation(summary = "솔루션별 리뷰 조회 API")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),

@@ -7,13 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
-import startwithco.startwithbackend.b2b.consumer.repository.ConsumerRepository;
-import startwithco.startwithbackend.b2b.home.controller.response.HomeResponse;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.b2b.vendor.repository.VendorEntityRepository;
-import startwithco.startwithbackend.exception.ServerException;
-import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
 import startwithco.startwithbackend.solution.review.repository.SolutionReviewEntityRepository;
 import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 import startwithco.startwithbackend.solution.effect.util.DIRECTION;
@@ -27,14 +22,11 @@ import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 import startwithco.startwithbackend.solution.solution.repository.SolutionEntityRepository;
 import startwithco.startwithbackend.common.service.CommonService;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static startwithco.startwithbackend.b2b.home.controller.response.HomeResponse.*;
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.*;
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.getCode;
 import static startwithco.startwithbackend.solution.solution.controller.request.SolutionRequest.*;
@@ -46,7 +38,6 @@ import static startwithco.startwithbackend.solution.solution.controller.response
 @Slf4j
 public class SolutionService {
     private final VendorEntityRepository vendorEntityRepository;
-    private final ConsumerRepository consumerEntityRepository;
     private final SolutionEntityRepository solutionEntityRepository;
     private final SolutionEffectEntityRepository solutionEffectEntityRepository;
     private final SolutionKeywordEntityRepository solutionKeywordEntityRepository;
@@ -87,7 +78,6 @@ public class SolutionService {
                     .duration(request.duration())
                     .representImageUrl(s3RepresentImageUrl)
                     .descriptionPdfUrl(s3DescriptionPdfUrl)
-                    .specialist(request.specialist())
                     .build();
 
             solutionEntityRepository.saveSolutionEntity(solutionEntity);
@@ -152,7 +142,6 @@ public class SolutionService {
                     request.solutionImplementationType(),
                     request.amount(),
                     request.duration(),
-                    request.specialist(),
                     s3RepresentImageUrl,
                     s3DescriptionPdfUrl
             );
@@ -192,7 +181,7 @@ public class SolutionService {
     }
 
     @Transactional(readOnly = true)
-    public GetSolutionEntityResponse getSolutionEntity(Long vendorSeq, CATEGORY category) {
+    public GetSolutionEntityResponse getSolutionEntityByCategory(Long vendorSeq, CATEGORY category) {
         vendorEntityRepository.findByVendorSeq(vendorSeq)
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
@@ -229,9 +218,9 @@ public class SolutionService {
     }
 
     @Transactional(readOnly = true)
-    public List<GetAllSolutionEntityResponse> getAllSolutionEntity(String specialist, CATEGORY category, String industry, String budget, String keyword, int start, int end) {
+    public List<GetAllSolutionEntityResponse> getAllSolutionEntity(CATEGORY category, String industry, String budget, String keyword, int start, int end) {
         List<SolutionEntity> solutionEntities
-                = solutionEntityRepository.findBySpecialistAndCategoryAndIndustryAndBudgetAndKeyword(specialist, category, industry, budget, keyword, start, end);
+                = solutionEntityRepository.findByCategoryAndIndustryAndBudgetAndKeyword(category, industry, budget, keyword, start, end);
 
         List<GetAllSolutionEntityResponse> response = new ArrayList<>();
         for (SolutionEntity solutionEntity : solutionEntities) {
@@ -258,23 +247,45 @@ public class SolutionService {
     }
 
     @Transactional(readOnly = true)
-    public HomeCategoryResponse getCategory(Long seq) {
-        Optional<ConsumerEntity> consumerEntity = consumerEntityRepository.findByConsumerSeq(seq);
-        Optional<VendorEntity> vendorEntity = vendorEntityRepository.findByVendorSeq(seq);
+    public GetSolutionEntityResponse getSolutionEntity(Long solutionSeq) {
+        SolutionEntity solutionEntity = solutionEntityRepository.findBySolutionSeq(solutionSeq)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "해당 기업이 작성한 카테고리 솔루션이 존재하지 않습니다.",
+                        getCode("해당 기업이 작성한 카테고리 솔루션이 존재하지 않습니다.", ExceptionType.NOT_FOUND)
+                ));
 
-        if (consumerEntity.isEmpty() && vendorEntity.isEmpty()) {
-            throw new NotFoundException(
-                    HttpStatus.NOT_FOUND.value(),
-                    "존재하지 않는 사용자입니다.",
-                    getCode("존재하지 않는 사용자입니다.", ExceptionType.NOT_FOUND)
-            );
-        }
+        List<String> solutionImplementationType = List.of(solutionEntity.getSolutionImplementationType().split(","));
+        List<String> industry = List.of(solutionEntity.getIndustry().split(","));
+        List<String> recommendedCompanySize = List.of(solutionEntity.getRecommendedCompanySize().split(","));
+        List<SolutionEffectResponse> solutionEffectResponse
+                = solutionEffectEntityRepository.findAllBySolutionSeqCustom(solutionEntity.getSolutionSeq());
 
-        Map<String, List<CATEGORY>> result = solutionEntityRepository.findUsedAndUnusedCategories();
-
-        return new HomeCategoryResponse(
-                result.getOrDefault("used", List.of()),
-                result.getOrDefault("unused", List.of())
+        return new GetSolutionEntityResponse(
+                solutionEntity.getSolutionSeq(),
+                solutionEntity.getRepresentImageUrl(),
+                solutionEntity.getDescriptionPdfUrl(),
+                solutionEntity.getSolutionName(),
+                solutionEntity.getSolutionDetail(),
+                solutionEntity.getAmount(),
+                solutionImplementationType,
+                solutionEntity.getDuration(),
+                industry,
+                recommendedCompanySize,
+                solutionEffectResponse
         );
+    }
+
+    @Transactional
+    public void deleteSolutionEntity(Long solutionSeq) {
+        SolutionEntity solutionEntity = solutionEntityRepository.findBySolutionSeq(solutionSeq)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "해당 기업이 작성한 카테고리 솔루션이 존재하지 않습니다.",
+                        getCode("해당 기업이 작성한 카테고리 솔루션이 존재하지 않습니다.", ExceptionType.NOT_FOUND)
+                ));
+
+        solutionEntity.deleteSolutionEntity();
+        solutionEntityRepository.saveSolutionEntity(solutionEntity);
     }
 }

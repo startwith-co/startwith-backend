@@ -9,7 +9,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,6 +58,8 @@ public class ConsumerService {
                         "존재하지 않는 수요 기업입니다.",
                         getCode("존재하지 않는 수요 기업입니다.", ExceptionType.NOT_FOUND)
                 ));
+
+        validateMatch(encoder.matches(request.password(), consumerEntity.getEncodedPassword()), "비밀번호가 일치하지 않습니다.");
 
         String uploadJPGFile = commonService.uploadJPGFile(consumerImageUrl);
 
@@ -125,14 +126,7 @@ public class ConsumerService {
         // 이메일 검증
         ConsumerEntity consumerEntity = validateEmail(request);
 
-        // 비밀번호 검증
-        if (!encoder.matches(request.password(), consumerEntity.getEncodedPassword())) {
-            throw new BadRequestException(
-                    HttpStatus.BAD_REQUEST.value(),
-                    "비밀번호가 일치하지 않습니다.",
-                    getCode("비밀번호가 일치하지 않습니다.", ExceptionType.BAD_REQUEST)
-            );
-        }
+        validateMatch(encoder.matches(request.password(), consumerEntity.getEncodedPassword()), "비밀번호가 일치하지 않습니다.");
 
         // Access 토큰 생성
         Long consumerSeq = consumerEntity.getConsumerSeq();
@@ -147,6 +141,17 @@ public class ConsumerService {
 
         return new LoginConsumerResponse(accessToken, refreshToken, consumerSeq, consumerEntity.getConsumerUniqueType(), consumerEntity.getConsumerName());
 
+    }
+
+    private void validateMatch(boolean condition, String message) {
+
+        if (!condition) {
+            throw new BadRequestException(
+                    HttpStatus.BAD_REQUEST.value(),
+                    message,
+                    getCode(message, ExceptionType.BAD_REQUEST)
+            );
+        }
     }
 
     public GetConsumerInfo getConsumerInfo(Long vendorSeq) {
@@ -171,13 +176,7 @@ public class ConsumerService {
     }
 
     private void validatePassword(String requestPassword, String password) {
-        if (!encoder.matches(requestPassword, password)) {
-            throw new BadRequestException(
-                    HttpStatus.BAD_REQUEST.value(),
-                    "비밀번호가 일치하지 않습니다.",
-                    getCode("비밀번호가 일치하지 않습니다.", ExceptionType.BAD_REQUEST)
-            );
-        }
+        validateMatch(encoder.matches(requestPassword, password), "비밀번호가 일치하지 않습니다.");
     }
 
     private String generateToken(long tokenExpiration, Long consumerSeq) {
@@ -255,13 +254,7 @@ public class ConsumerService {
                         )));
 
         // consumer Name 검증
-        if (!request.consumerName().equals(consumerEntity.getConsumerName())) {
-            throw new BadRequestException(
-                    HttpStatus.BAD_REQUEST.value(),
-                    "Consumer Name이 일치하지 않습니다.",
-                    getCode("Consumer Name이 일치하지 않습니다.", ExceptionType.BAD_REQUEST)
-            );
-        }
+        validateMatch(request.consumerName().equals(consumerEntity.getConsumerName()), "Consumer Name이 일치하지 않습니다.");
 
         // 토큰 생성
         String token = generateToken(1_800_000L, consumerEntity.getConsumerSeq());

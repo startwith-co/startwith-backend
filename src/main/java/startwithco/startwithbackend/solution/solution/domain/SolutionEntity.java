@@ -63,8 +63,8 @@ public class SolutionEntity extends BaseTimeEntity {
     @Column(name = "description_pdf_url", nullable = false)
     private String descriptionPdfUrl;
 
-    @Column(name = "specialist", nullable = false)
-    private String specialist;
+    @Column(name = "deleted", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean deleted = false;
 
     public SolutionEntity updateSolutionEntity(String solutionName,
                                                String solutionDetail,
@@ -75,8 +75,7 @@ public class SolutionEntity extends BaseTimeEntity {
                                                Long amount,
                                                Long duration,
                                                String representImageUrl,
-                                               String descriptionPdfUrl,
-                                               String specialist) {
+                                               String descriptionPdfUrl) {
         this.solutionName = solutionName;
         this.solutionDetail = solutionDetail;
         this.category = category;
@@ -85,10 +84,13 @@ public class SolutionEntity extends BaseTimeEntity {
         this.solutionImplementationType = solutionImplementationType;
         this.amount = amount;
         this.duration = duration;
-        this.specialist = specialist;
         this.representImageUrl = representImageUrl;
         this.descriptionPdfUrl = descriptionPdfUrl;
 
         return this;
+    }
+
+    public void deleteSolutionEntity() {
+        this.deleted = true;
     }
 }

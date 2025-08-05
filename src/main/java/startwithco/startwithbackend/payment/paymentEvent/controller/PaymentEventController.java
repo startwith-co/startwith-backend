@@ -38,7 +38,7 @@ public class PaymentEventController {
             summary = "결제 요청하기 생성 API",
             description = """
                     1. 광클 방지를 위한 disable 처리해주세요.
-                    2. amount는 1보다 작을 수 없습니다.
+                    2. amount는 0보다 작을 수 없습니다.
                     3. 만약 해당 결제 요청을 통해 결제 승인을 진행한 경우 다시 결제를 진행하려면 새로운 결제 요청하기를 생성해야합니다.
                     """
     )
@@ -49,7 +49,7 @@ public class PaymentEventController {
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_005", description = "존재하지 않는 솔루션입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_001", description = "존재하지 않는 벤더 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_004", description = "존재하지 않는 수요 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "\"동시성 저장은 불가능합니다.\"", description = "동시성 저장은 불가능합니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "CONFLICT_EXCEPTION_002", description = "동시성 저장은 불가능합니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
     public ResponseEntity<BaseResponse<SavePaymentEventEntityResponse>> savePaymentEventEntity(
             @RequestPart(value = "contractConfirmationUrl", required = false) MultipartFile contractConfirmationUrl,
@@ -72,18 +72,15 @@ public class PaymentEventController {
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
     }
 
-    @GetMapping(
-            name = "결제 요청하기 조회"
-    )
+    @GetMapping(name = "결제 요청하기 조회")
     @Operation(
             summary = "결제 요청하기 조회 API",
             description = """
-                    1. category: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY
-                    2. 결제 승인 유무의 경우 orderId의 존재 여부로 확인하면 됩니다.
+                    1. 결제 승인 유무의 경우 orderId의 존재 여부로 확인하면 됩니다.
                     2. 결제 승인되지 않았을 때(orderId X)의 Response
-                        - GetCONFIRMEDPaymentEventEntityResponse
-                    3. 결제 승인 됐을 때(orderId O)의 Response
                         - GetREQUESTEDPaymentEventEntityResponse
+                    3. 결제 승인 됐을 때(orderId O)의 Response
+                        - GetCONFIRMEDPaymentEventEntityResponse
                     """
     )
     @ApiResponses(value = {
@@ -113,7 +110,7 @@ public class PaymentEventController {
     @Operation(
             summary = "결제 요청하기 후 주문내역 API",
             description = """
-                    1. category: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY
+                    1. 삭제된 솔루션의 경우 결제요청하기 화면에서 DISABLE 되어야 함
                     """
     )
     @ApiResponses(value = {
@@ -121,6 +118,7 @@ public class PaymentEventController {
             @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_002", description = "존재하지 않는 결제 요청입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_005", description = "존재하지 않는 솔루션입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
     public ResponseEntity<BaseResponse<GetPaymentEventEntityOrderResponse>> getPaymentEventEntityOrder(@RequestParam(name = "paymentEventSeq") Long paymentEventSeq) {
         if (paymentEventSeq == null) {

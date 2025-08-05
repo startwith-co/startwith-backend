@@ -42,11 +42,11 @@ public class VendorController {
 
     @GetMapping(
             value = "/category",
-            name = "벤더 기업 생성 솔루션 카테고리 API"
+            name = "벤더 기업이 생성한 솔루션 카테고리 API"
     )
     @Operation(
-            summary = "벤더 기업 생성 솔루션 카테고리 / 담당자(박종훈)",
-            description = "1. CATEGORY: BI, BPM, CMS, CRM, DMS, EAM, ECM, ERP, HR, HRM, KM, SCM, SI, SECURITY"
+            summary = "벤더 기업이 생성한 솔루션 카테고리",
+            description = ""
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
@@ -171,9 +171,7 @@ public class VendorController {
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), login));
     }
 
-    @GetMapping(
-            name = "벤더 기업 조회"
-    )
+    @GetMapping(name = "벤더 기업 조회")
     @Operation(summary = "벤더 기업 조회 API", description = "벤더 기업 조회 API")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
@@ -209,13 +207,14 @@ public class VendorController {
     })
     public ResponseEntity<BaseResponse<String>> updateVendor(
             @RequestPart UpdateVendorInfoRequest request,
-            @RequestPart("vendorBannerImageUrl") MultipartFile vendorBannerImageUrl
+            @RequestPart("vendorBannerImageUrl") MultipartFile vendorBannerImageUrl,
+            @RequestPart("clientInfos") List<MultipartFile> clientInfos
     ) {
 
         // DTO 유효성 검사
         request.validateUpdateVendorRequest(request);
 
-        vendorService.updateVendor(request, vendorBannerImageUrl);
+        vendorService.updateVendor(request, vendorBannerImageUrl, clientInfos);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "success"));
     }
@@ -261,7 +260,7 @@ public class VendorController {
 
 
         // jwt 타입 검사
-        if (!Objects.equals(type,"password_reset")) {
+        if (!Objects.equals(type, "password_reset")) {
             throw new UnauthorizedException(
                     HttpStatus.UNAUTHORIZED.value(),
                     "잘못된 JWT 입니다.",
@@ -269,8 +268,35 @@ public class VendorController {
             );
         }
 
-        vendorService.resetPassword(request,token);
+        vendorService.resetPassword(request, token);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "success"));
+    }
+
+    @GetMapping(
+            name = "벤더 기업 생성 솔루션 조회",
+            value = "/solution"
+    )
+    @Operation(summary = "벤더 기업 생성 솔루션 조회 API")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_001", description = "존재하지 않는 벤더 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+    })
+    public ResponseEntity<BaseResponse<List<GetVendorSolutionEntitiesResponse>>> getVendorSolutionEntities(
+            @RequestParam(name = "vendorSeq", required = false) Long vendorSeq
+    ) {
+        if (vendorSeq == null) {
+            throw new BadRequestException(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "요청 데이터 오류입니다.",
+                    getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
+            );
+        }
+
+        List<GetVendorSolutionEntitiesResponse> response = vendorService.getVendorSolutionEntities(vendorSeq);
+
+        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
     }
 }
