@@ -123,32 +123,37 @@ public class VendorEntity extends BaseTimeEntity {
     @Column(name = "vendor_unique_type", nullable = false)
     private String vendorUniqueType;
 
-    public void update(String vendorName, String managerName, String phoneNumber, String email, boolean audit,
+    public void update(String vendorName, String managerName, String phoneNumber, String email, Boolean audit,
                        String accountNumber, String bank, String vendorExplanation, String vendorBannerImageUrl,
-                       boolean weekdayAvailable, LocalTime weekdayStartTime, LocalTime weekdayEndTime,
-                       boolean weekendAvailable, LocalTime weekendStartTime, LocalTime weekendEndTime,
-                       boolean holidayAvailable, LocalTime holidayStartTime, LocalTime holidayEndTime,
+                       Boolean weekdayAvailable, LocalTime weekdayStartTime, LocalTime weekdayEndTime,
+                       Boolean weekendAvailable, LocalTime weekendStartTime, LocalTime weekendEndTime,
+                       Boolean holidayAvailable, LocalTime holidayStartTime, LocalTime holidayEndTime,
                        Long orderCount, Long clientCount) {
-        this.vendorName = vendorName;
-        this.managerName = managerName;
-        this.phoneNumber = phoneNumber;
-        this.email = email;
-        this.audit = audit;
-        this.accountNumber = accountNumber;
-        this.bank = bank;
-        this.vendorExplanation = vendorExplanation;
-        this.vendorBannerImageUrl = vendorBannerImageUrl;
-        this.weekdayAvailable = weekdayAvailable;
-        this.weekdayStartTime = weekdayStartTime;
-        this.weekdayEndTime = weekdayEndTime;
-        this.weekendAvailable = weekendAvailable;
-        this.weekendStartTime = weekendStartTime;
-        this.weekendEndTime = weekendEndTime;
-        this.holidayAvailable = holidayAvailable;
-        this.holidayStartTime = holidayStartTime;
-        this.holidayEndTime = holidayEndTime;
-        this.orderCount = orderCount;
-        this.clientCount = clientCount;
+
+        if (vendorName != null) this.vendorName = vendorName;
+        if (managerName != null) this.managerName = managerName;
+        if (phoneNumber != null) this.phoneNumber = phoneNumber;
+        if (email != null) this.email = email;
+        if (audit != null) this.audit = audit;
+        if (accountNumber != null) this.accountNumber = accountNumber;
+        if (bank != null) this.bank = bank;
+        if (vendorExplanation != null) this.vendorExplanation = vendorExplanation;
+        if (vendorBannerImageUrl != null) this.vendorBannerImageUrl = vendorBannerImageUrl;
+
+        if (weekdayAvailable != null) this.weekdayAvailable = weekdayAvailable;
+        if (weekdayStartTime != null) this.weekdayStartTime = weekdayStartTime;
+        if (weekdayEndTime != null) this.weekdayEndTime = weekdayEndTime;
+
+        if (weekendAvailable != null) this.weekendAvailable = weekendAvailable;
+        if (weekendStartTime != null) this.weekendStartTime = weekendStartTime;
+        if (weekendEndTime != null) this.weekendEndTime = weekendEndTime;
+
+        if (holidayAvailable != null) this.holidayAvailable = holidayAvailable;
+        if (holidayStartTime != null) this.holidayStartTime = holidayStartTime;
+        if (holidayEndTime != null) this.holidayEndTime = holidayEndTime;
+
+        if (orderCount != null) this.orderCount = orderCount;
+        if (clientCount != null) this.clientCount = clientCount;
     }
 
     public void updatePassword(String encodedPassword) {

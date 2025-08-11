@@ -17,8 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 import startwithco.startwithbackend.b2b.client.domain.ClientEntity;
 import startwithco.startwithbackend.b2b.client.repository.ClientEntityRepository;
 import startwithco.startwithbackend.admin.settlement.dto.VendorDto;
-import startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest;
-import startwithco.startwithbackend.b2b.consumer.controller.response.ConsumerResponse;
 import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
 import startwithco.startwithbackend.b2b.consumer.repository.ConsumerRepository;
 import startwithco.startwithbackend.b2b.stat.domain.StatEntity;
@@ -41,6 +39,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static startwithco.startwithbackend.b2b.client.controller.response.ClientResponse.*;
 import static startwithco.startwithbackend.b2b.vendor.controller.request.VendorRequest.*;
 import static startwithco.startwithbackend.b2b.vendor.controller.response.VendorResponse.*;
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.*;
@@ -239,7 +238,7 @@ public class VendorService {
                         getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
                 ));
 
-        String uploadJPGFile = commonService.uploadJPGFile(vendorBannerImageUrl);
+        String uploadJPGFile = vendorBannerImageUrl == null ? null : commonService.uploadJPGFile(vendorBannerImageUrl);
 
         vendorEntity.update(
                 request.vendorName(),
@@ -266,36 +265,41 @@ public class VendorService {
 
         vendorEntityRepository.save(vendorEntity);
 
-        // 기존 StatEntity 삭제
-        statRepository.deleteAllByVendor(vendorEntity);
-
         // stat
-        List<StatEntity> statEntities = request.stats().stream()
-                .map(statInfo -> StatEntity.builder()
-                        .label(statInfo.label())
-                        .percentage(statInfo.percentage())
-                        .statType(statInfo.statType())
-                        .vendor(vendorEntity)
-                        .build())
-                .collect(Collectors.toList());
-        // 저장
-        statRepository.saveAll(statEntities);
+        if (request.stats() != null && !request.stats().isEmpty()) {
+            // 기존 StatEntity 삭제
+            statRepository.deleteAllByVendor(vendorEntity);
 
-        // 기존 client 삭제
-        clientRepository.deleteAllByVendor(vendorEntity);
+            List<StatEntity> statEntities = request.stats().stream()
+                    .map(statInfo -> StatEntity.builder()
+                            .label(statInfo.label())
+                            .percentage(statInfo.percentage())
+                            .statType(statInfo.statType())
+                            .vendor(vendorEntity)
+                            .build())
+                    .collect(Collectors.toList());
+            // 저장
+            statRepository.saveAll(statEntities);
+        }
 
 
-        List<String> imageUrls = commonService.uploadJPGFileList(clientInfos);
+        if (clientInfos != null && !clientInfos.isEmpty()) {
+            // 기존 client 삭제
+            clientRepository.deleteAllByVendor(vendorEntity);
 
-        // 갱신
-        List<ClientEntity> clientEntities = imageUrls.stream()
-                .map(imageUrl -> ClientEntity.builder()
-                        .logoImageUrl(imageUrl)
-                        .vendorEntity(vendorEntity)
-                        .build())
-                .collect(Collectors.toList());
 
-        clientRepository.saveAll(clientEntities);
+            List<String> imageUrls = commonService.uploadJPGFileList(clientInfos);
+
+            // 갱신
+            List<ClientEntity> clientEntities = imageUrls.stream()
+                    .map(imageUrl -> ClientEntity.builder()
+                            .logoImageUrl(imageUrl)
+                            .vendorEntity(vendorEntity)
+                            .build())
+                    .collect(Collectors.toList());
+
+            clientRepository.saveAll(clientEntities);
+        }
 
     }
 

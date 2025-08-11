@@ -207,8 +207,8 @@ public class VendorController {
     })
     public ResponseEntity<BaseResponse<String>> updateVendor(
             @RequestPart UpdateVendorInfoRequest request,
-            @RequestPart("vendorBannerImageUrl") MultipartFile vendorBannerImageUrl,
-            @RequestPart("clientInfos") List<MultipartFile> clientInfos
+            @RequestPart(value = "vendorBannerImageUrl", required = false)  MultipartFile vendorBannerImageUrl,
+            @RequestPart(value = "clientInfos", required = false) List<MultipartFile> clientInfos
     ) {
 
         // DTO 유효성 검사
