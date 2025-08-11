@@ -222,7 +222,12 @@ public class VendorService {
                         getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
                 ));
 
-        return GetVendorInfo.fromEntity(vendorEntity);
+
+        List<StatResponse> statResponses = statRepository.findAllByVendorCustom(vendorEntity);
+
+        List<GetAllClientResponse> clientResponses = clientRepository.findAllByVendorSeqCustom(vendorSeq);
+
+        return GetVendorInfo.fromEntity(vendorEntity,statResponses,clientResponses);
     }
 
     @Transactional
