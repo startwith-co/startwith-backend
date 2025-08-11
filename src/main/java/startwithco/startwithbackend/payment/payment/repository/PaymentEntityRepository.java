@@ -1,6 +1,9 @@
 package startwithco.startwithbackend.payment.payment.repository;
 
+import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
+import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
+import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,4 +28,6 @@ public interface PaymentEntityRepository {
     List<PaymentEntity> findAll(int start, int end);
 
     Optional<PaymentEntity> findByPaymentEventUniqueType(String paymentEventUniqueType);
+
+    boolean existsConflictPaymentEntity(VendorEntity vendorEntity, ConsumerEntity consumerEntity, SolutionEntity solutionEntity);
 }

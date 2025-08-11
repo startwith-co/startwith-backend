@@ -10,12 +10,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import startwithco.startwithbackend.base.BaseResponse;
 import startwithco.startwithbackend.exception.BadRequestException;
+import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
 import startwithco.startwithbackend.exception.handler.GlobalExceptionHandler;
 import startwithco.startwithbackend.payment.paymentEvent.service.PaymentEventService;
+import startwithco.startwithbackend.solution.effect.util.DIRECTION;
+import startwithco.startwithbackend.solution.solution.controller.request.SolutionRequest;
+import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.*;
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.getCode;
@@ -120,7 +125,7 @@ public class PaymentEventController {
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_002", description = "존재하지 않는 결제 요청입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_005", description = "존재하지 않는 솔루션입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
-    public ResponseEntity<BaseResponse<GetPaymentEventEntityOrderResponse>> getPaymentEventEntityOrder(@RequestParam(name = "paymentEventSeq") Long paymentEventSeq) {
+    public ResponseEntity<BaseResponse<GetPaymentEventEntityOrderResponse>> getPaymentEventEntityOrder(@RequestParam(name = "paymentEventSeq", required = false) Long paymentEventSeq) {
         if (paymentEventSeq == null) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
@@ -130,6 +135,47 @@ public class PaymentEventController {
         }
 
         GetPaymentEventEntityOrderResponse response = paymentEventService.getPaymentEventEntityOrder(paymentEventSeq);
+
+        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
+    }
+
+    @GetMapping(
+            value = "/conflict",
+            name = "결제 요청하기 중복확인"
+    )
+    @Operation(summary = "결제 요청하기 중복확인 API")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_005", description = "존재하지 않는 솔루션입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_001", description = "존재하지 않는 벤더 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_004", description = "존재하지 않는 수요 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+    })
+    public ResponseEntity<BaseResponse<Boolean>> getPaymentEventConflict(
+            @RequestParam(name = "vendorSeq", required = false) Long vendorSeq,
+            @RequestParam(name = "consumerSeq", required = false) Long consumerSeq,
+            @RequestParam(name = "category", required = false) String category
+    ) {
+        if (vendorSeq == null || consumerSeq == null || category == null) {
+            throw new BadRequestException(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "요청 데이터 오류입니다.",
+                    getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
+            );
+        }
+
+        try {
+            CATEGORY.valueOf(category.toUpperCase());
+        } catch (Exception e) {
+            throw new BadRequestException(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "요청 데이터 오류입니다.",
+                    getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+            );
+        }
+
+        boolean response = paymentEventService.getPaymentEventConflict(vendorSeq, consumerSeq, CATEGORY.valueOf(category.toUpperCase()));
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
     }

@@ -23,6 +23,8 @@ import startwithco.startwithbackend.payment.paymentEvent.repository.PaymentEvent
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 import startwithco.startwithbackend.solution.solution.repository.SolutionEntityRepository;
 
+import java.util.List;
+
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.*;
 import static startwithco.startwithbackend.payment.paymentEvent.controller.request.PaymentEventRequest.*;
 import static startwithco.startwithbackend.payment.paymentEvent.controller.response.PaymentEventResponse.*;
@@ -140,7 +142,7 @@ public class PaymentEventService {
                 ));
 
         SolutionEntity solutionEntity = paymentEventEntity.getSolutionEntity();
-        if(solutionEntity.getDeleted()) {
+        if (solutionEntity.getDeleted()) {
             throw new NotFoundException(
                     HttpStatus.NOT_FOUND.value(),
                     "존재하지 않는 솔루션입니다.",
@@ -166,5 +168,29 @@ public class PaymentEventService {
                 consumerEntity.getPhoneNumber(),
                 consumerEntity.getEmail()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public boolean getPaymentEventConflict(Long vendorSeq, Long consumerSeq, CATEGORY category) {
+        VendorEntity vendorEntity = vendorEntityRepository.findByVendorSeq(vendorSeq)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 벤더 기업입니다.",
+                        getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
+                ));
+        ConsumerEntity consumerEntity = consumerRepository.findByConsumerSeq(consumerSeq)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "존재하지 않는 수요 기업입니다.",
+                        getCode("존재하지 않는 수요 기업입니다.", ExceptionType.NOT_FOUND)
+                ));
+        SolutionEntity solutionEntity = solutionEntityRepository.findByVendorSeqAndCategory(vendorSeq, category)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "해당 기업이 작성한 카테고리 솔루션이 존재하지 않습니다.",
+                        getCode("해당 기업이 작성한 카테고리 솔루션이 존재하지 않습니다.", ExceptionType.NOT_FOUND)
+                ));
+
+        return paymentEntityRepository.existsConflictPaymentEntity(vendorEntity, consumerEntity, solutionEntity);
     }
 }
