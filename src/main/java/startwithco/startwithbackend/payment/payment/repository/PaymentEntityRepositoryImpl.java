@@ -164,13 +164,15 @@ public class PaymentEntityRepositoryImpl implements PaymentEntityRepository {
 
         Integer result = queryFactory
                 .selectOne()
-                .from(p)
-                .join(p.paymentEventEntity, pe)
+                .from(pe)
+                .leftJoin(p).on(p.paymentEventEntity.eq(pe))
                 .where(
                         pe.vendorEntity.eq(vendor),
                         pe.consumerEntity.eq(consumer),
                         pe.solutionEntity.eq(solution),
-                        p.paymentStatus.in(PAYMENT_STATUS.IN_PROGRESS, PAYMENT_STATUS.WAITING_FOR_DEPOSIT)
+                        p.isNull().or(p.paymentStatus.in(
+                                PAYMENT_STATUS.IN_PROGRESS, PAYMENT_STATUS.WAITING_FOR_DEPOSIT
+                        ))
                 )
                 .fetchFirst();
 
