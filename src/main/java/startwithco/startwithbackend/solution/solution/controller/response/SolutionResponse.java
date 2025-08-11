@@ -9,7 +9,6 @@ public class SolutionResponse {
     public record SaveSolutionEntityResponse(
             Long solutionSeq
     ) {
-
     }
 
     public record GetSolutionEntityResponse(
@@ -23,14 +22,14 @@ public class SolutionResponse {
             Long duration,
             List<String> industry,
             List<String> recommendedCompanySize,
-            List<SolutionEffectResponse> solutionEffect
+            List<SolutionEffectResponse> solutionEffect,
+            List<String> keywords
     ) {
         public record SolutionEffectResponse(
                 String effectName,
                 Long percent,
                 DIRECTION direction
         ) {
-
         }
     }
 

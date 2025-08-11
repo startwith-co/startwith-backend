@@ -8,4 +8,6 @@ public interface SolutionKeywordEntityRepository {
     List<SolutionKeywordEntity> saveAll(List<SolutionKeywordEntity> solutionKeywordEntities);
 
     void deleteAllBySolutionSeq(Long solutionSeq);
+
+    List<String> findAllKeywordsBySolutionSeq(Long solutionSeq);
 }
