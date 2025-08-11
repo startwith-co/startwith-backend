@@ -8,10 +8,19 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import startwithco.startwithbackend.solution.keyword.domain.SolutionKeywordEntity;
 
+import java.util.List;
+
 @Repository
 public interface SolutionKeywordEntityJpaRepository extends JpaRepository<SolutionKeywordEntity, Long> {
     @Modifying
     @Transactional
     @Query("DELETE FROM SolutionKeywordEntity sk WHERE sk.solutionEntity.solutionSeq = :solutionSeq")
     void deleteAllBySolutionSeq(@Param("solutionSeq") Long solutionSeq);
+
+    @Query("""
+           SELECT ske.keyword
+           FROM SolutionKeywordEntity ske
+           WHERE ske.solutionEntity.solutionSeq = :solutionSeq
+           """)
+    List<String> findAllKeywordsBySolutionSeq(@Param("solutionSeq") Long solutionSeq);
 }

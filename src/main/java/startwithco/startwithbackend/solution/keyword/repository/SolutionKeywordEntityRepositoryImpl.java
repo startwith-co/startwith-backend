@@ -19,4 +19,9 @@ public class SolutionKeywordEntityRepositoryImpl implements SolutionKeywordEntit
     public void deleteAllBySolutionSeq(Long solutionSeq) {
         repository.deleteAllBySolutionSeq(solutionSeq);
     }
+
+    @Override
+    public List<String> findAllKeywordsBySolutionSeq(Long solutionSeq) {
+        return repository.findAllKeywordsBySolutionSeq(solutionSeq);
+    }
 }
