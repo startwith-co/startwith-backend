@@ -202,6 +202,7 @@ public class SolutionService {
         List<String> recommendedCompanySize = List.of(solutionEntity.getRecommendedCompanySize().split(","));
         List<SolutionEffectResponse> solutionEffectResponse
                 = solutionEffectEntityRepository.findAllBySolutionSeqCustom(solutionEntity.getSolutionSeq());
+        List<String> keywords = solutionKeywordEntityRepository.findAllKeywordsBySolutionSeq(solutionEntity.getSolutionSeq());
 
         return new GetSolutionEntityResponse(
                 solutionEntity.getSolutionSeq(),
@@ -214,7 +215,8 @@ public class SolutionService {
                 solutionEntity.getDuration(),
                 industry,
                 recommendedCompanySize,
-                solutionEffectResponse
+                solutionEffectResponse,
+                keywords
         );
     }
 
@@ -261,6 +263,7 @@ public class SolutionService {
         List<String> recommendedCompanySize = List.of(solutionEntity.getRecommendedCompanySize().split(","));
         List<SolutionEffectResponse> solutionEffectResponse
                 = solutionEffectEntityRepository.findAllBySolutionSeqCustom(solutionEntity.getSolutionSeq());
+        List<String> keywords = solutionKeywordEntityRepository.findAllKeywordsBySolutionSeq(solutionEntity.getSolutionSeq());
 
         return new GetSolutionEntityResponse(
                 solutionEntity.getSolutionSeq(),
@@ -273,7 +276,8 @@ public class SolutionService {
                 solutionEntity.getDuration(),
                 industry,
                 recommendedCompanySize,
-                solutionEffectResponse
+                solutionEffectResponse,
+                keywords
         );
     }
 
