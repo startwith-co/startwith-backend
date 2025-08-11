@@ -517,7 +517,6 @@ public class VendorService {
             return consumerRepository.findByEmail(email).isPresent();
         }
 
-        // 허용 타입이 아니면 false 또는 예외
         return false;
     }
 }
