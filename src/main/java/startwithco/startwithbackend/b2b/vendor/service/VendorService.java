@@ -20,6 +20,7 @@ import startwithco.startwithbackend.admin.settlement.dto.VendorDto;
 import startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest;
 import startwithco.startwithbackend.b2b.consumer.controller.response.ConsumerResponse;
 import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
+import startwithco.startwithbackend.b2b.consumer.repository.ConsumerRepository;
 import startwithco.startwithbackend.b2b.stat.domain.StatEntity;
 import startwithco.startwithbackend.b2b.stat.repository.StatEntityRepository;
 import startwithco.startwithbackend.b2b.vendor.controller.request.VendorRequest;
@@ -55,6 +56,7 @@ public class VendorService {
     private final TossPaymentDailySnapshotEntityRepository tossPaymentDailySnapshotEntityRepository;
     private final StatEntityRepository statRepository;
     private final ClientEntityRepository clientRepository;
+    private final ConsumerRepository consumerRepository;
 
     private final CommonService commonService;
 
@@ -501,5 +503,21 @@ public class VendorService {
                         s.getAmount()
                 ))
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public boolean conflictVendorConsumerEntity(String email, String type) {
+        if (type == null || email == null) return false;
+
+        if (type.equalsIgnoreCase("VENDOR")) {
+            return vendorEntityRepository.findByEmail(email).isPresent();
+        }
+
+        if (type.equalsIgnoreCase("CONSUMER")) {
+            return consumerRepository.findByEmail(email).isPresent();
+        }
+
+        // 허용 타입이 아니면 false 또는 예외
+        return false;
     }
 }
