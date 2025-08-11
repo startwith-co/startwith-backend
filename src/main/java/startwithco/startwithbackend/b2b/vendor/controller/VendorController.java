@@ -299,4 +299,44 @@ public class VendorController {
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
     }
+
+    @GetMapping(
+            name = "벤더/수요 기업 이메일 중복 확인",
+            value = "/conflict"
+    )
+    @Operation(
+            summary = "벤더/수요 기업 이메일 중복 확인 API",
+            description = """
+                    1. type은 vendor, consumer 입니다. 대소문자 상관 없습니다.
+                    """
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+    })
+    public ResponseEntity<BaseResponse<Boolean>> conflictVendorConsumerEntity(
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "type", required = false) String type
+    ) {
+        if (email == null || type == null) {
+            throw new BadRequestException(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "요청 데이터 오류입니다.",
+                    getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
+            );
+        }
+
+        if (!type.equalsIgnoreCase("VENDOR") && !type.equalsIgnoreCase("CONSUMER")) {
+            throw new BadRequestException(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "요청 데이터 오류입니다.",
+                    getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
+            );
+        }
+
+        boolean response = vendorService.conflictVendorConsumerEntity(email, type);
+
+        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
+    }
 }
