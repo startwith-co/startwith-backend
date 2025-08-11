@@ -5,8 +5,10 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
 import startwithco.startwithbackend.b2b.consumer.domain.QConsumerEntity;
 import startwithco.startwithbackend.b2b.vendor.domain.QVendorEntity;
+import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
 import startwithco.startwithbackend.payment.payment.domain.QPaymentEntity;
@@ -14,9 +16,13 @@ import startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS;
 import startwithco.startwithbackend.payment.paymentEvent.domain.QPaymentEventEntity;
 import startwithco.startwithbackend.payment.snapshot.entity.QTossPaymentDailySnapshotEntity;
 import startwithco.startwithbackend.solution.solution.domain.QSolutionEntity;
+import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 
 import java.util.List;
 import java.util.Optional;
+
+import static startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS.IN_PROGRESS;
+import static startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS.WAITING_FOR_DEPOSIT;
 
 @Repository
 @RequiredArgsConstructor
@@ -149,5 +155,25 @@ public class PaymentEntityRepositoryImpl implements PaymentEntityRepository {
     @Override
     public Optional<PaymentEntity> findByPaymentEventUniqueType(String paymentEventUniqueType) {
         return repository.findByPaymentEventUniqueType(paymentEventUniqueType);
+    }
+
+    @Override
+    public boolean existsConflictPaymentEntity(VendorEntity vendor, ConsumerEntity consumer, SolutionEntity solution) {
+        QPaymentEntity p = QPaymentEntity.paymentEntity;
+        QPaymentEventEntity pe = QPaymentEventEntity.paymentEventEntity;
+
+        Integer result = queryFactory
+                .selectOne()
+                .from(p)
+                .join(p.paymentEventEntity, pe)
+                .where(
+                        pe.vendorEntity.eq(vendor),
+                        pe.consumerEntity.eq(consumer),
+                        pe.solutionEntity.eq(solution),
+                        p.paymentStatus.in(PAYMENT_STATUS.IN_PROGRESS, PAYMENT_STATUS.WAITING_FOR_DEPOSIT)
+                )
+                .fetchFirst();
+
+        return result != null;
     }
 }
