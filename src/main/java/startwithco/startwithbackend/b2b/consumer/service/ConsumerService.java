@@ -227,6 +227,7 @@ public class ConsumerService {
 
             response.add(new GetConsumerDashboardResponse(
                     consumerEntity.getConsumerSeq(),
+                    vendorEntity.getVendorSeq(),
                     paymentEntity.getPaymentStatus(),
                     paymentEntity.getPaymentCompletedAt(),
                     solutionEntity.getRepresentImageUrl(),
@@ -236,7 +237,8 @@ public class ConsumerService {
                     solutionEntity.getSolutionName(),
                     paymentEntity.getMethod(),
                     paymentEntity.getAmount(),
-                    solutionReviewEntityRepository.existsByConsumerSeqAndSolutionSeq(consumerSeq, solutionEntity.getSolutionSeq())
+                    solutionReviewEntityRepository.existsByConsumerSeqAndSolutionSeq(consumerSeq, solutionEntity.getSolutionSeq()),
+                    solutionEntity.getCategory()
             ));
         }
 
