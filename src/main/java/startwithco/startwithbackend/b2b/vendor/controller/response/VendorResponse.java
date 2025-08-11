@@ -1,12 +1,16 @@
 package startwithco.startwithbackend.b2b.vendor.controller.response;
 
 import lombok.Builder;
+import startwithco.startwithbackend.b2b.stat.util.STAT_TYPE;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS;
 import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
+
+import static startwithco.startwithbackend.b2b.client.controller.response.ClientResponse.*;
 
 public class VendorResponse {
     public record GetVendorSolutionCategoryResponse(
@@ -48,9 +52,13 @@ public class VendorResponse {
             LocalTime holidayEndTime,
             Long orderCount,
             Long clientCount,
-            String vendorUniqueType
+            String vendorUniqueType ,
+
+            List<StatResponse> stats,
+
+            List<GetAllClientResponse> clientResponses
     ) {
-        public static GetVendorInfo fromEntity(VendorEntity vendorEntity) {
+        public static GetVendorInfo fromEntity(VendorEntity vendorEntity, List<StatResponse> statResponses, List<GetAllClientResponse> clientResponses) {
             return GetVendorInfo.builder()
                     .vendorSeq(vendorEntity.getVendorSeq())
                     .vendorName(vendorEntity.getVendorName())
@@ -74,9 +82,17 @@ public class VendorResponse {
                     .orderCount(vendorEntity.getOrderCount())
                     .clientCount(vendorEntity.getClientCount())
                     .vendorUniqueType(vendorEntity.getVendorUniqueType())
+                    .stats(statResponses)
+                    .clientResponses(clientResponses)
                     .build();
         }
     }
+
+    public record StatResponse(
+            STAT_TYPE statType,
+            Long percentage,
+            String label
+    ) {}
 
     public record GetVendorDashboardResponse(
             Long vendorSeq,
