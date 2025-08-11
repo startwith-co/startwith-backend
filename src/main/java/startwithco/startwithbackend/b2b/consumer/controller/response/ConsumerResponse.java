@@ -4,6 +4,7 @@ import lombok.Builder;
 import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
 import startwithco.startwithbackend.payment.payment.util.METHOD;
 import startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS;
+import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 
 import java.time.LocalDateTime;
 
@@ -42,6 +43,7 @@ public class ConsumerResponse {
 
     public record GetConsumerDashboardResponse(
             Long consumerSeq,
+            Long vendorSeq,
             PAYMENT_STATUS paymentStatus,
             LocalDateTime paymentCompletedAt,
             String representImageUrl,
@@ -51,7 +53,8 @@ public class ConsumerResponse {
             String solutionName,
             METHOD method,
             Long amount,
-            boolean existReview
+            boolean existReview,
+            CATEGORY category
     ) {
 
     }
