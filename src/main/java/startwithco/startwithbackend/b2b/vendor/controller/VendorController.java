@@ -9,11 +9,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import startwithco.startwithbackend.b2b.vendor.service.VendorService;
@@ -36,6 +35,7 @@ import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.ge
 @RequestMapping("/api/b2b-service/vendor")
 @RequiredArgsConstructor
 @Tag(name = "벤더 기업", description = "담당자(송인준)")
+@Slf4j
 public class VendorController {
     private final VendorService vendorService;
     private final CommonService commonService;
@@ -250,10 +250,9 @@ public class VendorController {
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_001", description = "존재하지 않는 벤더 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class)))
     })
     public ResponseEntity<BaseResponse<String>> resetPasswordVendor(HttpServletRequest httpServletRequest, @Valid @RequestBody ResetPasswordRequest request) {
-
         String token = (String) httpServletRequest.getAttribute("accessToken");
         String type = (String) httpServletRequest.getAttribute("type");
-
+        log.info("resetPasswordVendor = {}", token);
 
         // DTO 유효성 검사
         request.validateResetPasswordRequest(request);
