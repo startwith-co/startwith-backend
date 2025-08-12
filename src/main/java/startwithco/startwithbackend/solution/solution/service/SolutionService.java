@@ -1,5 +1,6 @@
 package startwithco.startwithbackend.solution.solution.service;
 
+import jakarta.persistence.LockTimeoutException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -47,12 +48,13 @@ public class SolutionService {
 
     @Transactional
     public SaveSolutionEntityResponse saveSolutionEntity(SaveSolutionEntityRequest request, MultipartFile representImageUrl, MultipartFile descriptionPdfUrl) {
-        VendorEntity vendorEntity = vendorEntityRepository.findByVendorSeq(request.vendorSeq())
+        VendorEntity vendorEntity = vendorEntityRepository.findByVendorSeqForUpdate(request.vendorSeq())
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
                         "존재하지 않는 벤더 기업입니다.",
                         getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
                 ));
+
         solutionEntityRepository.findByVendorSeqAndCategory(request.vendorSeq(), CATEGORY.valueOf(request.category()))
                 .ifPresent(solutionEntity -> {
                     throw new ConflictException(
@@ -117,7 +119,7 @@ public class SolutionService {
 
     @Transactional
     public void modifySolutionEntity(SaveSolutionEntityRequest request, MultipartFile representImageUrl, MultipartFile descriptionPdfUrl) {
-        vendorEntityRepository.findByVendorSeq(request.vendorSeq())
+        vendorEntityRepository.findByVendorSeqForUpdate(request.vendorSeq())
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
                         "존재하지 않는 벤더 기업입니다.",

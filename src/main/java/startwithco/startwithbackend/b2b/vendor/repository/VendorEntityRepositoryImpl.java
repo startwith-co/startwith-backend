@@ -68,4 +68,9 @@ public class VendorEntityRepositoryImpl implements VendorEntityRepository {
                 .limit(end - start)
                 .fetch();
     }
+
+    @Override
+    public Optional<VendorEntity> findByVendorSeqForUpdate(Long vendorSeq) {
+        return repository.findByVendorSeqForUpdate(vendorSeq);
+    }
 }
