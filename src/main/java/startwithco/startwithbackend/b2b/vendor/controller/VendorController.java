@@ -35,7 +35,6 @@ import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.ge
 @RequestMapping("/api/b2b-service/vendor")
 @RequiredArgsConstructor
 @Tag(name = "벤더 기업", description = "담당자(송인준)")
-@Slf4j
 public class VendorController {
     private final VendorService vendorService;
     private final CommonService commonService;
@@ -250,9 +249,9 @@ public class VendorController {
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_001", description = "존재하지 않는 벤더 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class)))
     })
     public ResponseEntity<BaseResponse<String>> resetPasswordVendor(HttpServletRequest httpServletRequest, @Valid @RequestBody ResetPasswordRequest request) {
+
         String token = (String) httpServletRequest.getAttribute("accessToken");
         String type = (String) httpServletRequest.getAttribute("type");
-        log.info("resetPasswordVendor = {}", token);
 
         // DTO 유효성 검사
         request.validateResetPasswordRequest(request);
