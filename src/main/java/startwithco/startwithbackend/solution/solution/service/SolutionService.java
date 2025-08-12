@@ -125,18 +125,25 @@ public class SolutionService {
                         "존재하지 않는 벤더 기업입니다.",
                         getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
                 ));
-        solutionEntityRepository.findByVendorSeqAndCategory(request.vendorSeq(), CATEGORY.valueOf(request.nextCategory()))
-                .orElseThrow(() -> new NotFoundException(
-                        HttpStatus.NOT_FOUND.value(),
-                        "이미 존재하는 카테고리입니다.",
-                        getCode("이미 존재하는 카테고리입니다.", ExceptionType.NOT_FOUND)
-                ));
-        SolutionEntity solutionEntity = solutionEntityRepository.findByVendorSeqAndCategory(request.vendorSeq(), CATEGORY.valueOf(request.prevCategory()))
+
+        CATEGORY prevCat = CATEGORY.valueOf(request.prevCategory());
+        CATEGORY nextCat = CATEGORY.valueOf(request.nextCategory());
+
+        SolutionEntity solutionEntity = solutionEntityRepository.findByVendorSeqAndCategory(request.vendorSeq(), prevCat)
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
                         "존재하지 않는 솔루션입니다.",
                         getCode("존재하지 않는 솔루션입니다.", ExceptionType.NOT_FOUND)
                 ));
+
+        if (!prevCat.equals(nextCat)) {
+            solutionEntityRepository.findByVendorSeqAndCategory(request.vendorSeq(), nextCat)
+                    .ifPresent(x -> { throw new ConflictException(
+                            HttpStatus.CONFLICT.value(),
+                            "이미 존재하는 카테고리입니다.",
+                            getCode("이미 존재하는 카테고리입니다.", ExceptionType.CONFLICT)
+                    );});
+        }
 
         try {
             String s3RepresentImageUrl = commonService.uploadJPGFile(representImageUrl);

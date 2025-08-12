@@ -28,6 +28,7 @@ public class ExceptionCodeMapper {
         CONFLICT_MAP.put("해당 벤더의 해당 카테고리 솔루션이 이미 존재합니다.", "CONFLICT_EXCEPTION_004");
         CONFLICT_MAP.put("같은 솔루션에 리뷰는 한 번만 작성할 수 있습니다.", "CONFLICT_EXCEPTION_005");
         CONFLICT_MAP.put("이미 해당 결제 요청에 대한 결제 정보가 존재합니다. 새롭게 결제 요청을 진행해야합니다.", "CONFLICT_EXCEPTION_006");
+        NOT_FOUND_MAP.put("이미 존재하는 카테고리입니다.", "CONFLICT_EXCEPTION_007");
 
         // NotFoundException
         NOT_FOUND_MAP.put("존재하지 않는 벤더 기업입니다.", "NOT_FOUND_EXCEPTION_001");
@@ -43,7 +44,6 @@ public class ExceptionCodeMapper {
         NOT_FOUND_MAP.put("수신자가 수요/벤더 기업에 존재하지 않습니다.", "NOT_FOUND_EXCEPTION_011");
         NOT_FOUND_MAP.put("존재하지 않는 사용자입니다.", "NOT_FOUND_EXCEPTION_012");
         NOT_FOUND_MAP.put("존재하지 않는 채팅 Unique Type 입니다.", "NOT_FOUND_EXCEPTION_013");
-        NOT_FOUND_MAP.put("이미 존재하는 카테고리입니다.", "NOT_FOUND_EXCEPTION_014");
 
         // ServerException
         SERVER_MAP.put("내부 서버 오류가 발생했습니다.", "SERVER_EXCEPTION_001");
