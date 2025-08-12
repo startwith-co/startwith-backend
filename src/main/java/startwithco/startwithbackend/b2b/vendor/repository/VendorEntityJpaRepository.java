@@ -1,7 +1,12 @@
 package startwithco.startwithbackend.b2b.vendor.repository;
 
+import io.lettuce.core.dynamic.annotation.Param;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.QueryHint;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.stereotype.Repository;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 
@@ -28,9 +33,10 @@ public interface VendorEntityJpaRepository extends JpaRepository<VendorEntity, L
             """)
     boolean existsByVendorSeq(Long vendorSeq);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
             SELECT v FROM VendorEntity v
-            ORDER BY v.createdAt DESC
+            WHERE v.vendorSeq = :vendorSeq
             """)
-    List<VendorEntity> findAllByCreatedAtDesc();
+    Optional<VendorEntity> findByVendorSeqForUpdate(@Param("vendorSeq") Long vendorSeq);
 }
