@@ -19,4 +19,6 @@ public interface VendorEntityRepository {
     void saveBlackToken(String token);
 
     List<VendorEntity> getAllVendorEntity(int start, int end);
+
+    Optional<VendorEntity> findByVendorSeqForUpdate(Long vendorSeq);
 }

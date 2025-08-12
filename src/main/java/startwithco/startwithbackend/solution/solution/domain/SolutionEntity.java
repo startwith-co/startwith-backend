@@ -5,18 +5,16 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.base.BaseTimeEntity;
 import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
-@Table(
-        name = "SOLUTION_ENTITY",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"vendor_seq", "category"})
-        }
-)
+@SQLDelete(sql = "UPDATE SOLUTION_ENTITY SET deleted = true WHERE solution_seq = ?")
+@Where(clause = "deleted = false")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
