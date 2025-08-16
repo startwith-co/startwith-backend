@@ -190,6 +190,14 @@ public class PaymentService {
             );
         }
 
+        if(paymentEntity.getPaymentStatus() == PAYMENT_STATUS.CANCELLED) {
+            throw new BadRequestException(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "이미 환불 처리된 건입니다.",
+                    getCode("이미 환불 처리된 건입니다.", ExceptionType.BAD_REQUEST)
+            );
+        }
+
         if (!(paymentEntity.getMethod() == METHOD.VIRTUAL_ACCOUNT
                 && paymentEntity.getPaymentStatus() == PAYMENT_STATUS.DONE)) {
             if (request.bankCode() != null || request.accountNumber() != null || request.holderName() != null) {

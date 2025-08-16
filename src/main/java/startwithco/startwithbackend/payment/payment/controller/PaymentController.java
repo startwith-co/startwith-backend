@@ -109,8 +109,10 @@ public class PaymentController {
             @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "SERVER_EXCEPTION_009", description = "환불이 불가능한 결제입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_003", description = "존재하지 않는 결제입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_013", description = "해당 결제는 마감 시간이 지났습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_014", description = "이미 환불 처리된 건입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_015", description = "가상계좌 결제 완료 상태가 아닐 경우 환불 계좌 정보를 입력할 수 없습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
     public ResponseEntity<BaseResponse<String>> refundTossPaymentApproval(@RequestBody RefundTossPaymentApprovalRequest request) {
         request.validate();
@@ -120,12 +122,8 @@ public class PaymentController {
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "success"));
     }
 
-    @PostMapping(
-            value = "/deposit-callback"
-    )
-    @Operation(
-            hidden = true
-    )
+    @PostMapping(value = "/deposit-callback")
+    @Operation(hidden = true)
     public ResponseEntity<BaseResponse<String>> tossPaymentDepositCallBack(@RequestBody TossPaymentDepositCallBackRequest request) {
         paymentService.tossPaymentDepositCallBack(request);
 
