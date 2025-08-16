@@ -118,19 +118,32 @@ public class SolutionService {
     }
 
     @Transactional
-    public void modifySolutionEntity(SaveSolutionEntityRequest request, MultipartFile representImageUrl, MultipartFile descriptionPdfUrl) {
+    public void modifySolutionEntity(ModifySolutionEntityRequest request, MultipartFile representImageUrl, MultipartFile descriptionPdfUrl) {
         vendorEntityRepository.findByVendorSeqForUpdate(request.vendorSeq())
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
                         "존재하지 않는 벤더 기업입니다.",
                         getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
                 ));
-        SolutionEntity solutionEntity = solutionEntityRepository.findByVendorSeqAndCategory(request.vendorSeq(), CATEGORY.valueOf(request.category()))
+
+        CATEGORY prevCat = CATEGORY.valueOf(request.prevCategory());
+        CATEGORY nextCat = CATEGORY.valueOf(request.nextCategory());
+
+        SolutionEntity solutionEntity = solutionEntityRepository.findByVendorSeqAndCategory(request.vendorSeq(), prevCat)
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
                         "존재하지 않는 솔루션입니다.",
                         getCode("존재하지 않는 솔루션입니다.", ExceptionType.NOT_FOUND)
                 ));
+
+        if (!prevCat.equals(nextCat)) {
+            solutionEntityRepository.findByVendorSeqAndCategory(request.vendorSeq(), nextCat)
+                    .ifPresent(x -> { throw new ConflictException(
+                            HttpStatus.CONFLICT.value(),
+                            "이미 존재하는 카테고리입니다.",
+                            getCode("이미 존재하는 카테고리입니다.", ExceptionType.CONFLICT)
+                    );});
+        }
 
         try {
             String s3RepresentImageUrl = commonService.uploadJPGFile(representImageUrl);
@@ -139,7 +152,7 @@ public class SolutionService {
             SolutionEntity updatedSolutionEntity = solutionEntity.updateSolutionEntity(
                     request.solutionName(),
                     request.solutionDetail(),
-                    CATEGORY.valueOf(request.category()),
+                    CATEGORY.valueOf(request.nextCategory()),
                     request.industry(),
                     request.recommendedCompanySize(),
                     request.solutionImplementationType(),

@@ -21,6 +21,9 @@ public class ExceptionCodeMapper {
         BAD_REQUEST_MAP.put("웹훅 서명 검증에 실패했습니다.", "BAD_REQUEST_EXCEPTION_010");
         BAD_REQUEST_MAP.put("Consumer Name이 일치하지 않습니다.", "BAD_REQUEST_EXCEPTION_011");
         BAD_REQUEST_MAP.put("Vendor Name이 일치하지 않습니다.", "BAD_REQUEST_EXCEPTION_012");
+        BAD_REQUEST_MAP.put("해당 결제는 마감 시간이 지났습니다.", "BAD_REQUEST_EXCEPTION_013");
+        BAD_REQUEST_MAP.put("이미 환불 처리된 건입니다.", "BAD_REQUEST_EXCEPTION_014");
+        BAD_REQUEST_MAP.put("가상계좌 결제 완료 상태가 아닐 경우 환불 계좌 정보를 입력할 수 없습니다.", "BAD_REQUEST_EXCEPTION_015");
 
         // ConflictException
         CONFLICT_MAP.put("중복된 이메일입니다.", "CONFLICT_EXCEPTION_001");
@@ -28,6 +31,7 @@ public class ExceptionCodeMapper {
         CONFLICT_MAP.put("해당 벤더의 해당 카테고리 솔루션이 이미 존재합니다.", "CONFLICT_EXCEPTION_004");
         CONFLICT_MAP.put("같은 솔루션에 리뷰는 한 번만 작성할 수 있습니다.", "CONFLICT_EXCEPTION_005");
         CONFLICT_MAP.put("이미 해당 결제 요청에 대한 결제 정보가 존재합니다. 새롭게 결제 요청을 진행해야합니다.", "CONFLICT_EXCEPTION_006");
+        NOT_FOUND_MAP.put("이미 존재하는 카테고리입니다.", "CONFLICT_EXCEPTION_007");
 
         // NotFoundException
         NOT_FOUND_MAP.put("존재하지 않는 벤더 기업입니다.", "NOT_FOUND_EXCEPTION_001");

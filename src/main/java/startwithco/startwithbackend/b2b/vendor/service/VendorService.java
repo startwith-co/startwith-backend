@@ -2,6 +2,7 @@ package startwithco.startwithbackend.b2b.vendor.service;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -69,6 +70,8 @@ public class VendorService {
     private long accessTokenExpiration;
     @Value("${jwt.refreshTokenExpiration}")
     private long refreshTokenExpiration;
+    @Value("${app.frontend.reset-link}")
+    private String resetLink;
 
     @Transactional(readOnly = true)
     public List<GetVendorSolutionCategoryResponse> getVendorSolutionCategory(Long vendorSeq) {
@@ -395,8 +398,6 @@ public class VendorService {
 
         // 토큰 생성
         String token = generateToken(1_800_000L, vendorEntity.getVendorSeq());
-
-        String resetLink = "http://localhost:3000/forget/reset?token=" + token;
 
         commonService.sendResetLink(vendorEntity.getEmail(), resetLink);
 
