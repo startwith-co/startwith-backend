@@ -14,7 +14,6 @@ public class PaymentEventRequest {
             Long vendorSeq,
             String category,
             String paymentEventName,
-            Long amount,
             String paymentEventUniqueType
     ) {
         public void validate() {
@@ -22,16 +21,7 @@ public class PaymentEventRequest {
                     vendorSeq == null ||
                     isBlank(paymentEventName) ||
                     isBlank(category) ||
-                    amount == null ||
                     isBlank(paymentEventUniqueType)) {
-                throw new BadRequestException(
-                        HttpStatus.BAD_REQUEST.value(),
-                        "요청 데이터 오류입니다.",
-                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
-                );
-            }
-
-            if (amount < 0) {
                 throw new BadRequestException(
                         HttpStatus.BAD_REQUEST.value(),
                         "요청 데이터 오류입니다.",
