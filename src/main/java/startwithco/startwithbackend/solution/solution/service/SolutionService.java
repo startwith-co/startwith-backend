@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.b2b.vendor.repository.VendorEntityRepository;
+import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.solution.review.repository.SolutionReviewEntityRepository;
 import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 import startwithco.startwithbackend.solution.effect.util.DIRECTION;
@@ -63,6 +64,14 @@ public class SolutionService {
                             getCode("해당 벤더의 해당 카테고리 솔루션이 이미 존재합니다.", ExceptionType.CONFLICT)
                     );
                 });
+
+        if(request.amount() >= 10_000_000) {
+            throw new BadRequestException(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "솔루션 금액이 천만원을 넘으면 안됩니다.",
+                    getCode("솔루션 금액이 천만원을 넘으면 안됩니다.", ExceptionType.BAD_REQUEST)
+            );
+        }
 
         try {
             String s3RepresentImageUrl = commonService.uploadJPGFile(representImageUrl);

@@ -67,15 +67,16 @@ public class PaymentEventService {
 
         String s3ContractConfirmationUrl = commonService.uploadPDFFile(contractConfirmationUrl);
         String s3RefundPolicyUrl = commonService.uploadPDFFile(refundPolicyUrl);
-        Long tax = (long) (request.amount() * 0.1);
-        Long actualAmount = request.amount() + tax;
+        Long amount = solutionEntity.getAmount();
+        Long tax = (long) (amount * 0.1);
+        Long actualAmount = amount + tax;
 
         PaymentEventEntity paymentEventEntity = PaymentEventEntity.builder()
                 .vendorEntity(vendorEntity)
                 .consumerEntity(consumerEntity)
                 .solutionEntity(solutionEntity)
                 .paymentEventName(request.paymentEventName())
-                .amount(request.amount())
+                .amount(amount)
                 .tax(tax)
                 .actualAmount(actualAmount)
                 .contractConfirmationUrl(s3ContractConfirmationUrl)
