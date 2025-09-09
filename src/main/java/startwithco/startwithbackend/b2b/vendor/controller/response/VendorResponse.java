@@ -54,6 +54,8 @@ public class VendorResponse {
             Long clientCount,
             String vendorUniqueType ,
 
+            String profileImage,
+
             List<StatResponse> stats,
 
             List<GetAllClientResponse> clientResponses
@@ -84,6 +86,7 @@ public class VendorResponse {
                     .vendorUniqueType(vendorEntity.getVendorUniqueType())
                     .stats(statResponses)
                     .clientResponses(clientResponses)
+                    .profileImage(vendorEntity.getProfileImage())
                     .build();
         }
     }
