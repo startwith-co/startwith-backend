@@ -401,9 +401,10 @@ public class VendorService {
         // 토큰 생성
         String token = generateToken(1_800_000L, vendorEntity.getVendorSeq());
 
-        commonService.sendResetLink(vendorEntity.getEmail(), resetLink);
+        String resetUrl = resetLink + "/forget/reset?user=vendor&token=ey";
+        commonService.sendResetLink(vendorEntity.getEmail(), resetUrl);
 
-        return new ResetLinkResponse(token, resetLink, vendorEntity.getVendorSeq());
+        return new ResetLinkResponse(token, resetUrl, vendorEntity.getVendorSeq());
     }
 
     @Transactional
