@@ -123,12 +123,15 @@ public class VendorEntity extends BaseTimeEntity {
     @Column(name = "vendor_unique_type", nullable = false)
     private String vendorUniqueType;
 
+    @Column(name = "profile_image", nullable = true)
+    private String profileImage;
+
     public void update(String vendorName, String managerName, String phoneNumber, String email, Boolean audit,
                        String accountNumber, String bank, String vendorExplanation, String vendorBannerImageUrl,
                        Boolean weekdayAvailable, LocalTime weekdayStartTime, LocalTime weekdayEndTime,
                        Boolean weekendAvailable, LocalTime weekendStartTime, LocalTime weekendEndTime,
                        Boolean holidayAvailable, LocalTime holidayStartTime, LocalTime holidayEndTime,
-                       Long orderCount, Long clientCount) {
+                       Long orderCount, Long clientCount, String profileImage) {
 
         if (vendorName != null) this.vendorName = vendorName;
         if (managerName != null) this.managerName = managerName;
@@ -154,6 +157,7 @@ public class VendorEntity extends BaseTimeEntity {
 
         if (orderCount != null) this.orderCount = orderCount;
         if (clientCount != null) this.clientCount = clientCount;
+        if (profileImage != null) this.profileImage = profileImage;
     }
 
     public void updatePassword(String encodedPassword) {

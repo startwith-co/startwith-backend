@@ -24,6 +24,7 @@ public class ExceptionCodeMapper {
         BAD_REQUEST_MAP.put("해당 결제는 마감 시간이 지났습니다.", "BAD_REQUEST_EXCEPTION_013");
         BAD_REQUEST_MAP.put("이미 환불 처리된 건입니다.", "BAD_REQUEST_EXCEPTION_014");
         BAD_REQUEST_MAP.put("가상계좌 결제 완료 상태가 아닐 경우 환불 계좌 정보를 입력할 수 없습니다.", "BAD_REQUEST_EXCEPTION_015");
+        BAD_REQUEST_MAP.put("솔루션 금액이 천만원을 넘으면 안됩니다.", "BAD_REQUEST_EXCEPTION_016");
 
         // ConflictException
         CONFLICT_MAP.put("중복된 이메일입니다.", "CONFLICT_EXCEPTION_001");

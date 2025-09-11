@@ -233,7 +233,7 @@ public class VendorService {
     }
 
     @Transactional
-    public void updateVendor(UpdateVendorInfoRequest request, MultipartFile vendorBannerImageUrl, List<MultipartFile> clientInfos) {
+    public void updateVendor(UpdateVendorInfoRequest request, MultipartFile vendorBannerImageUrl, List<MultipartFile> clientInfos, MultipartFile profileImage) {
         VendorEntity vendorEntity = vendorEntityRepository.findByVendorSeq(request.vendorSeq())
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
@@ -241,7 +241,8 @@ public class VendorService {
                         getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
                 ));
 
-        String uploadJPGFile = vendorBannerImageUrl == null ? null : commonService.uploadJPGFile(vendorBannerImageUrl);
+        String vendorBannerImage = vendorBannerImageUrl == null ? null : commonService.uploadJPGFile(vendorBannerImageUrl);
+        String vendorProfileImage = vendorBannerImageUrl == null ? null : commonService.uploadJPGFile(vendorBannerImageUrl);
 
         vendorEntity.update(
                 request.vendorName(),
@@ -252,7 +253,7 @@ public class VendorService {
                 request.accountNumber(),
                 request.bank(),
                 request.vendorExplanation(),
-                uploadJPGFile,
+                vendorBannerImage,
                 request.weekdayAvailable(),
                 request.weekdayStartTime(),
                 request.weekdayEndTime(),
@@ -263,7 +264,8 @@ public class VendorService {
                 request.holidayStartTime(),
                 request.holidayEndTime(),
                 request.orderCount(),
-                request.clientCount()
+                request.clientCount(),
+                vendorProfileImage
         );
 
         vendorEntityRepository.save(vendorEntity);
@@ -399,9 +401,10 @@ public class VendorService {
         // 토큰 생성
         String token = generateToken(1_800_000L, vendorEntity.getVendorSeq());
 
-        commonService.sendResetLink(vendorEntity.getEmail(), resetLink);
+        String resetUrl = resetLink + "/forget/reset?user=vendor&token=ey";
+        commonService.sendResetLink(vendorEntity.getEmail(), resetUrl);
 
-        return new ResetLinkResponse(token, resetLink, vendorEntity.getVendorSeq());
+        return new ResetLinkResponse(token, resetUrl, vendorEntity.getVendorSeq());
     }
 
     @Transactional

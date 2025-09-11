@@ -49,6 +49,8 @@ public class ConsumerService {
     private long accessTokenExpiration;
     @Value("${jwt.refreshTokenExpiration}")
     private long refreshTokenExpiration;
+    @Value("${app.frontend.reset-link}")
+    private String resetLink;
 
     @Transactional
     public void updateConsumer(UpdateConsumerInfoRequest request, MultipartFile consumerImageUrl) {
@@ -261,11 +263,12 @@ public class ConsumerService {
         // 토큰 생성
         String token = generateToken(1_800_000L, consumerEntity.getConsumerSeq());
 
-        String resetLink = "http://localhost:3000/forget/reset?token=" + token;
+        String resetUrl = resetLink + "/forget/reset?user=consumer&token=ey";
 
-        commonService.sendResetLink(consumerEntity.getEmail(), resetLink);
 
-        return new ResetLinkResponse(token, resetLink, consumerEntity.getConsumerSeq());
+        commonService.sendResetLink(consumerEntity.getEmail(), resetUrl);
+
+        return new ResetLinkResponse(token, resetUrl, consumerEntity.getConsumerSeq());
     }
 
     @Transactional

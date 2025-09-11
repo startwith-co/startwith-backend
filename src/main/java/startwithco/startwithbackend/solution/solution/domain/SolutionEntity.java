@@ -33,7 +33,7 @@ public class SolutionEntity extends BaseTimeEntity {
     private String solutionName;
 
     @Lob
-    @Column(name = "solution_detail", nullable = false)
+    @Column(name = "solution_detail", nullable = false, columnDefinition = "MEDIUMTEXT")
     private String solutionDetail;
 
     @Enumerated(EnumType.STRING)
