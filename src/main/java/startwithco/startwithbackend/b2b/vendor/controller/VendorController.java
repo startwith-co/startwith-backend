@@ -216,7 +216,7 @@ public class VendorController {
 
         vendorService.updateVendor(request, vendorBannerImageUrl, clientInfos, vendorProfileImage);
 
-        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "success"));
+        return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SUCCESS"));
     }
 
     @PostMapping(value = "/resetLink", name = "Vendor 비번 리셋 링크")
