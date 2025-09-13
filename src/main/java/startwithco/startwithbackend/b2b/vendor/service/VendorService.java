@@ -229,7 +229,7 @@ public class VendorService {
 
         List<GetAllClientResponse> clientResponses = clientRepository.findAllByVendorSeqCustom(vendorSeq);
 
-        return GetVendorInfo.fromEntity(vendorEntity,statResponses,clientResponses);
+        return GetVendorInfo.fromEntity(vendorEntity, statResponses, clientResponses);
     }
 
     @Transactional
@@ -241,8 +241,8 @@ public class VendorService {
                         getCode("존재하지 않는 벤더 기업입니다.", ExceptionType.NOT_FOUND)
                 ));
 
-        String vendorBannerImage = vendorBannerImageUrl == null ? null : commonService.uploadJPGFile(vendorBannerImageUrl);
-        String vendorProfileImage = vendorBannerImageUrl == null ? null : commonService.uploadJPGFile(vendorBannerImageUrl);
+        String vendorBannerImage = (vendorBannerImageUrl != null && !vendorBannerImageUrl.isEmpty()) ? commonService.uploadJPGFile(vendorBannerImageUrl) : null;
+        String vendorProfileImage = (profileImage != null && !profileImage.isEmpty()) ? commonService.uploadJPGFile(profileImage) : null;
 
         vendorEntity.update(
                 request.vendorName(),

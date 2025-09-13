@@ -159,7 +159,7 @@ public class PaymentEventService {
                 paymentEventEntity.getPaymentEventName(),
                 solutionEntity.getCategory(),
                 vendorEntity.getVendorName(),
-                vendorEntity.getVendorBannerImageUrl(),
+                vendorEntity.getProfileImage(),
                 solutionEntity.getRepresentImageUrl(),
                 paymentEventEntity.getAmount(),
                 paymentEventEntity.getTax(),
