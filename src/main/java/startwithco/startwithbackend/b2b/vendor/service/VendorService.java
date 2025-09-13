@@ -229,7 +229,7 @@ public class VendorService {
 
         List<GetAllClientResponse> clientResponses = clientRepository.findAllByVendorSeqCustom(vendorSeq);
 
-        return GetVendorInfo.fromEntity(vendorEntity,statResponses,clientResponses);
+        return GetVendorInfo.fromEntity(vendorEntity, statResponses, clientResponses);
     }
 
     @Transactional
@@ -242,7 +242,7 @@ public class VendorService {
                 ));
 
         String vendorBannerImage = vendorBannerImageUrl == null ? null : commonService.uploadJPGFile(vendorBannerImageUrl);
-        String vendorProfileImage = vendorBannerImageUrl == null ? null : commonService.uploadJPGFile(vendorBannerImageUrl);
+        String vendorProfileImage = vendorBannerImageUrl == null ? null : commonService.uploadJPGFile(profileImage);
 
         vendorEntity.update(
                 request.vendorName(),
