@@ -43,7 +43,7 @@ public class PaymentEventResponse {
             String paymentEventName,
             CATEGORY category,
             String vendorName,
-            String vendorBannerImageUrl,
+            String profileImage,
             String representImageUrl,
 
             // 총 결제 금액
