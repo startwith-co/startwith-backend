@@ -55,6 +55,7 @@ public class SolutionController {
             @ApiResponse(responseCode = "CONFLICT_EXCEPTION_004", description = "해당 벤더의 해당 카테고리 솔루션이 이미 존재합니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "CONFLICT_EXCEPTION_002", description = "동시성 저장은 불가능합니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "SERVER_EXCEPTION_002", description = "S3 UPLOAD 실패", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_016", description = "솔루션 금액이 천만원을 넘으면 안됩니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
     ResponseEntity<BaseResponse<SaveSolutionEntityResponse>> saveSolutionEntity(
             @Valid
@@ -95,6 +96,7 @@ public class SolutionController {
             @ApiResponse(responseCode = "CONFLICT_EXCEPTION_007", description = "이미 존재하는 카테고리입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "CONFLICT_EXCEPTION_002", description = "동시성 저장은 불가능합니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "SERVER_EXCEPTION_002", description = "S3 UPLOAD 실패", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_016", description = "솔루션 금액이 천만원을 넘으면 안됩니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
     ResponseEntity<BaseResponse<String>> modifySolutionEntity(
             @Valid
