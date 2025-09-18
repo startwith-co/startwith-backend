@@ -14,7 +14,6 @@ import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 @SQLDelete(sql = "UPDATE SOLUTION_ENTITY SET deleted = true WHERE solution_seq = ?")
-@Where(clause = "deleted = false")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
