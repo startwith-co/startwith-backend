@@ -154,6 +154,14 @@ public class SolutionService {
                     );});
         }
 
+        if(request.amount() >= 10_000_000) {
+            throw new BadRequestException(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "솔루션 금액이 천만원을 넘으면 안됩니다.",
+                    getCode("솔루션 금액이 천만원을 넘으면 안됩니다.", ExceptionType.BAD_REQUEST)
+            );
+        }
+
         try {
             String s3RepresentImageUrl = commonService.uploadJPGFile(representImageUrl);
             String s3DescriptionPdfUrl = commonService.uploadPDFFile(descriptionPdfUrl);
