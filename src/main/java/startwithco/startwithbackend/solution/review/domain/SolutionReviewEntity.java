@@ -41,8 +41,8 @@ public class SolutionReviewEntity extends BaseTimeEntity {
     @Column(name = "comment", nullable = false)
     private String comment;
 
-    public void updateSolutionReviewEntity(Double start, String comment) {
-        this.star = start;
+    public void updateSolutionReviewEntity(Double star, String comment) {
+        this.star = star;
         this.comment = comment;
     }
 }

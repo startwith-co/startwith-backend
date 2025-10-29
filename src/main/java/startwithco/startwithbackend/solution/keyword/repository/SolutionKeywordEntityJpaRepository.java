@@ -1,6 +1,6 @@
 package startwithco.startwithbackend.solution.keyword.repository;
 
-import io.lettuce.core.dynamic.annotation.Param;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -21,6 +21,7 @@ public interface SolutionKeywordEntityJpaRepository extends JpaRepository<Soluti
            SELECT ske.keyword
            FROM SolutionKeywordEntity ske
            WHERE ske.solutionEntity.solutionSeq = :solutionSeq
+           ORDER BY ske.solutionKeywordSeq ASC
            """)
     List<String> findAllKeywordsBySolutionSeq(@Param("solutionSeq") Long solutionSeq);
 }

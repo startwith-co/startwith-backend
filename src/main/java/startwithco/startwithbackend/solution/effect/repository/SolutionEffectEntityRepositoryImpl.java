@@ -17,6 +17,7 @@ public class SolutionEffectEntityRepositoryImpl implements SolutionEffectEntityR
     private final SolutionEffectEntityJpaRepository repository;
     private final JPAQueryFactory queryFactory;
 
+    @Override
     public List<SolutionEffectEntity> saveAll(List<SolutionEffectEntity> solutionEffectEntities) {
         return repository.saveAll(solutionEffectEntities);
     }
@@ -39,7 +40,7 @@ public class SolutionEffectEntityRepositoryImpl implements SolutionEffectEntityR
                 ))
                 .from(qSolutionEffectEntity)
                 .where(qSolutionEffectEntity.solutionEntity.solutionSeq.eq(solutionSeq))
+                .orderBy(qSolutionEffectEntity.solutionEffectSeq.asc())
                 .fetch();
     }
-
 }

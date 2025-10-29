@@ -45,7 +45,7 @@ public class SolutionReviewEntityRepositoryImpl implements SolutionReviewEntityR
                         qSolutionReviewEntity.createdAt
                 ))
                 .from(qSolutionReviewEntity)
-                .join(qSolutionReviewEntity.consumerEntity, qConsumerEntity)
+                .innerJoin(qSolutionReviewEntity.consumerEntity, qConsumerEntity)
                 .where(qSolutionReviewEntity.solutionEntity.solutionSeq.eq(solutionSeq))
                 .orderBy(qSolutionReviewEntity.createdAt.desc())
                 .fetch();
