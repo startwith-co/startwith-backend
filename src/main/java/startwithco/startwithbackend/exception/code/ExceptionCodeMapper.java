@@ -71,7 +71,7 @@ public class ExceptionCodeMapper {
         return switch (type) {
             case BAD_REQUEST -> BAD_REQUEST_MAP.getOrDefault(message, "BAD_REQUEST_EXCEPTION_예외코드 설정하세요.");
             case CONFLICT -> CONFLICT_MAP.getOrDefault(message, "CONFLICT_EXCEPTION_예외코드 설정하세요.");
-            case NOT_FOUND -> NOT_FOUND_MAP.getOrDefault(message, "NOT_FOUNE_EXCEPTION_예외코드 설정하세요.");
+            case NOT_FOUND -> NOT_FOUND_MAP.getOrDefault(message, "NOT_FOUND_EXCEPTION_예외코드 설정하세요.");
             case SERVER -> SERVER_MAP.getOrDefault(message, "SERVER_EXCEPTION_예외코드 설정하세요.");
             case UNAUTHORIZED -> UNAUTHORIZED_MAP.getOrDefault(message, "UNAUTHORIZED_EXCEPTION_예외코드 설정하세요.");
         };
