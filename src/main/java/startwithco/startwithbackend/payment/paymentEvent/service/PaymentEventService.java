@@ -13,6 +13,7 @@ import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.b2b.vendor.repository.VendorEntityRepository;
 import startwithco.startwithbackend.common.service.CommonService;
 import startwithco.startwithbackend.exception.ConflictException;
+import startwithco.startwithbackend.exception.ServerException;
 import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
 import startwithco.startwithbackend.payment.payment.repository.PaymentEntityRepository;
 import startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS;
@@ -23,7 +24,6 @@ import startwithco.startwithbackend.payment.paymentEvent.repository.PaymentEvent
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 import startwithco.startwithbackend.solution.solution.repository.SolutionEntityRepository;
 
-import java.util.List;
 
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.*;
 import static startwithco.startwithbackend.payment.paymentEvent.controller.request.PaymentEventRequest.*;
@@ -67,8 +67,9 @@ public class PaymentEventService {
 
         String s3ContractConfirmationUrl = commonService.uploadPDFFile(contractConfirmationUrl);
         String s3RefundPolicyUrl = commonService.uploadPDFFile(refundPolicyUrl);
+        final double TAX_RATE = 0.1;
         Long amount = solutionEntity.getAmount();
-        Long tax = (long) (amount * 0.1);
+        Long tax = (long) (amount * TAX_RATE);
         Long actualAmount = amount + tax;
 
         PaymentEventEntity paymentEventEntity = PaymentEventEntity.builder()
@@ -93,6 +94,12 @@ public class PaymentEventService {
                     HttpStatus.CONFLICT.value(),
                     "동시성 저장은 불가능합니다.",
                     getCode("동시성 저장은 불가능합니다.", ExceptionType.CONFLICT)
+            );
+        } catch (Exception e) {
+            throw new ServerException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    e.getMessage(),
+                    getCode(e.getMessage(), ExceptionType.SERVER)
             );
         }
     }
