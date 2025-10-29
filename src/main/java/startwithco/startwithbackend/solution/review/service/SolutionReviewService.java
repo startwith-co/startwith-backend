@@ -9,6 +9,7 @@ import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
 import startwithco.startwithbackend.b2b.consumer.repository.ConsumerRepository;
 import startwithco.startwithbackend.exception.ConflictException;
 import startwithco.startwithbackend.exception.NotFoundException;
+import startwithco.startwithbackend.exception.ServerException;
 import startwithco.startwithbackend.solution.review.domain.SolutionReviewEntity;
 import startwithco.startwithbackend.solution.review.repository.SolutionReviewEntityRepository;
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
@@ -34,13 +35,13 @@ public class SolutionReviewService {
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
                         "존재하지 않는 수요 기업입니다.",
-                        getCode("존재하지 않는 수요 기업입니다.", ExceptionType.BAD_REQUEST)
+                        getCode("존재하지 않는 수요 기업입니다.", ExceptionType.NOT_FOUND)
                 ));
         SolutionEntity solutionEntity = solutionEntityRepository.findBySolutionSeq(request.solutionSeq())
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
                         "존재하지 않는 솔루션입니다.",
-                        getCode("존재하지 않는 솔루션입니다.", ExceptionType.BAD_REQUEST)
+                        getCode("존재하지 않는 솔루션입니다.", ExceptionType.NOT_FOUND)
                 ));
         if (solutionReviewEntityRepository.existsByConsumerSeqAndSolutionSeq(request.consumerSeq(), request.solutionSeq())) {
             throw new ConflictException(
@@ -67,32 +68,53 @@ public class SolutionReviewService {
                     "동시성 저장은 불가능합니다.",
                     getCode("동시성 저장은 불가능합니다.", ExceptionType.CONFLICT)
             );
+        } catch (Exception e) {
+            throw new ServerException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    e.getMessage(),
+                    getCode(e.getMessage(), ExceptionType.SERVER)
+            );
         }
     }
 
+    @Transactional
     public void modifySolutionReviewEntity(ModifySolutionReviewRequest request) {
         consumerRepository.findByConsumerSeq(request.consumerSeq())
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
                         "존재하지 않는 수요 기업입니다.",
-                        getCode("존재하지 않는 수요 기업입니다.", ExceptionType.BAD_REQUEST)
+                        getCode("존재하지 않는 수요 기업입니다.", ExceptionType.NOT_FOUND)
                 ));
         solutionEntityRepository.findBySolutionSeq(request.solutionSeq())
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
                         "존재하지 않는 솔루션입니다.",
-                        getCode("존재하지 않는 솔루션입니다.", ExceptionType.BAD_REQUEST)
+                        getCode("존재하지 않는 솔루션입니다.", ExceptionType.NOT_FOUND)
                 ));
         SolutionReviewEntity solutionReviewEntity
                 = solutionReviewEntityRepository.findBySolutionSeqAndConsumerSeqAndSolutionReviewSeq(request.solutionSeq(), request.consumerSeq(), request.solutionReviewSeq())
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
                         "수요 기업이 해당 솔루션에 작성한 리뷰가 없습니다.",
-                        getCode("수요 기업이 해당 솔루션에 작성한 리뷰가 없습니다.", ExceptionType.BAD_REQUEST)
+                        getCode("수요 기업이 해당 솔루션에 작성한 리뷰가 없습니다.", ExceptionType.NOT_FOUND)
                 ));
 
-        solutionReviewEntity.updateSolutionReviewEntity(request.star(), request.comment());
-        solutionReviewEntityRepository.saveSolutionReviewEntity(solutionReviewEntity);
+        try {
+            solutionReviewEntity.updateSolutionReviewEntity(request.star(), request.comment());
+            solutionReviewEntityRepository.saveSolutionReviewEntity(solutionReviewEntity);
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException(
+                    HttpStatus.CONFLICT.value(),
+                    "동시성 저장은 불가능합니다.",
+                    getCode("동시성 저장은 불가능합니다.", ExceptionType.CONFLICT)
+            );
+        } catch (Exception e) {
+            throw new ServerException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    e.getMessage(),
+                    getCode(e.getMessage(), ExceptionType.SERVER)
+            );
+        }
     }
 
     public List<GetAllSolutionReviewResponse> getAllSolutionReviewEntity(Long solutionSeq) {
@@ -100,7 +122,7 @@ public class SolutionReviewService {
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
                         "존재하지 않는 솔루션입니다.",
-                        getCode("존재하지 않는 솔루션입니다.", ExceptionType.BAD_REQUEST)
+                        getCode("존재하지 않는 솔루션입니다.", ExceptionType.NOT_FOUND)
                 ));
 
         return solutionReviewEntityRepository.findAllBySolutionSeq(solutionSeq);

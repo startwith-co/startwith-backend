@@ -4,7 +4,6 @@ import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public interface SolutionEntityRepository {

@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.b2b.vendor.repository.VendorEntityRepository;
 import startwithco.startwithbackend.exception.BadRequestException;
+import startwithco.startwithbackend.exception.ServerException;
 import startwithco.startwithbackend.solution.review.repository.SolutionReviewEntityRepository;
 import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 import startwithco.startwithbackend.solution.effect.util.DIRECTION;
@@ -23,7 +24,7 @@ import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 import startwithco.startwithbackend.solution.solution.repository.SolutionEntityRepository;
 import startwithco.startwithbackend.common.service.CommonService;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -64,7 +65,7 @@ public class SolutionService {
                     );
                 });
 
-        if(request.amount() >= 10_000_000) {
+        if (request.amount() >= 10_000_000) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
                     "솔루션 금액이 천만원을 넘으면 안됩니다.",
@@ -122,6 +123,12 @@ public class SolutionService {
                     "동시성 저장은 불가능합니다.",
                     getCode("동시성 저장은 불가능합니다.", ExceptionType.CONFLICT)
             );
+        } catch (Exception e) {
+            throw new ServerException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    e.getMessage(),
+                    getCode(e.getMessage(), ExceptionType.SERVER)
+            );
         }
     }
 
@@ -146,14 +153,16 @@ public class SolutionService {
 
         if (!prevCat.equals(nextCat)) {
             solutionEntityRepository.findByVendorSeqAndCategory(request.vendorSeq(), nextCat)
-                    .ifPresent(x -> { throw new ConflictException(
-                            HttpStatus.CONFLICT.value(),
-                            "이미 존재하는 카테고리입니다.",
-                            getCode("이미 존재하는 카테고리입니다.", ExceptionType.CONFLICT)
-                    );});
+                    .ifPresent(x -> {
+                        throw new ConflictException(
+                                HttpStatus.CONFLICT.value(),
+                                "이미 존재하는 카테고리입니다.",
+                                getCode("이미 존재하는 카테고리입니다.", ExceptionType.CONFLICT)
+                        );
+                    });
         }
 
-        if(request.amount() >= 10_000_000) {
+        if (request.amount() >= 10_000_000) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
                     "솔루션 금액이 천만원을 넘으면 안됩니다.",
@@ -209,6 +218,13 @@ public class SolutionService {
                     "동시성 저장은 불가능합니다.",
                     getCode("동시성 저장은 불가능합니다.", ExceptionType.CONFLICT)
             );
+        } catch (Exception e) {
+            log.error("Invalid enum value provided", e);
+            throw new ServerException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    e.getMessage(),
+                    getCode(e.getMessage(), ExceptionType.SERVER)
+            );
         }
     }
 
@@ -228,9 +244,15 @@ public class SolutionService {
                         getCode("해당 기업이 작성한 카테고리 솔루션이 존재하지 않습니다.", ExceptionType.NOT_FOUND)
                 ));
 
-        List<String> solutionImplementationType = List.of(solutionEntity.getSolutionImplementationType().split(","));
-        List<String> industry = List.of(solutionEntity.getIndustry().split(","));
-        List<String> recommendedCompanySize = List.of(solutionEntity.getRecommendedCompanySize().split(","));
+        List<String> solutionImplementationType = Arrays.stream(solutionEntity.getSolutionImplementationType().split(","))
+                .filter(s -> !s.isBlank())
+                .collect(Collectors.toList());
+        List<String> industry = Arrays.stream(solutionEntity.getIndustry().split(","))
+                .filter(s -> !s.isBlank())
+                .collect(Collectors.toList());
+        List<String> recommendedCompanySize = Arrays.stream(solutionEntity.getRecommendedCompanySize().split(","))
+                .filter(s -> !s.isBlank())
+                .collect(Collectors.toList());
         List<SolutionEffectResponse> solutionEffectResponse
                 = solutionEffectEntityRepository.findAllBySolutionSeqCustom(solutionEntity.getSolutionSeq());
         List<String> keywords = solutionKeywordEntityRepository.findAllKeywordsBySolutionSeq(solutionEntity.getSolutionSeq());
@@ -256,28 +278,27 @@ public class SolutionService {
         List<SolutionEntity> solutionEntities
                 = solutionEntityRepository.findByCategoryAndIndustryAndBudgetAndKeyword(category, industry, budget, keyword, start, end);
 
-        List<GetAllSolutionEntityResponse> response = new ArrayList<>();
-        for (SolutionEntity solutionEntity : solutionEntities) {
-            VendorEntity vendorEntity = solutionEntity.getVendorEntity();
-            Long countSolutionReview = solutionReviewEntityRepository.countBySolutionSeq(solutionEntity.getSolutionSeq());
-            Double averageStar = Optional.ofNullable(
-                    solutionReviewEntityRepository.averageBySolutionSeq(solutionEntity.getSolutionSeq())
-            ).orElse(0.0);
+        return solutionEntities.stream()
+                .map(solutionEntity -> {
+                    VendorEntity vendorEntity = solutionEntity.getVendorEntity();
+                    Long countSolutionReview = solutionReviewEntityRepository.countBySolutionSeq(solutionEntity.getSolutionSeq());
+                    Double averageStar = Optional.ofNullable(
+                            solutionReviewEntityRepository.averageBySolutionSeq(solutionEntity.getSolutionSeq())
+                    ).orElse(0.0);
 
-            response.add(new GetAllSolutionEntityResponse(
-                    solutionEntity.getSolutionSeq(),
-                    solutionEntity.getSolutionName(),
-                    solutionEntity.getAmount(),
-                    solutionEntity.getRepresentImageUrl(),
-                    solutionEntity.getCategory(),
-                    vendorEntity.getVendorSeq(),
-                    vendorEntity.getVendorName(),
-                    averageStar,
-                    countSolutionReview
-            ));
-        }
-
-        return response;
+                    return new GetAllSolutionEntityResponse(
+                            solutionEntity.getSolutionSeq(),
+                            solutionEntity.getSolutionName(),
+                            solutionEntity.getAmount(),
+                            solutionEntity.getRepresentImageUrl(),
+                            solutionEntity.getCategory(),
+                            vendorEntity.getVendorSeq(),
+                            vendorEntity.getVendorName(),
+                            averageStar,
+                            countSolutionReview
+                    );
+                })
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -289,9 +310,15 @@ public class SolutionService {
                         getCode("해당 기업이 작성한 카테고리 솔루션이 존재하지 않습니다.", ExceptionType.NOT_FOUND)
                 ));
 
-        List<String> solutionImplementationType = List.of(solutionEntity.getSolutionImplementationType().split(","));
-        List<String> industry = List.of(solutionEntity.getIndustry().split(","));
-        List<String> recommendedCompanySize = List.of(solutionEntity.getRecommendedCompanySize().split(","));
+        List<String> solutionImplementationType = Arrays.stream(solutionEntity.getSolutionImplementationType().split(","))
+                .filter(s -> !s.isBlank())
+                .collect(Collectors.toList());
+        List<String> industry = Arrays.stream(solutionEntity.getIndustry().split(","))
+                .filter(s -> !s.isBlank())
+                .collect(Collectors.toList());
+        List<String> recommendedCompanySize = Arrays.stream(solutionEntity.getRecommendedCompanySize().split(","))
+                .filter(s -> !s.isBlank())
+                .collect(Collectors.toList());
         List<SolutionEffectResponse> solutionEffectResponse
                 = solutionEffectEntityRepository.findAllBySolutionSeqCustom(solutionEntity.getSolutionSeq());
         List<String> keywords = solutionKeywordEntityRepository.findAllKeywordsBySolutionSeq(solutionEntity.getSolutionSeq());

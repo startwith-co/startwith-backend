@@ -75,6 +75,12 @@ public class PaymentService {
                     "이미 해당 결제 요청에 대한 결제 정보가 존재합니다. 새롭게 결제 요청을 진행해야합니다.",
                     getCode("이미 해당 결제 요청에 대한 결제 정보가 존재합니다. 새롭게 결제 요청을 진행해야합니다.", ExceptionType.CONFLICT)
             );
+        } catch (Exception e) {
+            throw new ServerException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    e.getMessage(),
+                    getCode(e.getMessage(), ExceptionType.SERVER)
+            );
         }
 
         return commonService.executeTossPaymentApproval(
@@ -104,9 +110,7 @@ public class PaymentService {
                             json.path("receipt").path("url").asText(),
                             paymentEventEntity.getSolutionEntity().getCategory()
                     ));
-                }
-
-                if ("가상계좌".equals(method)) {
+                } else if ("가상계좌".equals(method)) {
                     LocalDateTime requestedAt = OffsetDateTime.parse(json.path("requestedAt").asText()).toLocalDateTime();
                     String secret = json.path("secret").asText(null);
 
@@ -130,9 +134,7 @@ public class PaymentService {
                             json.path("receipt").path("url").asText(),
                             paymentEventEntity.getSolutionEntity().getCategory()
                     ));
-                }
-
-                if ("간편결제".equals(method)) {
+                } else if ("간편결제".equals(method)) {
                     paymentEntity.updateEasyPayDONEStatus();
                     paymentEntityRepository.savePaymentEntity(paymentEntity);
 
@@ -146,19 +148,19 @@ public class PaymentService {
                             json.path("receipt").path("url").asText(null),
                             paymentEventEntity.getSolutionEntity().getCategory()
                     ));
+                } else {
+                    return Mono.error(new ServerException(
+                            HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                            "지원하지 않는 결제 수단입니다.",
+                            getCode("지원하지 않는 결제 수단입니다.", ExceptionType.SERVER)
+                    ));
                 }
-
-                return Mono.error(new ServerException(
-                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                        "지원하지 않는 결제 수단입니다.",
-                        getCode("지원하지 않는 결제 수단입니다.", ExceptionType.SERVER)
-                ));
 
             } catch (Exception e) {
                 return Mono.error(new ServerException(
                         HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                        e.getMessage(),
-                        getCode(e.getMessage(), ExceptionType.SERVER)
+                        "결제 응답 파싱 중 오류가 발생했습니다.",
+                        getCode("결제 응답 파싱 중 오류가 발생했습니다.", ExceptionType.SERVER)
                 ));
             }
         }).onErrorResume(e -> {
@@ -167,8 +169,8 @@ public class PaymentService {
 
             return Mono.error(new ServerException(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    e.getMessage(),
-                    getCode(e.getMessage(), ExceptionType.SERVER)
+                    "토스페이먼츠 결제 승인 실패",
+                    getCode("토스페이먼츠 결제 승인 실패", ExceptionType.SERVER)
             ));
         });
     }
@@ -182,7 +184,7 @@ public class PaymentService {
                         getCode("존재하지 않는 결제입니다.", ExceptionType.NOT_FOUND)
                 ));
 
-        if (paymentEntity.getDueDate().isBefore(LocalDateTime.now())) {
+        if (paymentEntity.getDueDate() != null && paymentEntity.getDueDate().isBefore(LocalDateTime.now())) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
                     "해당 결제는 마감 시간이 지났습니다.",
@@ -190,7 +192,7 @@ public class PaymentService {
             );
         }
 
-        if(paymentEntity.getPaymentStatus() == PAYMENT_STATUS.CANCELLED) {
+        if (paymentEntity.getPaymentStatus() == PAYMENT_STATUS.CANCELLED) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
                     "이미 환불 처리된 건입니다.",
@@ -198,23 +200,22 @@ public class PaymentService {
             );
         }
 
-        if (!(paymentEntity.getMethod() == METHOD.VIRTUAL_ACCOUNT
-                && paymentEntity.getPaymentStatus() == PAYMENT_STATUS.DONE)) {
-            if (request.bankCode() != null || request.accountNumber() != null || request.holderName() != null) {
-                throw new BadRequestException(
-                        HttpStatus.BAD_REQUEST.value(),
-                        "가상계좌 결제 완료 상태가 아닐 경우 환불 계좌 정보를 입력할 수 없습니다.",
-                        getCode("가상계좌 결제 완료 상태가 아닐 경우 환불 계좌 정보를 입력할 수 없습니다.", ExceptionType.BAD_REQUEST)
-                );
-            }
+        boolean isVirtualAccountDone = paymentEntity.getMethod() == METHOD.VIRTUAL_ACCOUNT
+                && paymentEntity.getPaymentStatus() == PAYMENT_STATUS.DONE;
+        
+        if (!isVirtualAccountDone && (request.bankCode() != null || request.accountNumber() != null || request.holderName() != null)) {
+            throw new BadRequestException(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "가상계좌 결제 완료 상태가 아닐 경우 환불 계좌 정보를 입력할 수 없습니다.",
+                    getCode("가상계좌 결제 완료 상태가 아닐 경우 환불 계좌 정보를 입력할 수 없습니다.", ExceptionType.BAD_REQUEST)
+            );
         }
 
         String bankCode = null;
         String accountNumber = null;
         String holderName = null;
 
-        // 가상계좌 + 결제 완료 상태일 경우에만 환불 계좌 필요
-        if (paymentEntity.getMethod().equals(METHOD.VIRTUAL_ACCOUNT) &&
+        if (paymentEntity.getMethod() != null && paymentEntity.getMethod().equals(METHOD.VIRTUAL_ACCOUNT) &&
                 paymentEntity.getPaymentStatus().equals(PAYMENT_STATUS.DONE)) {
             bankCode = request.bankCode();
             accountNumber = request.accountNumber();
@@ -253,6 +254,9 @@ public class PaymentService {
             case "CANCELED", "PARTIAL_CANCELED" -> {
                 paymentEntity.updateCANCELStatus(paymentCompletedAt);
                 paymentEntityRepository.savePaymentEntity(paymentEntity);
+            }
+            default -> {
+                log.warn("Unhandled payment status: {}", request.status());
             }
         }
     }

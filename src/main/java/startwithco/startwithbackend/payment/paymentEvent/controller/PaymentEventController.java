@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import startwithco.startwithbackend.base.BaseResponse;
@@ -18,8 +17,6 @@ import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
 import startwithco.startwithbackend.exception.handler.GlobalExceptionHandler;
 import startwithco.startwithbackend.payment.paymentEvent.service.PaymentEventService;
-import startwithco.startwithbackend.solution.effect.util.DIRECTION;
-import startwithco.startwithbackend.solution.solution.controller.request.SolutionRequest;
 import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.*;
@@ -61,7 +58,7 @@ public class PaymentEventController {
             @RequestPart(value = "refundPolicyUrl", required = false) MultipartFile refundPolicyUrl,
             @RequestPart SavePaymentEventRequest request
     ) {
-        if (contractConfirmationUrl.isEmpty() || refundPolicyUrl.isEmpty()) {
+        if (contractConfirmationUrl == null || contractConfirmationUrl.isEmpty() || refundPolicyUrl == null || refundPolicyUrl.isEmpty()) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
                     "요청 데이터 오류입니다.",
@@ -167,7 +164,7 @@ public class PaymentEventController {
 
         try {
             CATEGORY.valueOf(category.toUpperCase());
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
                     "요청 데이터 오류입니다.",

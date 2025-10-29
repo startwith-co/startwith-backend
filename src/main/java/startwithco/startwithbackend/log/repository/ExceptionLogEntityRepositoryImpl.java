@@ -23,11 +23,13 @@ public class ExceptionLogEntityRepositoryImpl implements ExceptionLogEntityRepos
     public List<ExceptionLogEntity> findAll(int start, int end) {
         QExceptionLogEntity qExceptionLogEntity = QExceptionLogEntity.exceptionLogEntity;
 
+        int limit = Math.max(0, end - start);
+        
         return queryFactory
                 .selectFrom(qExceptionLogEntity)
                 .orderBy(qExceptionLogEntity.createdAt.desc())
-                .offset(start)
-                .limit(end - start)
+                .offset(Math.max(0, start))
+                .limit(limit)
                 .fetch();
     }
 }

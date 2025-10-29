@@ -1,6 +1,6 @@
 package startwithco.startwithbackend.solution.review.repository;
 
-import io.lettuce.core.dynamic.annotation.Param;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -38,11 +38,7 @@ public interface SolutionReviewEntityJpaRepository extends JpaRepository<Solutio
     Double averageBySolutionSeq(@Param("solutionSeq") Long solutionSeq);
 
     @Query("""
-            SELECT
-                  CASE
-                  WHEN COUNT(sre) > 0 THEN true
-                  ELSE false
-                  END
+            SELECT COUNT(sre) > 0
             FROM SolutionReviewEntity sre
             WHERE sre.solutionEntity.solutionSeq = :solutionSeq
               AND sre.consumerEntity.consumerSeq = :consumerSeq

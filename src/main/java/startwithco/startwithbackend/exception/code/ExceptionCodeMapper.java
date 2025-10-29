@@ -32,7 +32,7 @@ public class ExceptionCodeMapper {
         CONFLICT_MAP.put("해당 벤더의 해당 카테고리 솔루션이 이미 존재합니다.", "CONFLICT_EXCEPTION_004");
         CONFLICT_MAP.put("같은 솔루션에 리뷰는 한 번만 작성할 수 있습니다.", "CONFLICT_EXCEPTION_005");
         CONFLICT_MAP.put("이미 해당 결제 요청에 대한 결제 정보가 존재합니다. 새롭게 결제 요청을 진행해야합니다.", "CONFLICT_EXCEPTION_006");
-        NOT_FOUND_MAP.put("이미 존재하는 카테고리입니다.", "CONFLICT_EXCEPTION_007");
+        CONFLICT_MAP.put("이미 존재하는 카테고리입니다.", "CONFLICT_EXCEPTION_007");
 
         // NotFoundException
         NOT_FOUND_MAP.put("존재하지 않는 벤더 기업입니다.", "NOT_FOUND_EXCEPTION_001");
@@ -71,7 +71,7 @@ public class ExceptionCodeMapper {
         return switch (type) {
             case BAD_REQUEST -> BAD_REQUEST_MAP.getOrDefault(message, "BAD_REQUEST_EXCEPTION_예외코드 설정하세요.");
             case CONFLICT -> CONFLICT_MAP.getOrDefault(message, "CONFLICT_EXCEPTION_예외코드 설정하세요.");
-            case NOT_FOUND -> NOT_FOUND_MAP.getOrDefault(message, "NOT_FOUNE_EXCEPTION_예외코드 설정하세요.");
+            case NOT_FOUND -> NOT_FOUND_MAP.getOrDefault(message, "NOT_FOUND_EXCEPTION_예외코드 설정하세요.");
             case SERVER -> SERVER_MAP.getOrDefault(message, "SERVER_EXCEPTION_예외코드 설정하세요.");
             case UNAUTHORIZED -> UNAUTHORIZED_MAP.getOrDefault(message, "UNAUTHORIZED_EXCEPTION_예외코드 설정하세요.");
         };

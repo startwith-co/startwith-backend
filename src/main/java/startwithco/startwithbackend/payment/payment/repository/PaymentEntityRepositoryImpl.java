@@ -9,7 +9,6 @@ import startwithco.startwithbackend.b2b.consumer.domain.ConsumerEntity;
 import startwithco.startwithbackend.b2b.consumer.domain.QConsumerEntity;
 import startwithco.startwithbackend.b2b.vendor.domain.QVendorEntity;
 import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
-import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
 import startwithco.startwithbackend.payment.payment.domain.QPaymentEntity;
 import startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS;
@@ -72,13 +71,13 @@ public class PaymentEntityRepositoryImpl implements PaymentEntityRepository {
 
         return queryFactory
                 .selectFrom(qPaymentEntity)
-                .join(qPaymentEntity.paymentEventEntity, qPaymentEventEntity).fetchJoin()
-                .join(qPaymentEventEntity.solutionEntity, qSolutionEntity).fetchJoin()
-                .join(qPaymentEventEntity.vendorEntity, qVendorEntity).fetchJoin()
+                .innerJoin(qPaymentEntity.paymentEventEntity, qPaymentEventEntity).fetchJoin()
+                .innerJoin(qPaymentEventEntity.solutionEntity, qSolutionEntity).fetchJoin()
+                .innerJoin(qPaymentEventEntity.vendorEntity, qVendorEntity).fetchJoin()
                 .where(builder)
                 .orderBy(qPaymentEntity.paymentCompletedAt.desc())
-                .offset(start)
-                .limit(end - start)
+                .offset(Math.max(0, start))
+                .limit(Math.max(0, end - start))
                 .fetch();
     }
 
@@ -115,14 +114,14 @@ public class PaymentEntityRepositoryImpl implements PaymentEntityRepository {
 
         return queryFactory
                 .selectFrom(qPaymentEntity)
-                .join(qPaymentEntity.paymentEventEntity, qPaymentEventEntity).fetchJoin()
-                .join(qPaymentEventEntity.vendorEntity, qVendorEntity).fetchJoin()
-                .join(qPaymentEventEntity.consumerEntity, qConsumerEntity).fetchJoin()
-                .join(qPaymentEventEntity.solutionEntity, qSolutionEntity).fetchJoin()
+                .innerJoin(qPaymentEntity.paymentEventEntity, qPaymentEventEntity).fetchJoin()
+                .innerJoin(qPaymentEventEntity.vendorEntity, qVendorEntity).fetchJoin()
+                .innerJoin(qPaymentEventEntity.consumerEntity, qConsumerEntity).fetchJoin()
+                .innerJoin(qPaymentEventEntity.solutionEntity, qSolutionEntity).fetchJoin()
                 .where(builder)
                 .orderBy(qPaymentEntity.paymentCompletedAt.desc())
-                .offset(start)
-                .limit(end - start)
+                .offset(Math.max(0, start))
+                .limit(Math.max(0, end - start))
                 .fetch();
     }
 
@@ -137,18 +136,18 @@ public class PaymentEntityRepositoryImpl implements PaymentEntityRepository {
 
         return queryFactory
                 .selectFrom(qPaymentEntity)
-                .join(qPaymentEntity.paymentEventEntity, qPaymentEventEntity).fetchJoin()
-                .join(qPaymentEventEntity.consumerEntity, qConsumerEntity).fetchJoin()
-                .join(qPaymentEventEntity.vendorEntity, qVendorEntity).fetchJoin()
-                .join(qPaymentEventEntity.solutionEntity, qSolutionEntity).fetchJoin()
+                .innerJoin(qPaymentEntity.paymentEventEntity, qPaymentEventEntity).fetchJoin()
+                .innerJoin(qPaymentEventEntity.consumerEntity, qConsumerEntity).fetchJoin()
+                .innerJoin(qPaymentEventEntity.vendorEntity, qVendorEntity).fetchJoin()
+                .innerJoin(qPaymentEventEntity.solutionEntity, qSolutionEntity).fetchJoin()
                 .where(qPaymentEntity.orderId.in(
                         JPAExpressions
                                 .select(qTossPaymentDailySnapshotEntity.orderId)
                                 .from(qTossPaymentDailySnapshotEntity)
                 ))
                 .orderBy(qPaymentEntity.paymentCompletedAt.desc())
-                .offset(start)
-                .limit(end - start)
+                .offset(Math.max(0, start))
+                .limit(Math.max(0, end - start))
                 .fetch();
     }
 
@@ -171,7 +170,7 @@ public class PaymentEntityRepositoryImpl implements PaymentEntityRepository {
                         pe.consumerEntity.eq(consumer),
                         pe.solutionEntity.eq(solution),
                         p.isNull().or(p.paymentStatus.in(
-                                PAYMENT_STATUS.IN_PROGRESS, PAYMENT_STATUS.WAITING_FOR_DEPOSIT
+                                IN_PROGRESS, WAITING_FOR_DEPOSIT
                         ))
                 )
                 .fetchFirst();

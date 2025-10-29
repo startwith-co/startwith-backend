@@ -11,6 +11,7 @@ import java.util.List;
 public class SolutionKeywordEntityRepositoryImpl implements SolutionKeywordEntityRepository {
     private final SolutionKeywordEntityJpaRepository repository;
 
+    @Override
     public List<SolutionKeywordEntity> saveAll(List<SolutionKeywordEntity> solutionKeywordEntities) {
         return repository.saveAll(solutionKeywordEntities);
     }
