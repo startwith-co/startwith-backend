@@ -21,10 +21,19 @@ public class ExceptionLogController {
     private final ExceptionLogService exceptionLogService;
 
     @GetMapping()
-    public String settlement(@RequestParam(defaultValue = "0") int page, @ModelAttribute String errorMessage, Model model) {
-        int pageSize = 20;
+    public String getExceptionLogs(@RequestParam(defaultValue = "0") int page, @ModelAttribute String errorMessage, Model model) {
+        final int pageSize = 20;
         int start = page * pageSize;
         int end = start + pageSize;
+        
+        if (start < 0 || end < start) {
+            model.addAttribute("errorMessage", "잘못된 페이지 번호입니다.");
+            model.addAttribute("exceptionLogs", List.of());
+            model.addAttribute("hasNext", false);
+            model.addAttribute("currentPage", 0);
+            model.addAttribute("pageSize", pageSize);
+            return "log";
+        }
 
         ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 
@@ -32,12 +41,13 @@ public class ExceptionLogController {
             List<ExceptionLogDto> exceptionLogDtos = exceptionLogService.getAllExceptionLogEntity(start, end)
                     .stream()
                     .map(dto -> {
-                        String raw = dto.getRequestBody();
-                        String pretty = raw;
+                        // [수정] 변수명 개선 (raw, pretty -> requestBody, formattedRequestBody)
+                        String requestBody = dto.getRequestBody();
+                        String formattedRequestBody = requestBody;
 
                         try {
-                            if (raw != null && raw.trim().startsWith("{")) {
-                                var root = objectMapper.readTree(raw);
+                            if (requestBody != null && !requestBody.trim().isEmpty() && requestBody.trim().startsWith("{")) {
+                                var root = objectMapper.readTree(requestBody);
 
                                 // case 1: "request" 키가 있고, 그 값이 JSON 문자열이라면 → 이중 파싱
                                 if (root.has("request") && root.get("request").isTextual()) {
@@ -45,20 +55,19 @@ public class ExceptionLogController {
 
                                     try {
                                         var nestedJson = objectMapper.readTree(nestedStr);
-                                        pretty = objectMapper.writerWithDefaultPrettyPrinter()
+                                        formattedRequestBody = objectMapper.writerWithDefaultPrettyPrinter()
                                                 .writeValueAsString(nestedJson);
                                     } catch (Exception e) {
-                                        pretty = nestedStr;
+                                        formattedRequestBody = nestedStr;
                                     }
 
                                 } else {
-                                    // case 2: 일반 JSON 객체 → 바로 예쁘게 출력
-                                    pretty = objectMapper.writerWithDefaultPrettyPrinter()
+                                    formattedRequestBody = objectMapper.writerWithDefaultPrettyPrinter()
                                             .writeValueAsString(root);
                                 }
                             }
                         } catch (Exception e) {
-                            // JSON 파싱 실패 → 원본 그대로
+                            formattedRequestBody = requestBody;
                         }
 
                         return new ExceptionLogDto(
@@ -67,7 +76,7 @@ public class ExceptionLogController {
                                 dto.getErrorCode(),
                                 dto.getMessage(),
                                 dto.getRequestUri(),
-                                pretty,
+                                formattedRequestBody,
                                 dto.getMethodName()
                         );
                     })
