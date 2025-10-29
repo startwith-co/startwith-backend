@@ -1,11 +1,10 @@
 package startwithco.startwithbackend.payment.payment.repository;
 
-import io.lettuce.core.dynamic.annotation.Param;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
-import startwithco.startwithbackend.payment.paymentEvent.domain.PaymentEventEntity;
 
 import java.util.Optional;
 
@@ -21,7 +20,7 @@ public interface PaymentEntityJpaRepository extends JpaRepository<PaymentEntity,
               AND p.paymentEventEntity.paymentEventSeq = :paymentEventSeq
               AND p.paymentStatus = 'IN_PROGRESS'
             """)
-    boolean canApproveTossPayment(@Param("orderId") String orderId, Long paymentEventSeq);
+    boolean canApproveTossPayment(@Param("orderId") String orderId, @Param("paymentEventSeq") Long paymentEventSeq);
 
     @Query("""
             SELECT p
@@ -51,7 +50,7 @@ public interface PaymentEntityJpaRepository extends JpaRepository<PaymentEntity,
             WHERE p.paymentEventEntity.vendorEntity.vendorSeq = :vendorSeq
               AND p.paymentStatus = 'SETTLED'
             """)
-    Long countSETTLEDStatusByVendorSeq(Long vendorSeq);
+    Long countSETTLEDStatusByVendorSeq(@Param("vendorSeq") Long vendorSeq);
 
     @Query("""
             SELECT p

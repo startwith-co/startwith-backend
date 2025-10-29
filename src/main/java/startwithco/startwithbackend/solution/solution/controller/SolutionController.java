@@ -17,7 +17,6 @@ import startwithco.startwithbackend.base.BaseResponse;
 import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
 import startwithco.startwithbackend.exception.handler.GlobalExceptionHandler;
-import startwithco.startwithbackend.solution.solution.controller.request.SolutionRequest;
 import startwithco.startwithbackend.solution.solution.service.SolutionService;
 import startwithco.startwithbackend.solution.solution.util.CATEGORY;
 
@@ -64,7 +63,7 @@ public class SolutionController {
             @RequestPart SaveSolutionEntityRequest request
     ) {
         request.validate();
-        if (representImageUrl.isEmpty() || descriptionPdfUrl.isEmpty()) {
+        if (representImageUrl == null || representImageUrl.isEmpty() || descriptionPdfUrl == null || descriptionPdfUrl.isEmpty()) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
                     "요청 데이터 오류입니다.",
@@ -105,7 +104,7 @@ public class SolutionController {
             @RequestPart ModifySolutionEntityRequest request
     ) {
         request.validate();
-        if (representImageUrl.isEmpty() || descriptionPdfUrl.isEmpty()) {
+        if (representImageUrl == null || representImageUrl.isEmpty() || descriptionPdfUrl == null || descriptionPdfUrl.isEmpty()) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
                     "요청 데이터 오류입니다.",
@@ -183,9 +182,10 @@ public class SolutionController {
             @RequestParam(value = "start", defaultValue = "0") int start,
             @RequestParam(value = "end", defaultValue = "15") int end
     ) {
+        CATEGORY categoryEnum = null;
         if (category != null) {
             try {
-                CATEGORY.valueOf(category);
+                categoryEnum = CATEGORY.valueOf(category);
             } catch (IllegalArgumentException e) {
                 throw new BadRequestException(
                         HttpStatus.BAD_REQUEST.value(),
@@ -194,8 +194,6 @@ public class SolutionController {
                 );
             }
         }
-
-        CATEGORY categoryEnum = (category != null) ? CATEGORY.valueOf(category) : null;
         List<GetAllSolutionEntityResponse> response = solutionService.getAllSolutionEntity(categoryEnum, industry, budget, keyword, start, end);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
@@ -229,7 +227,6 @@ public class SolutionController {
             @ApiResponse(responseCode = "200", description = "SUCCESS", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "SERVER_EXCEPTION_001", description = "내부 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_001", description = "존재하지 않는 벤더 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_008", description = "해당 기업이 작성한 카테고리 솔루션이 존재하지 않습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
     ResponseEntity<BaseResponse<String>> deleteSolutionEntity(@RequestParam(value = "solutionSeq", required = false) Long solutionSeq) {

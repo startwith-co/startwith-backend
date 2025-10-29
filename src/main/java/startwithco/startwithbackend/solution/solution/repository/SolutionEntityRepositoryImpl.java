@@ -78,7 +78,7 @@ public class SolutionEntityRepositoryImpl implements SolutionEntityRepository {
             );
         }
 
-        if (!budget.equals("전체")) {
+        if (budget != null && !budget.equals("전체")) {
             switch (budget) {
                 case "500,000원 미만" -> builder.and(qSolutionEntity.amount.lt(500_000L));
                 case "500,000원~1,000,000원 미만" ->
@@ -99,8 +99,10 @@ public class SolutionEntityRepositoryImpl implements SolutionEntityRepository {
         }
 
         if (keyword != null && !keyword.isBlank()) {
+            builder.and(qSolutionKeywordEntity.keyword.eq(keyword));
             return queryFactory
                     .select(qSolutionEntity)
+                    .distinct()
                     .from(qSolutionKeywordEntity)
                     .join(qSolutionKeywordEntity.solutionEntity, qSolutionEntity)
                     .join(qSolutionEntity.vendorEntity).fetchJoin()

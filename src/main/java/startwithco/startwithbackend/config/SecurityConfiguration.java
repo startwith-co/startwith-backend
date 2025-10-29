@@ -28,13 +28,6 @@ public class SecurityConfiguration {
     private String jwtSecret;
 
     @Bean
-    @ConditionalOnProperty(name = "spring.h2.console.enabled", havingValue = "true")
-    public WebSecurityCustomizer configureH2ConsoleEnable() {
-        return web -> web.ignoring()
-                .requestMatchers(PathRequest.toH2Console());
-    }
-
-    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
@@ -102,7 +95,7 @@ public class SecurityConfiguration {
                 "/admin/**"
 
                 // 모든 URL 개방
-//                ,"/**"
+                ,"/**"
         );
         return new JwtTokenFilter(jwtSecret, permitAllEndpoints);
     }
