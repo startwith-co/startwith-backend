@@ -19,7 +19,6 @@ public class SolutionRequest {
             String solutionName,
             String solutionDetail,
             String category,
-            String industry,
             String recommendedCompanySize,
             String solutionImplementationType,
 
@@ -46,7 +45,6 @@ public class SolutionRequest {
                     isBlank(solutionName) ||
                     isBlank(solutionDetail) ||
                     category == null ||
-                    isBlank(industry) ||
                     isBlank(recommendedCompanySize) ||
                     isBlank(solutionImplementationType) ||
                     amount == null ||
@@ -92,7 +90,6 @@ public class SolutionRequest {
             String solutionDetail,
             String prevCategory,
             String nextCategory,
-            String industry,
             String recommendedCompanySize,
             String solutionImplementationType,
 
@@ -120,7 +117,6 @@ public class SolutionRequest {
                     isBlank(solutionDetail) ||
                     prevCategory == null ||
                     nextCategory == null ||
-                    isBlank(industry) ||
                     isBlank(recommendedCompanySize) ||
                     isBlank(solutionImplementationType) ||
                     amount == null ||

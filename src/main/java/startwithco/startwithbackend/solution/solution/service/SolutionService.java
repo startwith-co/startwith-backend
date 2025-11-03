@@ -82,7 +82,6 @@ public class SolutionService {
                     .solutionName(request.solutionName())
                     .solutionDetail(request.solutionDetail())
                     .category(CATEGORY.valueOf(request.category()))
-                    .industry(request.industry())
                     .recommendedCompanySize(request.recommendedCompanySize())
                     .solutionImplementationType(request.solutionImplementationType())
                     .amount(request.amount())
@@ -178,7 +177,6 @@ public class SolutionService {
                     request.solutionName(),
                     request.solutionDetail(),
                     CATEGORY.valueOf(request.nextCategory()),
-                    request.industry(),
                     request.recommendedCompanySize(),
                     request.solutionImplementationType(),
                     request.amount(),
@@ -247,9 +245,6 @@ public class SolutionService {
         List<String> solutionImplementationType = Arrays.stream(solutionEntity.getSolutionImplementationType().split(","))
                 .filter(s -> !s.isBlank())
                 .collect(Collectors.toList());
-        List<String> industry = Arrays.stream(solutionEntity.getIndustry().split(","))
-                .filter(s -> !s.isBlank())
-                .collect(Collectors.toList());
         List<String> recommendedCompanySize = Arrays.stream(solutionEntity.getRecommendedCompanySize().split(","))
                 .filter(s -> !s.isBlank())
                 .collect(Collectors.toList());
@@ -266,7 +261,6 @@ public class SolutionService {
                 solutionEntity.getAmount(),
                 solutionImplementationType,
                 solutionEntity.getDuration(),
-                industry,
                 recommendedCompanySize,
                 solutionEffectResponse,
                 keywords
@@ -274,9 +268,9 @@ public class SolutionService {
     }
 
     @Transactional(readOnly = true)
-    public List<GetAllSolutionEntityResponse> getAllSolutionEntity(CATEGORY category, String industry, String budget, String keyword, int start, int end) {
+    public List<GetAllSolutionEntityResponse> getAllSolutionEntity(CATEGORY category, String budget, String keyword, int start, int end) {
         List<SolutionEntity> solutionEntities
-                = solutionEntityRepository.findByCategoryAndIndustryAndBudgetAndKeyword(category, industry, budget, keyword, start, end);
+                = solutionEntityRepository.findByCategoryAndBudgetAndKeyword(category, budget, keyword, start, end);
 
         return solutionEntities.stream()
                 .map(solutionEntity -> {
@@ -313,9 +307,6 @@ public class SolutionService {
         List<String> solutionImplementationType = Arrays.stream(solutionEntity.getSolutionImplementationType().split(","))
                 .filter(s -> !s.isBlank())
                 .collect(Collectors.toList());
-        List<String> industry = Arrays.stream(solutionEntity.getIndustry().split(","))
-                .filter(s -> !s.isBlank())
-                .collect(Collectors.toList());
         List<String> recommendedCompanySize = Arrays.stream(solutionEntity.getRecommendedCompanySize().split(","))
                 .filter(s -> !s.isBlank())
                 .collect(Collectors.toList());
@@ -332,7 +323,6 @@ public class SolutionService {
                 solutionEntity.getAmount(),
                 solutionImplementationType,
                 solutionEntity.getDuration(),
-                industry,
                 recommendedCompanySize,
                 solutionEffectResponse,
                 keywords
