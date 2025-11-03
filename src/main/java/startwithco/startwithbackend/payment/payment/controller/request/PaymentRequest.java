@@ -27,16 +27,6 @@ public class PaymentRequest {
         }
     }
 
-    public record TossPaymentDepositCallBackRequest(
-            String createdAt,
-            String secret,
-            String status,
-            String transactionKey,
-            String orderId
-    ) {
-
-    }
-
     public record RefundTossPaymentApprovalRequest(
             String orderId,
             String cancelReason,
@@ -82,6 +72,52 @@ public class PaymentRequest {
                     );
                 }
             }
+        }
+    }
+
+    public record PaymentStatusChangedWebhookRequest(
+            String eventType,
+            String createdAt,
+            WebhookPaymentData data
+    ) {
+        public record WebhookPaymentData(
+                String paymentKey,
+                String orderId,
+                String status,
+                String requestedAt,
+                String approvedAt,
+                String method,
+                WebhookCardData card,
+                WebhookVirtualAccountData virtualAccount
+        ) {
+        }
+
+        public record WebhookCardData(
+                String issuerCode,
+                String acquirerCode,
+                String number
+        ) {
+        }
+
+        public record WebhookVirtualAccountData(
+                String accountNumber,
+                String bankCode,
+                String customerName
+        ) {
+        }
+    }
+
+    public record CancelStatusChangedWebhookRequest(
+            String eventType,
+            String createdAt,
+            WebhookCancelData data
+    ) {
+        public record WebhookCancelData(
+                String paymentKey,
+                String orderId,
+                String cancelStatus,
+                String canceledAt
+        ) {
         }
     }
 }

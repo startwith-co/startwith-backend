@@ -17,6 +17,8 @@ import startwithco.startwithbackend.exception.handler.GlobalExceptionHandler;
 import startwithco.startwithbackend.payment.payment.service.PaymentService;
 
 import static startwithco.startwithbackend.payment.payment.controller.request.PaymentRequest.*;
+import static startwithco.startwithbackend.payment.payment.controller.request.PaymentRequest.PaymentStatusChangedWebhookRequest;
+import static startwithco.startwithbackend.payment.payment.controller.request.PaymentRequest.CancelStatusChangedWebhookRequest;
 import static startwithco.startwithbackend.payment.payment.controller.response.PaymentResponse.*;
 
 @RestController
@@ -37,7 +39,7 @@ public class PaymentController {
                     2. amount의 경우 부가세 포함한 가격을 보내야합니다.
                     3. paymentKey의 경우 SuccessURL 에서 받은 값, orderId의 경우 UUID 값을 생성해서 넘겨주셔야합니다.
                     4. SERVER - TOSS 사이 간 orderId로 멱등성 처리가 돼 있습니다. 때문에 이전 결제 요청에서 결제 실패가 발생했을 경우 새로운 orderId 값을 만들어주셔야합니다.
-                    5. 결제 실패 상황의 경우 웹훅 이벤트 URL 참고해주세요. (카드 결제: PAYMENT_STATUS_CHANGED, 가상 계좌: DEPOSIT_CALLBACK)
+                    5. 결제 상태 변경은 웹훅으로만 처리됩니다. (모든 결제 수단: PAYMENT_STATUS_CHANGED, 취소: CANCEL_STATUS_CHANGED)
                     6. 넘어가는 method 값에 따라 Response가 다릅니다.
                         - "카드": TossCardPaymentApprovalResponse
                         - "가상계좌": TossVirtualAccountPaymentResponse
@@ -122,10 +124,10 @@ public class PaymentController {
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "success"));
     }
 
-    @PostMapping(value = "/deposit-callback")
-    @Operation(hidden = true)
-    public ResponseEntity<BaseResponse<String>> tossPaymentDepositCallBack(@RequestBody TossPaymentDepositCallBackRequest request) {
-        paymentService.tossPaymentDepositCallBack(request);
+    @PostMapping(value = "/webhook/payment-status-changed")
+    @Operation(hidden = true, summary = "토스페이먼츠 PAYMENT_STATUS_CHANGED 웹훅")
+    public ResponseEntity<BaseResponse<String>> handlePaymentStatusChanged(@RequestBody PaymentStatusChangedWebhookRequest request) {
+        paymentService.handlePaymentStatusChanged(request);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SUCCESS"));
     }
