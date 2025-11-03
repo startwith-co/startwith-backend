@@ -9,6 +9,7 @@ import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.exception.ServerException;
 import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
 import startwithco.startwithbackend.payment.payment.repository.PaymentEntityRepository;
+import startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS;
 import startwithco.startwithbackend.admin.settlement.dto.SettlementDto;
 import startwithco.startwithbackend.payment.snapshot.entity.TossPaymentDailySnapshotEntity;
 import startwithco.startwithbackend.payment.snapshot.repository.TossPaymentDailySnapshotEntityRepository;
@@ -78,7 +79,7 @@ public class SettlementService {
                         getCode("내부 서버 오류가 발생했습니다.", ExceptionType.SERVER)
                 ));
 
-        paymentEntity.updateSETTLEDStatus();
+        paymentEntity.markAsSettled();
         paymentEntityRepository.savePaymentEntity(paymentEntity);
 
         tossPaymentDailySnapshotEntity.updateApproveSettlement();
@@ -100,7 +101,7 @@ public class SettlementService {
                         getCode("내부 서버 오류가 발생했습니다.", ExceptionType.SERVER)
                 ));
 
-        paymentEntity.updateCANCELDStatus();
+        paymentEntity.setPaymentStatus(PAYMENT_STATUS.CANCELED);
         paymentEntityRepository.savePaymentEntity(paymentEntity);
 
         tossPaymentDailySnapshotEntity.updateDeleteSettlement();

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import startwithco.startwithbackend.base.BaseTimeEntity;
 import startwithco.startwithbackend.payment.payment.util.METHOD;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Setter
 @SuperBuilder
 public class PaymentEntity extends BaseTimeEntity {
     @Id
@@ -51,67 +53,84 @@ public class PaymentEntity extends BaseTimeEntity {
     @Column(name = "payment_completed_at", nullable = true)
     private LocalDateTime paymentCompletedAt;
 
-    @Column(name = "auto_confirm_scheduled_at", nullable = true)
-    private LocalDateTime autoConfirmScheduledAt;
-
     @Column(name = "due_date", nullable = true)
     private LocalDateTime dueDate;
 
-    public void updateCardDONEStatus(LocalDateTime paymentCompletedAt) {
-        this.paymentStatus = PAYMENT_STATUS.DONE;
-        this.method = METHOD.CARD;
-        this.secret = null;
-        this.paymentCompletedAt = paymentCompletedAt;
-        this.autoConfirmScheduledAt = paymentCompletedAt.plusDays(7);
-        this.dueDate = paymentCompletedAt.plusDays(1);
-    }
-
-    public void updateVirtualWAITING_FOR_DEPOSITStatus(LocalDateTime requestedAt, String secret) {
-        this.paymentStatus = PAYMENT_STATUS.WAITING_FOR_DEPOSIT;
-        this.method = METHOD.VIRTUAL_ACCOUNT;
-        this.secret = secret;
-        this.paymentCompletedAt = null;
-        this.autoConfirmScheduledAt = null;
-        this.dueDate = requestedAt.plusDays(1);
-    }
-
-    public void updateEasyPayDONEStatus() {
-        this.paymentStatus = PAYMENT_STATUS.DONE;
-        this.method = METHOD.EASY_PAY;
-        this.secret = null;
-        this.paymentCompletedAt = LocalDateTime.now();
-        this.autoConfirmScheduledAt = paymentCompletedAt.plusDays(7);
-        this.dueDate = paymentCompletedAt.plusDays(1);
-    }
-
-    public void updateVirtualDONEStatus(LocalDateTime paymentCompletedAt) {
-        this.paymentStatus = PAYMENT_STATUS.DONE;
-        this.method = METHOD.VIRTUAL_ACCOUNT;
-        this.paymentCompletedAt = paymentCompletedAt;
-        this.autoConfirmScheduledAt = paymentCompletedAt.plusDays(7);
-    }
-
-    public void updateFAILUREStatus() {
-        this.paymentStatus = PAYMENT_STATUS.FAILED;
-        this.method = null;
-        this.secret = null;
-        this.paymentCompletedAt = null;
-        this.autoConfirmScheduledAt = null;
-        this.dueDate = null;
-    }
-
-    public void updateCANCELStatus(LocalDateTime paymentCompletedAt) {
-        this.paymentStatus = PAYMENT_STATUS.CANCELLED;
-        this.paymentCompletedAt = paymentCompletedAt;
-    }
-
-    public void updateSETTLEDStatus() {
+    public void markAsSettled() {
         this.paymentStatus = PAYMENT_STATUS.SETTLED;
-        this.autoConfirmScheduledAt = LocalDateTime.now();
     }
 
-    public void updateCANCELDStatus() {
-        this.paymentStatus = PAYMENT_STATUS.DONE;
-        this.autoConfirmScheduledAt = LocalDateTime.now().plusDays(7);
+    public void updateStatusFromWebhook(String status, LocalDateTime completedAt, String methodStr) {
+        if (methodStr != null && this.method == null) {
+            switch (methodStr) {
+                case "카드" -> this.method = METHOD.CARD;
+                case "가상계좌" -> this.method = METHOD.VIRTUAL_ACCOUNT;
+                case "간편결제" -> this.method = METHOD.EASY_PAY;
+            }
+        }
+
+        switch (status) {
+            case "EXPIRED" -> {
+                if (this.method == METHOD.CARD || this.method == METHOD.EASY_PAY) {
+                    this.paymentStatus = PAYMENT_STATUS.EXPIRED;
+                    this.secret = null;
+                }
+            }
+            case "ABORTED" -> {
+                if (this.method == METHOD.CARD || this.method == METHOD.EASY_PAY) {
+                    this.paymentStatus = PAYMENT_STATUS.ABORTED;
+                    this.secret = null;
+                }
+            }
+            case "DONE" -> {
+                this.paymentStatus = PAYMENT_STATUS.DONE;
+                if (completedAt != null) {
+                    this.paymentCompletedAt = completedAt;
+                    if (this.method == METHOD.CARD || this.method == METHOD.EASY_PAY) {
+                        this.dueDate = completedAt.plusDays(1);
+                    }
+                }
+                if (this.method != METHOD.VIRTUAL_ACCOUNT) {
+                    this.secret = null;
+                }
+            }
+            case "CANCELED" -> {
+                this.paymentStatus = PAYMENT_STATUS.CANCELED;
+                if (completedAt != null) {
+                    this.paymentCompletedAt = completedAt;
+                }
+            }
+            case "PARTIAL_CANCELED" -> {
+                this.paymentStatus = PAYMENT_STATUS.PARTIAL_CANCELED;
+                if (completedAt != null) {
+                    this.paymentCompletedAt = completedAt;
+                }
+            }
+            case "WAITING_FOR_DEPOSIT" -> {
+                if (this.method == METHOD.VIRTUAL_ACCOUNT) {
+                    this.paymentStatus = PAYMENT_STATUS.WAITING_FOR_DEPOSIT;
+                }
+            }
+            case "READY", "IN_PROGRESS" -> {
+                // 상태 변경 없음
+            }
+        }
+    }
+
+    public void updateCancelStatusFromWebhook(String cancelStatus, LocalDateTime canceledAt) {
+        switch (cancelStatus) {
+            case "IN_PROGRESS" -> {
+                // 취소 진행 중 - 상태 변경 없음
+            }
+            case "DONE" -> {
+                this.paymentStatus = PAYMENT_STATUS.CANCELED;
+                if (canceledAt != null) {
+                    this.paymentCompletedAt = canceledAt;
+                }
+            }
+            case "ABORTED" -> {
+                // 취소 실패 - 상태는 유지 (이전 상태 그대로)
+            }
+        }
     }
 }

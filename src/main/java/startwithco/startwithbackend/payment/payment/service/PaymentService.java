@@ -22,10 +22,10 @@ import startwithco.startwithbackend.payment.paymentEvent.repository.PaymentEvent
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.*;
 import static startwithco.startwithbackend.payment.payment.controller.request.PaymentRequest.*;
+import static startwithco.startwithbackend.payment.payment.controller.request.PaymentRequest.PaymentStatusChangedWebhookRequest;
 import static startwithco.startwithbackend.payment.payment.controller.response.PaymentResponse.*;
 
 @Service
@@ -64,7 +64,7 @@ public class PaymentService {
                 .orderId(request.orderId())
                 .paymentKey(request.paymentKey())
                 .amount(request.amount())
-                .paymentStatus(PAYMENT_STATUS.IN_PROGRESS)
+                .paymentStatus(PAYMENT_STATUS.WAITING_FOR_DEPOSIT)
                 .build();
 
         try {
@@ -91,30 +91,15 @@ public class PaymentService {
             try {
                 String method = json.path("method").asText();
 
-                if ("카드".equals(method)) {
-                    LocalDateTime approvedAt = OffsetDateTime.parse(json.path("approvedAt").asText()).toLocalDateTime();
-                    paymentEntity.updateCardDONEStatus(approvedAt);
-                    paymentEntityRepository.savePaymentEntity(paymentEntity);
-
-                    JsonNode card = json.path("card");
-                    return Mono.just(new TossCardPaymentApprovalResponse(
-                            json.path("orderId").asText(),
-                            json.path("orderName").asText(),
-                            json.path("paymentKey").asText(),
-                            method,
-                            json.path("totalAmount").asInt(),
-                            approvedAt,
-                            card.path("issuerCode").asText(null),
-                            card.path("number").asText(null),
-                            card.path("cardType").asText(null),
-                            json.path("receipt").path("url").asText(),
-                            paymentEventEntity.getSolutionEntity().getCategory()
-                    ));
-                } else if ("가상계좌".equals(method)) {
+                if ("가상계좌".equals(method)) {
                     LocalDateTime requestedAt = OffsetDateTime.parse(json.path("requestedAt").asText()).toLocalDateTime();
                     String secret = json.path("secret").asText(null);
-
-                    paymentEntity.updateVirtualWAITING_FOR_DEPOSITStatus(requestedAt, secret);
+                    
+                    paymentEntity.setPaymentStatus(PAYMENT_STATUS.WAITING_FOR_DEPOSIT);
+                    paymentEntity.setMethod(METHOD.VIRTUAL_ACCOUNT);
+                    paymentEntity.setSecret(secret);
+                    paymentEntity.setPaymentCompletedAt(null);
+                    paymentEntity.setDueDate(requestedAt.plusDays(1));
                     paymentEntityRepository.savePaymentEntity(paymentEntity);
 
                     JsonNode va = json.path("virtualAccount");
@@ -134,28 +119,50 @@ public class PaymentService {
                             json.path("receipt").path("url").asText(),
                             paymentEventEntity.getSolutionEntity().getCategory()
                     ));
-                } else if ("간편결제".equals(method)) {
-                    paymentEntity.updateEasyPayDONEStatus();
-                    paymentEntityRepository.savePaymentEntity(paymentEntity);
-
-                    return Mono.just(new TossEasyPayPaymentApprovalResponse(
-                            json.path("orderId").asText(),
-                            json.path("orderName").asText(),
-                            json.path("paymentKey").asText(),
-                            method,
-                            json.path("totalAmount").asInt(),
-                            LocalDateTime.now(),
-                            json.path("receipt").path("url").asText(null),
-                            paymentEventEntity.getSolutionEntity().getCategory()
-                    ));
                 } else {
-                    return Mono.error(new ServerException(
-                            HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                            "지원하지 않는 결제 수단입니다.",
-                            getCode("지원하지 않는 결제 수단입니다.", ExceptionType.SERVER)
-                    ));
+                    if ("카드".equals(method)) {
+                        paymentEntity.setMethod(METHOD.CARD);
+                    } else if ("간편결제".equals(method)) {
+                        paymentEntity.setMethod(METHOD.EASY_PAY);
+                    }
+                    
+                    if ("카드".equals(method)) {
+                        LocalDateTime approvedAt = OffsetDateTime.parse(json.path("approvedAt").asText()).toLocalDateTime();
+                        JsonNode card = json.path("card");
+                        paymentEntityRepository.savePaymentEntity(paymentEntity);
+                        return Mono.just(new TossCardPaymentApprovalResponse(
+                                json.path("orderId").asText(),
+                                json.path("orderName").asText(),
+                                json.path("paymentKey").asText(),
+                                method,
+                                json.path("totalAmount").asInt(),
+                                approvedAt,
+                                card.path("issuerCode").asText(null),
+                                card.path("number").asText(null),
+                                card.path("cardType").asText(null),
+                                json.path("receipt").path("url").asText(),
+                                paymentEventEntity.getSolutionEntity().getCategory()
+                        ));
+                    } else if ("간편결제".equals(method)) {
+                        paymentEntityRepository.savePaymentEntity(paymentEntity);
+                        return Mono.just(new TossEasyPayPaymentApprovalResponse(
+                                json.path("orderId").asText(),
+                                json.path("orderName").asText(),
+                                json.path("paymentKey").asText(),
+                                method,
+                                json.path("totalAmount").asInt(),
+                                LocalDateTime.now(),
+                                json.path("receipt").path("url").asText(null),
+                                paymentEventEntity.getSolutionEntity().getCategory()
+                        ));
+                    } else {
+                        return Mono.error(new ServerException(
+                                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                                "지원하지 않는 결제 수단입니다.",
+                                getCode("지원하지 않는 결제 수단입니다.", ExceptionType.SERVER)
+                        ));
+                    }
                 }
-
             } catch (Exception e) {
                 return Mono.error(new ServerException(
                         HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -163,13 +170,16 @@ public class PaymentService {
                         getCode("결제 응답 파싱 중 오류가 발생했습니다.", ExceptionType.SERVER)
                 ));
             }
+        }).doOnError(e -> {
+            log.error("토스페이먼츠 결제 승인 중 오류 발생: {}", e.getMessage(), e);
         }).onErrorResume(e -> {
-            paymentEntity.updateFAILUREStatus();
-            paymentEntityRepository.savePaymentEntity(paymentEntity);
+            if (e instanceof ServerException) {
+                return Mono.error(e);
+            }
 
             return Mono.error(new ServerException(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "토스페이먼츠 결제 승인 실패",
+                    "토스페이먼츠 결제 승인 실패: " + e.getMessage(),
                     getCode("토스페이먼츠 결제 승인 실패", ExceptionType.SERVER)
             ));
         });
@@ -192,7 +202,8 @@ public class PaymentService {
             );
         }
 
-        if (paymentEntity.getPaymentStatus() == PAYMENT_STATUS.CANCELLED) {
+        if (paymentEntity.getPaymentStatus() == PAYMENT_STATUS.CANCELED || 
+            paymentEntity.getPaymentStatus() == PAYMENT_STATUS.PARTIAL_CANCELED) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
                     "이미 환불 처리된 건입니다.",
@@ -229,36 +240,36 @@ public class PaymentService {
                 accountNumber,
                 holderName
         ).subscribe();
-
-        paymentEntity.updateCANCELStatus(LocalDateTime.now());
-        paymentEntityRepository.savePaymentEntity(paymentEntity);
     }
 
     @Transactional
-    public void tossPaymentDepositCallBack(TossPaymentDepositCallBackRequest request) {
-        PaymentEntity paymentEntity = paymentEntityRepository.findBySecret(request.secret())
-                .orElseThrow(() -> new ServerException(
-                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                        "무통장 입금 전 결제가 저장되지 않았습니다.",
-                        getCode("무통장 입금 전 결제가 저장되지 않았습니다.", ExceptionType.SERVER)
-                ));
+    public void handlePaymentStatusChanged(PaymentStatusChangedWebhookRequest request) {
+        PaymentEntity paymentEntity = paymentEntityRepository.findByPaymentKey(request.data().paymentKey())
+                .orElseGet(() -> {
+                    return paymentEntityRepository.findByOrderId(request.data().orderId())
+                            .orElseThrow(() -> {
+                                log.error("Payment not found for webhook: paymentKey={}, orderId={}", 
+                                        request.data().paymentKey(), request.data().orderId());
+                                return new NotFoundException(
+                                        HttpStatus.NOT_FOUND.value(),
+                                        "웹훅에서 참조하는 결제 정보를 찾을 수 없습니다.",
+                                        getCode("웹훅에서 참조하는 결제 정보를 찾을 수 없습니다.", ExceptionType.NOT_FOUND)
+                                );
+                            });
+                });
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
-        LocalDateTime paymentCompletedAt = LocalDateTime.parse(request.createdAt(), formatter);
-
-        switch (request.status()) {
-            case "DONE" -> {
-                paymentEntity.updateVirtualDONEStatus(paymentCompletedAt);
-                paymentEntityRepository.savePaymentEntity(paymentEntity);
-            }
-            case "CANCELED", "PARTIAL_CANCELED" -> {
-                paymentEntity.updateCANCELStatus(paymentCompletedAt);
-                paymentEntityRepository.savePaymentEntity(paymentEntity);
-            }
-            default -> {
-                log.warn("Unhandled payment status: {}", request.status());
+        String status = request.data().status();
+        LocalDateTime completedAt = null;
+        
+        if (request.data().approvedAt() != null && !request.data().approvedAt().isEmpty()) {
+            try {
+                completedAt = OffsetDateTime.parse(request.data().approvedAt()).toLocalDateTime();
+            } catch (Exception e) {
+                log.warn("Failed to parse approvedAt: {}", request.data().approvedAt(), e);
             }
         }
-    }
 
+        paymentEntity.updateStatusFromWebhook(status, completedAt, request.data().method());
+        paymentEntityRepository.savePaymentEntity(paymentEntity);
+    }
 }

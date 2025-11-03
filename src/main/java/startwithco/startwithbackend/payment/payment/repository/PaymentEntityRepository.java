@@ -17,6 +17,8 @@ public interface PaymentEntityRepository {
 
     Optional<PaymentEntity> findByOrderId(String orderId);
 
+    Optional<PaymentEntity> findByPaymentKey(String paymentKey);
+
     List<PaymentEntity> findAllByConsumerSeqAndPaymentStatus(Long consumerSeq, String paymentStatus, int start, int end);
 
     Long countDONEStatusByVendorSeq(Long vendorSeq);

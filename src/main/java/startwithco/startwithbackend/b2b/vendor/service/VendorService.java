@@ -2,7 +2,6 @@ package startwithco.startwithbackend.b2b.vendor.service;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,7 +29,6 @@ import startwithco.startwithbackend.exception.*;
 import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
 import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
 import startwithco.startwithbackend.payment.payment.repository.PaymentEntityRepository;
-import startwithco.startwithbackend.payment.paymentEvent.repository.PaymentEventEntityRepository;
 import startwithco.startwithbackend.payment.snapshot.entity.TossPaymentDailySnapshotEntity;
 import startwithco.startwithbackend.payment.snapshot.repository.TossPaymentDailySnapshotEntityRepository;
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
@@ -352,8 +350,8 @@ public class VendorService {
                         solutionEntity.getSolutionSeq(),
                         solutionEntity.getSolutionName(),
                         paymentEntity.getAmount(),
-                        paymentEntity.getAutoConfirmScheduledAt(),
-                        paymentEntity.getAutoConfirmScheduledAt(),
+                        paymentEntity.getDueDate(),
+                        paymentEntity.getPaymentCompletedAt(),
                         consumerEntity.getConsumerSeq(),
                         consumerEntity.getConsumerName()
                 );
@@ -366,7 +364,7 @@ public class VendorService {
                         solutionEntity.getSolutionSeq(),
                         solutionEntity.getSolutionName(),
                         paymentEntity.getAmount(),
-                        paymentEntity.getAutoConfirmScheduledAt(),
+                        paymentEntity.getDueDate(),
                         tossPaymentDailySnapshotEntity.getSettlementAmount(),
                         consumerEntity.getConsumerSeq(),
                         consumerEntity.getConsumerName()

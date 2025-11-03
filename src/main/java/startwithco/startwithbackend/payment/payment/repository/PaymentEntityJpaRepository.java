@@ -18,7 +18,6 @@ public interface PaymentEntityJpaRepository extends JpaRepository<PaymentEntity,
             FROM PaymentEntity p
             WHERE p.orderId = :orderId
               AND p.paymentEventEntity.paymentEventSeq = :paymentEventSeq
-              AND p.paymentStatus = 'IN_PROGRESS'
             """)
     boolean canApproveTossPayment(@Param("orderId") String orderId, @Param("paymentEventSeq") Long paymentEventSeq);
 
@@ -35,6 +34,13 @@ public interface PaymentEntityJpaRepository extends JpaRepository<PaymentEntity,
             WHERE p.orderId = :orderId
             """)
     Optional<PaymentEntity> findByOrderId(@Param("orderId") String orderId);
+
+    @Query("""
+            SELECT p
+            FROM PaymentEntity p
+            WHERE p.paymentKey = :paymentKey
+            """)
+    Optional<PaymentEntity> findByPaymentKey(@Param("paymentKey") String paymentKey);
 
     @Query("""
             SELECT COUNT(p)
