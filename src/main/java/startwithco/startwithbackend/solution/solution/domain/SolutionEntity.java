@@ -38,9 +38,6 @@ public class SolutionEntity extends BaseTimeEntity {
     @Column(name = "category", nullable = false)
     private CATEGORY category;
 
-    @Column(name = "industry", nullable = false)
-    private String industry;
-
     @Column(name = "recommended_company_size", nullable = false)
     private String recommendedCompanySize;
 
@@ -65,7 +62,6 @@ public class SolutionEntity extends BaseTimeEntity {
     public SolutionEntity updateSolutionEntity(String solutionName,
                                                String solutionDetail,
                                                CATEGORY category,
-                                               String industry,
                                                String recommendedCompanySize,
                                                String solutionImplementationType,
                                                Long amount,
@@ -75,7 +71,6 @@ public class SolutionEntity extends BaseTimeEntity {
         this.solutionName = solutionName;
         this.solutionDetail = solutionDetail;
         this.category = category;
-        this.industry = industry;
         this.recommendedCompanySize = recommendedCompanySize;
         this.solutionImplementationType = solutionImplementationType;
         this.amount = amount;

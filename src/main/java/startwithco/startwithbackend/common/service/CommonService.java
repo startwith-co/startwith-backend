@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -28,12 +27,10 @@ import reactor.core.publisher.Mono;
 import startwithco.startwithbackend.exception.BadRequestException;
 import startwithco.startwithbackend.exception.NotFoundException;
 import startwithco.startwithbackend.exception.ServerException;
-import startwithco.startwithbackend.payment.payment.domain.PaymentEntity;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -55,9 +52,6 @@ public class CommonService {
 
     @Qualifier("tossPaymentWebClient")
     private final WebClient tossPaymentWebClient;
-
-    @Qualifier("frontWebClient")
-    private final WebClient frontWebClient;
 
     private final TemplateEngine templateEngine;
 
@@ -166,11 +160,16 @@ public class CommonService {
                 .doOnError(WebClientResponseException.class, err -> {
                     String responseBody = err.getResponseBodyAsString();
                     String errorMessage = "TOSS 결제 승인 실패";
+                    
+                    log.error("❌ 토스페이먼츠 API 오류 응답: HTTP {}, Body: {}", err.getStatusCode(), responseBody);
 
                     try {
                         JsonNode errorJson = objectMapper.readTree(responseBody);
                         if (errorJson.has("message")) {
                             errorMessage = errorJson.get("message").asText();
+                        }
+                        if (errorJson.has("code")) {
+                            log.error("토스페이먼츠 에러 코드: {}", errorJson.get("code").asText());
                         }
                     } catch (Exception parseError) {
                         log.warn("⚠️ Toss 오류 응답 파싱 실패: {}", responseBody);
@@ -182,11 +181,19 @@ public class CommonService {
                             getCode(errorMessage, ExceptionType.SERVER)
                     );
                 })
+                .doOnError(err -> {
+                    if (!(err instanceof WebClientResponseException)) {
+                        log.error("❌ 토스페이먼츠 API 호출 실패: {}", err.getMessage(), err);
+                    }
+                })
                 .onErrorResume(err -> {
+                    if (err instanceof ServerException) {
+                        return Mono.error(err);
+                    }
                     return Mono.error(new ServerException(
                             HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                            err.getMessage(),
-                            getCode(err.getMessage(), ExceptionType.SERVER)
+                            "토스페이먼츠 API 호출 실패: " + err.getMessage(),
+                            getCode("토스페이먼츠 API 호출 실패", ExceptionType.SERVER)
                     ));
                 });
     }
@@ -240,28 +247,6 @@ public class CommonService {
                             getCode(err.getMessage(), ExceptionType.SERVER)
                     ));
                 });
-    }
-
-    public void notifyFrontOfVirtualAccountStatus(PaymentEntity paymentEntity) {
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("paymentSeq", paymentEntity.getPaymentSeq());
-        payload.put("orderId", paymentEntity.getOrderId());
-        payload.put("paymentKey", paymentEntity.getPaymentKey());
-        payload.put("amount", paymentEntity.getAmount());
-        payload.put("paymentStatus", paymentEntity.getPaymentStatus().name());
-        payload.put("method", paymentEntity.getMethod() != null ? paymentEntity.getMethod().name() : null);
-        payload.put("secret", paymentEntity.getSecret());
-        payload.put("paymentCompletedAt", paymentEntity.getPaymentCompletedAt() != null ? paymentEntity.getPaymentCompletedAt().toString() : null);
-        payload.put("autoConfirmScheduledAt", paymentEntity.getAutoConfirmScheduledAt() != null ? paymentEntity.getAutoConfirmScheduledAt().toString() : null);
-        payload.put("dueDate", paymentEntity.getDueDate() != null ? paymentEntity.getDueDate().toString() : null);
-
-        frontWebClient.post()
-                .uri("/api/deposit-webhook")
-                .bodyValue(payload)
-                .retrieve()
-                .toBodilessEntity()
-                .doOnError(err -> log.error("❌ 프론트 전달 실패: error={}", err.getMessage()))
-                .subscribe();
     }
 
     public void sendResetLink(String email, String link) {

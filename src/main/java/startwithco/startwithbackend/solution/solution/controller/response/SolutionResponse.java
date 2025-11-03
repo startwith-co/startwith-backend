@@ -20,7 +20,6 @@ public class SolutionResponse {
             Long amount,
             List<String> solutionImplementationType,
             Long duration,
-            List<String> industry,
             List<String> recommendedCompanySize,
             List<SolutionEffectResponse> solutionEffect,
             List<String> keywords

@@ -19,7 +19,13 @@
     const paymentKey = query.get("paymentKey");
     const orderId = query.get("orderId");
     const amount = query.get("amount");
-    const paymentEventSeq = 1; // ✅ 고정값 1로 설정
+    let paymentEventSeq = query.get("paymentEventSeq") || localStorage.getItem("paymentEventSeq");
+    if (!paymentEventSeq) {
+        paymentEventSeq = prompt("paymentEventSeq를 입력하세요 (테스트용):", "1");
+        if (paymentEventSeq) {
+            localStorage.setItem("paymentEventSeq", paymentEventSeq);
+        }
+    }
 
     document.getElementById("paymentKey").innerText = paymentKey;
     document.getElementById("orderId").innerText = orderId;
@@ -27,19 +33,23 @@
 
     document.getElementById("approve").addEventListener("click", async () => {
         try {
-            const response = await fetch("/api/b2b-service/payment", {
+            const response = await fetch("/api/payment-service/payment", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     paymentKey,
                     orderId,
                     amount: Number(amount),
-                    paymentEventSeq: paymentEventSeq // ✅ 함께 전송
+                    paymentEventSeq: paymentEventSeq
                 })
             });
 
-            const result = await response.text();
-            document.getElementById("result").innerText = result;
+            const result = await response.json();
+            if (response.ok) {
+                document.getElementById("result").innerText = "✅ 성공:\n" + JSON.stringify(result, null, 2);
+            } else {
+                document.getElementById("result").innerText = "❌ 실패:\n" + JSON.stringify(result, null, 2);
+            }
         } catch (e) {
             document.getElementById("result").innerText = "❌ 요청 실패: " + e.message;
         }

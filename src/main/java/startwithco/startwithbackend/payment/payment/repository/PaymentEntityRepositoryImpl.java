@@ -20,7 +20,6 @@ import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 import java.util.List;
 import java.util.Optional;
 
-import static startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS.IN_PROGRESS;
 import static startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS.WAITING_FOR_DEPOSIT;
 
 @Repository
@@ -47,6 +46,11 @@ public class PaymentEntityRepositoryImpl implements PaymentEntityRepository {
     @Override
     public Optional<PaymentEntity> findByOrderId(String orderId) {
         return repository.findByOrderId(orderId);
+    }
+
+    @Override
+    public Optional<PaymentEntity> findByPaymentKey(String paymentKey) {
+        return repository.findByPaymentKey(paymentKey);
     }
 
     @Override
@@ -169,9 +173,7 @@ public class PaymentEntityRepositoryImpl implements PaymentEntityRepository {
                         pe.vendorEntity.eq(vendor),
                         pe.consumerEntity.eq(consumer),
                         pe.solutionEntity.eq(solution),
-                        p.isNull().or(p.paymentStatus.in(
-                                IN_PROGRESS, WAITING_FOR_DEPOSIT
-                        ))
+                        p.isNull().or(p.paymentStatus.eq(WAITING_FOR_DEPOSIT))
                 )
                 .fetchFirst();
 
