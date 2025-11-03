@@ -15,5 +15,5 @@ public interface SolutionEntityRepository {
 
     Optional<SolutionEntity> findBySolutionSeq(Long solutionSeq);
 
-    List<SolutionEntity> findByCategoryAndIndustryAndBudgetAndKeyword(CATEGORY category, String industry, String budget, String keyword, int start, int end);
+    List<SolutionEntity> findByCategoryAndBudgetAndKeyword(CATEGORY category, String budget, String keyword, int start, int end);
 }

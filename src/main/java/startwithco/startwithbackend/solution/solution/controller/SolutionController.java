@@ -176,7 +176,6 @@ public class SolutionController {
     })
     ResponseEntity<BaseResponse<List<GetAllSolutionEntityResponse>>> getAllSolutionEntity(
             @RequestParam(value = "category", required = false) String category,
-            @RequestParam(value = "industry", required = false) String industry,
             @RequestParam(value = "budget", required = false, defaultValue = "전체") String budget,
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "start", defaultValue = "0") int start,
@@ -194,7 +193,7 @@ public class SolutionController {
                 );
             }
         }
-        List<GetAllSolutionEntityResponse> response = solutionService.getAllSolutionEntity(categoryEnum, industry, budget, keyword, start, end);
+        List<GetAllSolutionEntityResponse> response = solutionService.getAllSolutionEntity(categoryEnum, budget, keyword, start, end);
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), response));
     }

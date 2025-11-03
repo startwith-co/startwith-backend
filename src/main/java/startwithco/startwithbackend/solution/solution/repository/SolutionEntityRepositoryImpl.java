@@ -59,7 +59,7 @@ public class SolutionEntityRepositoryImpl implements SolutionEntityRepository {
     }
 
     @Override
-    public List<SolutionEntity> findByCategoryAndIndustryAndBudgetAndKeyword(CATEGORY category, String industry, String budget, String keyword, int start, int end) {
+    public List<SolutionEntity> findByCategoryAndBudgetAndKeyword(CATEGORY category, String budget, String keyword, int start, int end) {
         QSolutionEntity qSolutionEntity = QSolutionEntity.solutionEntity;
         QSolutionKeywordEntity qSolutionKeywordEntity = QSolutionKeywordEntity.solutionKeywordEntity;
 
@@ -67,15 +67,6 @@ public class SolutionEntityRepositoryImpl implements SolutionEntityRepository {
                 .and(qSolutionEntity.deleted.isFalse());
         if (category != null) {
             builder.and(qSolutionEntity.category.eq(category));
-        }
-
-        if (industry != null) {
-            builder.andAnyOf(
-                    qSolutionEntity.industry.eq(industry),
-                    qSolutionEntity.industry.like(industry + ",%"),
-                    qSolutionEntity.industry.like("%," + industry),
-                    qSolutionEntity.industry.like("%," + industry + ",%")
-            );
         }
 
         if (budget != null && !budget.equals("전체")) {
