@@ -9,7 +9,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,7 +25,6 @@ import startwithco.startwithbackend.solution.review.repository.SolutionReviewEnt
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 import static startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest.*;
 import static startwithco.startwithbackend.b2b.consumer.controller.response.ConsumerResponse.*;
@@ -40,7 +38,6 @@ public class ConsumerService {
     private final SolutionReviewEntityRepository solutionReviewEntityRepository;
 
     private final RedisTemplate<String, String> redisTemplate;
-    private final BCryptPasswordEncoder encoder;
     private final CommonService commonService;
 
     @Value("${jwt.secret}")
@@ -61,7 +58,7 @@ public class ConsumerService {
                         getCode("존재하지 않는 수요 기업입니다.", ExceptionType.NOT_FOUND)
                 ));
 
-        validateMatch(encoder.matches(request.password(), consumerEntity.getEncodedPassword()), "비밀번호가 일치하지 않습니다.");
+        commonService.validatePassword(request.password(), consumerEntity.getEncodedPassword());
 
         String uploadJPGFile = commonService.uploadJPGFile(consumerImageUrl);
 
@@ -92,7 +89,7 @@ public class ConsumerService {
         try {
             ConsumerEntity consumerEntity = ConsumerEntity.builder()
                     .consumerName(request.consumerName())
-                    .encodedPassword(encoder.encode(request.password()))
+                    .encodedPassword(commonService.encodePassword(request.password()))
                     .phoneNumber(request.phoneNum())
                     .email(request.email())
                     .industry(request.industry())
@@ -104,14 +101,19 @@ public class ConsumerService {
         } catch (DataIntegrityViolationException e) {
             throw new ConflictException(
                     HttpStatus.CONFLICT.value(),
-                    "동시성 저장은 불가능합니다.",
-                    getCode("동시성 저장은 불가능합니다.", ExceptionType.CONFLICT)
+                    e.getMessage(),
+                    getCode(e.getMessage(), ExceptionType.CONFLICT)
+            );
+        } catch (Exception e) {
+            throw new ServerException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    e.getMessage(),
+                    getCode(e.getMessage(), ExceptionType.SERVER)
             );
         }
     }
 
     public void validateEmail(String email) {
-
         consumerRepository.findByEmail(email)
                 .ifPresent(entity -> {
                     throw new ConflictException(
@@ -128,7 +130,7 @@ public class ConsumerService {
         // 이메일 검증
         ConsumerEntity consumerEntity = validateEmail(request);
 
-        validateMatch(encoder.matches(request.password(), consumerEntity.getEncodedPassword()), "비밀번호가 일치하지 않습니다.");
+        commonService.validatePassword(request.password(), consumerEntity.getEncodedPassword());
 
         // Access 토큰 생성
         Long consumerSeq = consumerEntity.getConsumerSeq();
@@ -139,7 +141,7 @@ public class ConsumerService {
         String refreshToken = generateToken(refreshTokenExpiration, consumerSeq);
 
         // Refresh 토큰 저장
-        saveRefreshToken(consumerSeq, refreshToken);
+        commonService.saveRefreshToken(consumerSeq, refreshToken, refreshTokenExpiration);
 
         return new LoginConsumerResponse(accessToken, refreshToken, consumerSeq, consumerEntity.getConsumerUniqueType(), consumerEntity.getConsumerName());
 
@@ -177,37 +179,16 @@ public class ConsumerService {
                         )));
     }
 
-    private void validatePassword(String requestPassword, String password) {
-        validateMatch(encoder.matches(requestPassword, password), "비밀번호가 일치하지 않습니다.");
-    }
-
     private String generateToken(long tokenExpiration, Long consumerSeq) {
         Date now = new Date();
-        Date refreshExpiryDate = new Date(now.getTime() + tokenExpiration);
+        Date expiryDate = new Date(now.getTime() + tokenExpiration);
         return Jwts.builder()
                 .setSubject(String.valueOf(consumerSeq))
                 .setIssuedAt(now)
-                .setExpiration(refreshExpiryDate)
-                .claim("type", "password_reset")
+                .setExpiration(expiryDate)
+                .claim("role", "CONSUMER")
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
-    }
-
-    private void saveRefreshToken(Long consumerSeq, String refreshToken) {
-        try {
-            redisTemplate.opsForValue().set(
-                    String.valueOf(consumerSeq),
-                    refreshToken,
-                    refreshTokenExpiration,
-                    TimeUnit.MILLISECONDS
-            );
-        } catch (Exception e) {
-            throw new ServerException(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "Redis 서버 오류가 발생했습니다.",
-                    getCode("Redis 서버 오류가 발생했습니다.", ExceptionType.SERVER)
-            );
-        }
     }
 
     @Transactional(readOnly = true)
@@ -221,30 +202,30 @@ public class ConsumerService {
 
         List<PaymentEntity> paymentEntities
                 = paymentEntityRepository.findAllByConsumerSeqAndPaymentStatus(consumerSeq, paymentStatus, start, end);
-        List<GetConsumerDashboardResponse> response = new ArrayList<>();
-        for (PaymentEntity paymentEntity : paymentEntities) {
-            PaymentEventEntity paymentEventEntity = paymentEntity.getPaymentEventEntity();
-            SolutionEntity solutionEntity = paymentEventEntity.getSolutionEntity();
-            VendorEntity vendorEntity = paymentEventEntity.getVendorEntity();
 
-            response.add(new GetConsumerDashboardResponse(
-                    consumerEntity.getConsumerSeq(),
-                    vendorEntity.getVendorSeq(),
-                    paymentEntity.getPaymentStatus(),
-                    paymentEntity.getPaymentCompletedAt(),
-                    solutionEntity.getRepresentImageUrl(),
-                    vendorEntity.getVendorName(),
-                    vendorEntity.getVendorUniqueType(),
-                    solutionEntity.getSolutionSeq(),
-                    solutionEntity.getSolutionName(),
-                    paymentEntity.getMethod(),
-                    paymentEntity.getAmount(),
-                    solutionReviewEntityRepository.existsByConsumerSeqAndSolutionSeq(consumerSeq, solutionEntity.getSolutionSeq()),
-                    solutionEntity.getCategory()
-            ));
-        }
+        return paymentEntities.stream()
+                .map(paymentEntity -> {
+                    PaymentEventEntity paymentEventEntity = paymentEntity.getPaymentEventEntity();
+                    SolutionEntity solutionEntity = paymentEventEntity.getSolutionEntity();
+                    VendorEntity vendorEntity = paymentEventEntity.getVendorEntity();
 
-        return response;
+                    return new GetConsumerDashboardResponse(
+                            consumerEntity.getConsumerSeq(),
+                            vendorEntity.getVendorSeq(),
+                            paymentEntity.getPaymentStatus(),
+                            paymentEntity.getPaymentCompletedAt(),
+                            solutionEntity.getRepresentImageUrl(),
+                            vendorEntity.getVendorName(),
+                            vendorEntity.getVendorUniqueType(),
+                            solutionEntity.getSolutionSeq(),
+                            solutionEntity.getSolutionName(),
+                            paymentEntity.getMethod(),
+                            paymentEntity.getAmount(),
+                            solutionReviewEntityRepository.existsByConsumerSeqAndSolutionSeq(consumerSeq, solutionEntity.getSolutionSeq()),
+                            solutionEntity.getCategory()
+                    );
+                })
+                .toList();
     }
 
     public ResetLinkResponse resetLink(ResetLinkRequest request) {
@@ -261,7 +242,7 @@ public class ConsumerService {
         validateMatch(request.consumerName().equals(consumerEntity.getConsumerName()), "Consumer Name이 일치하지 않습니다.");
 
         // 토큰 생성
-        String token = generateToken(1_800_000L, consumerEntity.getConsumerSeq());
+        String token = commonService.generatePasswordResetToken(1_800_000L, consumerEntity.getConsumerSeq());
 
         String resetUrl = resetLink + "/forget/reset?user=consumer&token=ey";
 
@@ -284,8 +265,8 @@ public class ConsumerService {
         } catch (Exception e) {
             throw new ServerException(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "Redis 서버 오류가 발생했습니다.",
-                    getCode("Redis 서버 오류가 발생했습니다.", ExceptionType.SERVER)
+                    e.getMessage(),
+                    getCode(e.getMessage(), ExceptionType.SERVER)
             );
         }
 
@@ -314,7 +295,7 @@ public class ConsumerService {
         }
 
         // 비밀번호 수정
-        consumerEntity.updatePassword(encoder.encode(request.newPassword()));
+        consumerEntity.updatePassword(commonService.encodePassword(request.newPassword()));
 
         consumerRepository.save(consumerEntity);
 

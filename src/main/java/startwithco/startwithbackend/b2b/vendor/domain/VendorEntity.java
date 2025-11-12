@@ -67,7 +67,7 @@ public class VendorEntity extends BaseTimeEntity {
     private String accountNumber;
 
     @Column(name = "bank", nullable = true)
-    private Long bank;
+    private String bank;
 
     @Lob
     @Column(name = "vendor_explanation", nullable = true)

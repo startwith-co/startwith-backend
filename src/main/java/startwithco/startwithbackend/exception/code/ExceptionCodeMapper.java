@@ -25,6 +25,7 @@ public class ExceptionCodeMapper {
         BAD_REQUEST_MAP.put("이미 환불 처리된 건입니다.", "BAD_REQUEST_EXCEPTION_014");
         BAD_REQUEST_MAP.put("가상계좌 결제 완료 상태가 아닐 경우 환불 계좌 정보를 입력할 수 없습니다.", "BAD_REQUEST_EXCEPTION_015");
         BAD_REQUEST_MAP.put("솔루션 금액이 천만원을 넘으면 안됩니다.", "BAD_REQUEST_EXCEPTION_016");
+        BAD_REQUEST_MAP.put("금액은 정수만 입력 가능합니다.", "BAD_REQUEST_EXCEPTION_017");
 
         // ConflictException
         CONFLICT_MAP.put("중복된 이메일입니다.", "CONFLICT_EXCEPTION_001");
@@ -60,6 +61,9 @@ public class ExceptionCodeMapper {
         SERVER_MAP.put("무통장 입금 전 결제가 저장되지 않았습니다.", "SERVER_EXCEPTION_008");
         SERVER_MAP.put("환불이 불가능한 결제입니다.", "SERVER_EXCEPTION_009");
         SERVER_MAP.put("웹훅 처리 중 서버 오류가 발생했습니다.", "SERVER_EXCEPTION_010");
+        SERVER_MAP.put("Redis 서버 오류가 발생했습니다.", "SERVER_EXCEPTION_011");
+        SERVER_MAP.put("이메일 전송 중 오류가 발생했습니다.", "SERVER_EXCEPTION_012");
+        SERVER_MAP.put("토스페이먼츠 API 호출 실패", "SERVER_EXCEPTION_013");
 
         // UnauthorizedException
         UNAUTHORIZED_MAP.put("만료된 JWT 입니다.", "UNAUTHORIZED_EXCEPTION_001");

@@ -51,8 +51,8 @@ public class VendorEntityRepositoryImpl implements VendorEntityRepository {
         } catch (Exception e) {
             throw new ServerException(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "Redis 서버 오류가 발생했습니다.",
-                    getCode("Redis 서버 오류가 발생했습니다.", ExceptionCodeMapper.ExceptionType.SERVER)
+                    e.getMessage(),
+                    getCode(e.getMessage(), ExceptionCodeMapper.ExceptionType.SERVER)
             );
         }
     }

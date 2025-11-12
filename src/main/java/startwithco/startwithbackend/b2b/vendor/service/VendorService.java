@@ -10,7 +10,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,7 +34,6 @@ import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 import startwithco.startwithbackend.solution.solution.repository.SolutionEntityRepository;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static startwithco.startwithbackend.b2b.client.controller.response.ClientResponse.*;
@@ -57,8 +55,6 @@ public class VendorService {
     private final ConsumerRepository consumerRepository;
 
     private final CommonService commonService;
-
-    private final BCryptPasswordEncoder encoder;
 
     private final RedisTemplate<String, String> redisTemplate;
 
@@ -82,12 +78,12 @@ public class VendorService {
 
         List<SolutionEntity> solutionEntities = solutionEntityRepository.findAllByVendorSeq(vendorSeq);
 
-        List<GetVendorSolutionCategoryResponse> response = new ArrayList<>();
-        for (SolutionEntity solutionEntity : solutionEntities) {
-            response.add(new GetVendorSolutionCategoryResponse(solutionEntity.getCategory(), solutionEntity.getSolutionSeq()));
-        }
-
-        return response;
+        return solutionEntities.stream()
+                .map(solutionEntity -> new GetVendorSolutionCategoryResponse(
+                        solutionEntity.getCategory(),
+                        solutionEntity.getSolutionSeq()
+                ))
+                .toList();
     }
 
     @Transactional
@@ -109,7 +105,7 @@ public class VendorService {
                     .managerName(request.managerName())
                     .phoneNumber(request.phoneNumber())
                     .email(request.email())
-                    .encodedPassword(encoder.encode(request.password()))
+                    .encodedPassword(commonService.encodePassword(request.password()))
                     .businessLicenseImage(businessLicenseImage)
                     .vendorUniqueType(UUID.randomUUID().toString())
                     .build();
@@ -121,8 +117,14 @@ public class VendorService {
         } catch (DataIntegrityViolationException e) {
             throw new ConflictException(
                     HttpStatus.CONFLICT.value(),
-                    "동시성 저장은 불가능합니다.",
-                    getCode("동시성 저장은 불가능합니다.", ExceptionType.CONFLICT)
+                    e.getMessage(),
+                    getCode(e.getMessage(), ExceptionType.CONFLICT)
+            );
+        } catch (Exception e) {
+            throw new ServerException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    e.getMessage(),
+                    getCode(e.getMessage(), ExceptionType.SERVER)
             );
         }
 
@@ -147,7 +149,7 @@ public class VendorService {
         VendorEntity vendorEntity = validateEmail(request);
 
         // 비밀번호 검증
-        validatePassword(request, vendorEntity);
+        commonService.validatePassword(request.password(), vendorEntity.getEncodedPassword());
 
         // Access 토큰 생성
         Long consumerSeq = vendorEntity.getVendorSeq();
@@ -158,7 +160,7 @@ public class VendorService {
         String refreshToken = generateToken(refreshTokenExpiration, consumerSeq);
 
         // Refresh 토큰 저장
-        saveRefreshToken(consumerSeq, refreshToken);
+        commonService.saveRefreshToken(consumerSeq, refreshToken, refreshTokenExpiration);
 
         return new LoginVendorResponse(accessToken, refreshToken, vendorEntity.getVendorSeq(), vendorEntity.getVendorUniqueType(), vendorEntity.getVendorName());
     }
@@ -172,45 +174,18 @@ public class VendorService {
                         )));
     }
 
-    private void validatePassword(LoginVendorRequest request, VendorEntity vendorEntity) {
-        if (!encoder.matches(request.password(), vendorEntity.getEncodedPassword())) {
-            throw new BadRequestException(
-                    HttpStatus.BAD_REQUEST.value(),
-                    "비밀번호가 일치하지 않습니다.",
-                    getCode("비밀번호가 일치하지 않습니다.", ExceptionType.BAD_REQUEST)
-            );
-        }
-    }
-
-    private String generateToken(long tokenExpiration, Long consumerSeq) {
+    private String generateToken(long tokenExpiration, Long vendorSeq) {
         Date now = new Date();
-        Date refreshExpiryDate = new Date(now.getTime() + tokenExpiration);
+        Date expiryDate = new Date(now.getTime() + tokenExpiration);
         return Jwts.builder()
-                .setSubject(String.valueOf(consumerSeq))
+                .setSubject(String.valueOf(vendorSeq))
                 .setIssuedAt(now)
-                .setExpiration(refreshExpiryDate)
-                .claim("type", "password_reset")
+                .setExpiration(expiryDate)
+                .claim("role", "VENDOR")
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
     }
 
-    private void saveRefreshToken(Long consumerSeq, String refreshToken) {
-
-        try {
-            redisTemplate.opsForValue().set(
-                    String.valueOf(consumerSeq),
-                    refreshToken,
-                    refreshTokenExpiration,
-                    TimeUnit.MILLISECONDS
-            );
-        } catch (Exception e) {
-            throw new ServerException(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "Redis 서버 오류가 발생했습니다.",
-                    getCode("Redis 서버 오류가 발생했습니다.", ExceptionType.SERVER)
-            );
-        }
-    }
 
     @Transactional(readOnly = true)
     public GetVendorInfo getVendorInfo(Long vendorSeq) {
@@ -330,46 +305,41 @@ public class VendorService {
         List<PaymentEntity> paymentEntities
                 = paymentEntityRepository.findAllByVendorSeqAndPaymentStatus(vendorSeq, paymentStatus, start, end);
 
-        List<Object> response = new ArrayList<>();
-        for (PaymentEntity paymentEntity : paymentEntities) {
-            TossPaymentDailySnapshotEntity tossPaymentDailySnapshotEntity
-                    = tossPaymentDailySnapshotEntityRepository.findByOrderId(paymentEntity.getOrderId()).orElse(null);
-            VendorEntity vendorEntity = paymentEntity.getPaymentEventEntity().getVendorEntity();
-            SolutionEntity solutionEntity = paymentEntity.getPaymentEventEntity().getSolutionEntity();
-            ConsumerEntity consumerEntity = paymentEntity.getPaymentEventEntity().getConsumerEntity();
+        return paymentEntities.stream()
+                .<Object>map(paymentEntity -> {
+                    TossPaymentDailySnapshotEntity tossPaymentDailySnapshotEntity
+                            = tossPaymentDailySnapshotEntityRepository.findByOrderId(paymentEntity.getOrderId()).orElse(null);
+                    VendorEntity vendorEntity = paymentEntity.getPaymentEventEntity().getVendorEntity();
+                    SolutionEntity solutionEntity = paymentEntity.getPaymentEventEntity().getSolutionEntity();
+                    ConsumerEntity consumerEntity = paymentEntity.getPaymentEventEntity().getConsumerEntity();
 
-            if (tossPaymentDailySnapshotEntity == null) {
-                GetVendorDashboardDONEListResponse doneListResponse = new GetVendorDashboardDONEListResponse(
-                        vendorEntity.getVendorSeq(),
-                        paymentEntity.getPaymentStatus(),
-                        solutionEntity.getSolutionSeq(),
-                        solutionEntity.getSolutionName(),
-                        paymentEntity.getAmount(),
-                        paymentEntity.getDueDate(),
-                        paymentEntity.getPaymentCompletedAt(),
-                        consumerEntity.getConsumerSeq(),
-                        consumerEntity.getConsumerName()
-                );
-
-                response.add(doneListResponse);
-            } else {
-                GetVendorDashboardSETTELEDListResponse settledListResponse = new GetVendorDashboardSETTELEDListResponse(
-                        vendorEntity.getVendorSeq(),
-                        paymentEntity.getPaymentStatus(),
-                        solutionEntity.getSolutionSeq(),
-                        solutionEntity.getSolutionName(),
-                        paymentEntity.getAmount(),
-                        paymentEntity.getDueDate(),
-                        tossPaymentDailySnapshotEntity.getSettlementAmount(),
-                        consumerEntity.getConsumerSeq(),
-                        consumerEntity.getConsumerName()
-                );
-
-                response.add(settledListResponse);
-            }
-        }
-
-        return response;
+                    if (tossPaymentDailySnapshotEntity == null) {
+                        return new GetVendorDashboardDONEListResponse(
+                                vendorEntity.getVendorSeq(),
+                                paymentEntity.getPaymentStatus(),
+                                solutionEntity.getSolutionSeq(),
+                                solutionEntity.getSolutionName(),
+                                paymentEntity.getAmount(),
+                                paymentEntity.getDueDate(),
+                                paymentEntity.getPaymentCompletedAt(),
+                                consumerEntity.getConsumerSeq(),
+                                consumerEntity.getConsumerName()
+                        );
+                    } else {
+                        return new GetVendorDashboardSETTELEDListResponse(
+                                vendorEntity.getVendorSeq(),
+                                paymentEntity.getPaymentStatus(),
+                                solutionEntity.getSolutionSeq(),
+                                solutionEntity.getSolutionName(),
+                                paymentEntity.getAmount(),
+                                paymentEntity.getDueDate(),
+                                tossPaymentDailySnapshotEntity.getSettlementAmount(),
+                                consumerEntity.getConsumerSeq(),
+                                consumerEntity.getConsumerName()
+                        );
+                    }
+                })
+                .toList();
     }
 
     public ResetLinkResponse resetLink(ResetLinkRequest request) {
@@ -388,7 +358,7 @@ public class VendorService {
             );
         }
 
-        String token = generateToken(1_800_000L, vendorEntity.getVendorSeq());
+        String token = commonService.generatePasswordResetToken(1_800_000L, vendorEntity.getVendorSeq());
 
         String resetUrl = resetLink + "/forget/reset?user=vendor&token=ey";
         commonService.sendResetLink(vendorEntity.getEmail(), resetUrl);
@@ -409,8 +379,8 @@ public class VendorService {
         } catch (Exception e) {
             throw new ServerException(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "Redis 서버 오류가 발생했습니다.",
-                    getCode("Redis 서버 오류가 발생했습니다.", ExceptionType.SERVER)
+                    e.getMessage(),
+                    getCode(e.getMessage(), ExceptionType.SERVER)
             );
         }
 
@@ -439,7 +409,7 @@ public class VendorService {
         }
 
         // 비밀번호 수정
-        vendorEntity.updatePassword(encoder.encode(request.newPassword()));
+        vendorEntity.updatePassword(commonService.encodePassword(request.newPassword()));
 
         vendorEntityRepository.save(vendorEntity);
 

@@ -72,8 +72,8 @@ public class PaymentService {
         } catch (DataIntegrityViolationException e) {
             throw new ConflictException(
                     HttpStatus.CONFLICT.value(),
-                    "이미 해당 결제 요청에 대한 결제 정보가 존재합니다. 새롭게 결제 요청을 진행해야합니다.",
-                    getCode("이미 해당 결제 요청에 대한 결제 정보가 존재합니다. 새롭게 결제 요청을 진행해야합니다.", ExceptionType.CONFLICT)
+                    e.getMessage(),
+                    getCode(e.getMessage(), ExceptionType.CONFLICT)
             );
         } catch (Exception e) {
             throw new ServerException(
@@ -94,7 +94,7 @@ public class PaymentService {
                 if ("가상계좌".equals(method)) {
                     LocalDateTime requestedAt = OffsetDateTime.parse(json.path("requestedAt").asText()).toLocalDateTime();
                     String secret = json.path("secret").asText(null);
-                    
+
                     paymentEntity.setPaymentStatus(PAYMENT_STATUS.WAITING_FOR_DEPOSIT);
                     paymentEntity.setMethod(METHOD.VIRTUAL_ACCOUNT);
                     paymentEntity.setSecret(secret);
@@ -125,7 +125,7 @@ public class PaymentService {
                     } else if ("간편결제".equals(method)) {
                         paymentEntity.setMethod(METHOD.EASY_PAY);
                     }
-                    
+
                     if ("카드".equals(method)) {
                         LocalDateTime approvedAt = OffsetDateTime.parse(json.path("approvedAt").asText()).toLocalDateTime();
                         JsonNode card = json.path("card");
@@ -166,8 +166,8 @@ public class PaymentService {
             } catch (Exception e) {
                 return Mono.error(new ServerException(
                         HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                        "결제 응답 파싱 중 오류가 발생했습니다.",
-                        getCode("결제 응답 파싱 중 오류가 발생했습니다.", ExceptionType.SERVER)
+                        e.getMessage(),
+                        getCode(e.getMessage(), ExceptionType.SERVER)
                 ));
             }
         }).doOnError(e -> {
@@ -202,8 +202,8 @@ public class PaymentService {
             );
         }
 
-        if (paymentEntity.getPaymentStatus() == PAYMENT_STATUS.CANCELED || 
-            paymentEntity.getPaymentStatus() == PAYMENT_STATUS.PARTIAL_CANCELED) {
+        if (paymentEntity.getPaymentStatus() == PAYMENT_STATUS.CANCELED ||
+                paymentEntity.getPaymentStatus() == PAYMENT_STATUS.PARTIAL_CANCELED) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
                     "이미 환불 처리된 건입니다.",
@@ -213,7 +213,7 @@ public class PaymentService {
 
         boolean isVirtualAccountDone = paymentEntity.getMethod() == METHOD.VIRTUAL_ACCOUNT
                 && paymentEntity.getPaymentStatus() == PAYMENT_STATUS.DONE;
-        
+
         if (!isVirtualAccountDone && (request.bankCode() != null || request.accountNumber() != null || request.holderName() != null)) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
@@ -248,7 +248,7 @@ public class PaymentService {
                 .orElseGet(() -> {
                     return paymentEntityRepository.findByOrderId(request.data().orderId())
                             .orElseThrow(() -> {
-                                log.error("Payment not found for webhook: paymentKey={}, orderId={}", 
+                                log.error("Payment not found for webhook: paymentKey={}, orderId={}",
                                         request.data().paymentKey(), request.data().orderId());
                                 return new NotFoundException(
                                         HttpStatus.NOT_FOUND.value(),
@@ -260,7 +260,7 @@ public class PaymentService {
 
         String status = request.data().status();
         LocalDateTime completedAt = null;
-        
+
         if (request.data().approvedAt() != null && !request.data().approvedAt().isEmpty()) {
             try {
                 completedAt = OffsetDateTime.parse(request.data().approvedAt()).toLocalDateTime();

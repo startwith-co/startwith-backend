@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import startwithco.startwithbackend.base.BaseResponse;
 import startwithco.startwithbackend.exception.BadRequestException;
+import startwithco.startwithbackend.exception.ServerException;
 import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
 import startwithco.startwithbackend.exception.handler.GlobalExceptionHandler;
 import startwithco.startwithbackend.payment.paymentEvent.service.PaymentEventService;
@@ -167,8 +168,14 @@ public class PaymentEventController {
         } catch (IllegalArgumentException e) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
-                    "요청 데이터 오류입니다.",
-                    getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                    e.getMessage(),
+                    getCode(e.getMessage(), ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+            );
+        } catch (Exception e) {
+            throw new ServerException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    e.getMessage(),
+                    getCode(e.getMessage(), ExceptionCodeMapper.ExceptionType.SERVER)
             );
         }
 
