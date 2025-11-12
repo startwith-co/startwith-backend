@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -90,7 +89,7 @@ public class VendorController {
             @RequestPart SaveVendorRequest request,
             @RequestPart(name = "businessLicenseImage", required = true) MultipartFile businessLicenseImage
     ) {
-        request.validateSaveVendorRequest(request, businessLicenseImage);
+        request.validate(businessLicenseImage);
 
         vendorService.saveVendor(request, businessLicenseImage);
 
@@ -110,17 +109,10 @@ public class VendorController {
 
     })
     public ResponseEntity<BaseResponse<String>> sendMail(@Valid @RequestBody SendMailRequest request) {
+        request.validate();
 
-        // DTO 유효성 검사
-        request.validateMailSendRequest(request);
-
-        // 가입 여부 확인
         vendorService.validateEmail(request.email());
-
-        // 메일 전송
         String authKey = commonService.sendAuthKey(request.email());
-
-        // 인증코드 저장
         commonService.saveAuthKey(request.email(), authKey, "vendor");
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SUCCESS"));
@@ -137,14 +129,9 @@ public class VendorController {
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_006", description = "존재하지 않는 코드입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
     public ResponseEntity<BaseResponse<String>> verifyCode(@Valid @RequestBody VerifyCodeRequest request) {
+        request.validate();
 
-        // DTO 유효성 검사
-        request.validateVerifyCodeRequest(request);
-
-        // 가입 여부 확인
         vendorService.validateEmail(request.email());
-
-        // 코드 검증
         commonService.verifyCode(request, "vendor");
 
         return ResponseEntity.ok().body(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SUCCESS"));
@@ -161,9 +148,7 @@ public class VendorController {
             @ApiResponse(responseCode = "SERVER_EXCEPTION_010", description = "Redis 서버 오류가 발생했습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
     public ResponseEntity<BaseResponse<LoginVendorResponse>> loginVendor(@Valid @RequestBody LoginVendorRequest request) {
-
-        // DTO 유효성 검사
-        request.validateLoginVendorRequest(request);
+        request.validate();
 
         LoginVendorResponse login = vendorService.login(request);
 
@@ -178,7 +163,7 @@ public class VendorController {
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_001", description = "요청 데이터 오류입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_001", description = "존재하지 않는 벤더 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
-    public ResponseEntity<BaseResponse<GetVendorInfo>> getVendorInfo(@RequestParam(name = "vendorSeq") Long vendorSeq) {
+    public ResponseEntity<BaseResponse<GetVendorInfo>> getVendorInfo(@RequestParam(name = "vendorSeq", required = false) Long vendorSeq) {
         if (vendorSeq == null) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
@@ -206,13 +191,11 @@ public class VendorController {
     })
     public ResponseEntity<BaseResponse<String>> updateVendor(
             @RequestPart UpdateVendorInfoRequest request,
-            @RequestPart(value = "vendorBannerImageUrl", required = false)  MultipartFile vendorBannerImageUrl,
-            @RequestPart(value = "profileImage", required = false)  MultipartFile vendorProfileImage,
+            @RequestPart(value = "vendorBannerImageUrl", required = false) MultipartFile vendorBannerImageUrl,
+            @RequestPart(value = "profileImage", required = false) MultipartFile vendorProfileImage,
             @RequestPart(value = "clientInfos", required = false) List<MultipartFile> clientInfos
     ) {
-
-        // DTO 유효성 검사
-        request.validateUpdateVendorRequest(request);
+        request.validate();
 
         vendorService.updateVendor(request, vendorBannerImageUrl, clientInfos, vendorProfileImage);
 
@@ -230,9 +213,7 @@ public class VendorController {
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_012", description = "Vendor Name이 일치하지 않습니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
     public ResponseEntity<BaseResponse<ResetLinkResponse>> resetLinkVendor(@Valid @RequestBody ResetLinkRequest request) {
-
-        // DTO 유효성 검사
-        request.validateResetLinkRequest(request);
+        request.validate();
 
         ResetLinkResponse resetLinkResponse = vendorService.resetLink(request);
 
@@ -250,15 +231,10 @@ public class VendorController {
             @ApiResponse(responseCode = "NOT_FOUND_EXCEPTION_001", description = "존재하지 않는 벤더 기업입니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class)))
     })
     public ResponseEntity<BaseResponse<String>> resetPasswordVendor(HttpServletRequest httpServletRequest, @Valid @RequestBody ResetPasswordRequest request) {
-
         String token = (String) httpServletRequest.getAttribute("accessToken");
         String type = (String) httpServletRequest.getAttribute("type");
+        request.validate();
 
-        // DTO 유효성 검사
-        request.validateResetPasswordRequest(request);
-
-
-        // jwt 타입 검사
         if (!Objects.equals(type, "password_reset")) {
             throw new UnauthorizedException(
                     HttpStatus.UNAUTHORIZED.value(),
