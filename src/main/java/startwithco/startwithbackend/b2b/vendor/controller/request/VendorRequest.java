@@ -2,17 +2,14 @@ package startwithco.startwithbackend.b2b.vendor.controller.request;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.multipart.MultipartFile;
-import startwithco.startwithbackend.b2b.consumer.controller.request.ConsumerRequest;
 import startwithco.startwithbackend.b2b.stat.util.STAT_TYPE;
-import startwithco.startwithbackend.b2b.vendor.controller.response.VendorResponse;
-import startwithco.startwithbackend.b2b.vendor.domain.VendorEntity;
 import startwithco.startwithbackend.exception.BadRequestException;
-import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
 
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Objects;
 
+import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.*;
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.getCode;
 
 public class VendorRequest {
@@ -25,91 +22,75 @@ public class VendorRequest {
             String password,
             String confirmPassword
     ) {
-
-        public void validateSaveVendorRequest(VendorRequest.SaveVendorRequest request, MultipartFile businessLicenseImage) {
-
-            if (request.vendorName() == null || request.email() == null
-                    || request.password() == null || request.phoneNumber() == null || request.managerName() == null) {
+        public void validate(MultipartFile businessLicenseImage) {
+            if (vendorName == null || email == null || password == null
+                    || phoneNumber == null || managerName == null || vendorName.length() > 15) {
                 throw new BadRequestException(
                         HttpStatus.BAD_REQUEST.value(),
                         "요청 데이터 오류입니다.",
-                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                        getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
                 );
             }
 
-            // 1. MIME 타입 검사
             String contentType = businessLicenseImage.getContentType();
             if (!Objects.equals(contentType, "application/pdf")) {
                 throw new BadRequestException(
                         HttpStatus.BAD_REQUEST.value(),
                         "요청 데이터 오류입니다.",
-                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                        getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
                 );
             }
 
-            // 2. 파일 확장자 검사 (추가 보안)
             String filename = businessLicenseImage.getOriginalFilename();
             if (filename == null || !filename.toLowerCase().endsWith(".pdf")) {
                 throw new BadRequestException(
                         HttpStatus.BAD_REQUEST.value(),
                         "요청 데이터 오류입니다.",
-                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                        getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
                 );
             }
 
-            // 3. 비밀번호 확인
-            if(!request.password().equals(request.confirmPassword)) {
+            if (!password.equals(confirmPassword)) {
                 throw new BadRequestException(
                         HttpStatus.BAD_REQUEST.value(),
                         "요청 데이터 오류입니다.",
-                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
-                );
-            }
-
-        }
-    }
-
-    public record SendMailRequest(
-        String email
-    ) {
-        public void validateMailSendRequest(SendMailRequest request) {
-
-            if (request.email == null) {
-                throw new BadRequestException(
-                        HttpStatus.BAD_REQUEST.value(),
-                        "요청 데이터 오류입니다.",
-                        getCode("요청 데이터 오류입니다.",ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                        getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
                 );
             }
         }
     }
 
-    public record VerifyCodeRequest(
-            String code,
-            String email
-    ) {
-        public void validateVerifyCodeRequest(VerifyCodeRequest request) {
-            if (request.code == null || request.email == null) {
+    public record SendMailRequest(String email) {
+        public void validate() {
+            if (email == null) {
                 throw new BadRequestException(
                         HttpStatus.BAD_REQUEST.value(),
                         "요청 데이터 오류입니다.",
-                        getCode("요청 데이터 오류입니다.",ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                        getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
                 );
             }
         }
     }
 
-    public record LoginVendorRequest (
-            String email,
-            String password
-    ) {
-        public void validateLoginVendorRequest(VendorRequest.LoginVendorRequest request) {
-
-            if (request.email == null || request.password == null) {
+    public record VerifyCodeRequest(String code, String email) {
+        public void validate() {
+            if (code == null || email == null) {
                 throw new BadRequestException(
                         HttpStatus.BAD_REQUEST.value(),
                         "요청 데이터 오류입니다.",
-                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                        getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
+                );
+            }
+        }
+    }
+
+    public record LoginVendorRequest(String email, String password) {
+        public void validate() {
+            if (email == null || password == null) {
+                throw new BadRequestException(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "요청 데이터 오류입니다.",
+                        getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
                 );
             }
         }
@@ -125,7 +106,6 @@ public class VendorRequest {
             String accountNumber,
             String bank,
             String vendorExplanation,
-//            String vendorBannerImageUrl,
             Boolean weekdayAvailable,
             LocalTime weekdayStartTime,
             LocalTime weekdayEndTime,
@@ -139,12 +119,23 @@ public class VendorRequest {
             Long clientCount,
             List<StatInfo> stats
     ) {
-        public void validateUpdateVendorRequest(UpdateVendorInfoRequest request) {
-            if(request.vendorSeq == null) {
+        public void validate() {
+            if (vendorSeq == null || vendorName.length() > 15
+                    || vendorExplanation.length() > 500 || stats.size() > 6) {
                 throw new BadRequestException(
                         HttpStatus.BAD_REQUEST.value(),
                         "요청 데이터 오류입니다.",
-                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                        getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
+                );
+            }
+
+            boolean hasInvalidStat = stats.stream()
+                    .anyMatch(stat -> stat.percentage > 999 || stat.label.length() > 15);
+            if (hasInvalidStat) {
+                throw new BadRequestException(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "요청 데이터 오류입니다.",
+                        getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
                 );
             }
         }
@@ -153,54 +144,37 @@ public class VendorRequest {
                 String label,
                 Long percentage,
                 STAT_TYPE statType
-        ) {}
-
-        public record ClientInfo (
-                MultipartFile image
-        ) {}
+        ) {
+        }
     }
 
-//    public record StatInfo(
-//            String label,
-//            Long percentage,
-//            STAT_TYPE statType
-//    ) {}
-
-    public record ResetLinkRequest(
-            String email,
-            String vendorName
-    ) {
-
-        public void validateResetLinkRequest(ResetLinkRequest request) {
-            if (request.email == null) {
+    public record ResetLinkRequest(String email, String vendorName) {
+        public void validate() {
+            if (email == null) {
                 throw new BadRequestException(
                         HttpStatus.BAD_REQUEST.value(),
                         "요청 데이터 오류입니다.",
-                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                        getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
                 );
             }
         }
     }
 
-    public record ResetPasswordRequest(
-            String newPassword,
-            String confirmPassword
-    ) {
-
-        public void validateResetPasswordRequest(ResetPasswordRequest request) {
-            if (request.newPassword == null || request.confirmPassword == null) {
+    public record ResetPasswordRequest(String newPassword, String confirmPassword) {
+        public void validate() {
+            if (newPassword == null || confirmPassword == null) {
                 throw new BadRequestException(
                         HttpStatus.BAD_REQUEST.value(),
                         "요청 데이터 오류입니다.",
-                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                        getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
                 );
             }
 
-            if (!request.confirmPassword.equals(request.newPassword)) {
+            if (!confirmPassword.equals(newPassword)) {
                 throw new BadRequestException(
                         HttpStatus.BAD_REQUEST.value(),
                         "요청 데이터 오류입니다.",
-                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                        getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
                 );
             }
         }

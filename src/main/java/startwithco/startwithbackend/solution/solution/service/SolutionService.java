@@ -65,7 +65,9 @@ public class SolutionService {
                     );
                 });
 
-        if (request.amount() >= 10_000_000) {
+        Long amount = request.amount() != null ? request.amount().longValue() : null;
+        
+        if (amount != null && amount >= 10_000_000) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
                     "솔루션 금액이 천만원을 넘으면 안됩니다.",
@@ -84,7 +86,7 @@ public class SolutionService {
                     .category(CATEGORY.valueOf(request.category()))
                     .recommendedCompanySize(request.recommendedCompanySize())
                     .solutionImplementationType(request.solutionImplementationType())
-                    .amount(request.amount())
+                    .amount(amount)
                     .duration(request.duration())
                     .representImageUrl(s3RepresentImageUrl)
                     .descriptionPdfUrl(s3DescriptionPdfUrl)
@@ -161,7 +163,9 @@ public class SolutionService {
                     });
         }
 
-        if (request.amount() >= 10_000_000) {
+        Long amount = request.amount() != null ? request.amount().longValue() : null;
+        
+        if (amount != null && amount >= 10_000_000) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
                     "솔루션 금액이 천만원을 넘으면 안됩니다.",
@@ -179,7 +183,7 @@ public class SolutionService {
                     CATEGORY.valueOf(request.nextCategory()),
                     request.recommendedCompanySize(),
                     request.solutionImplementationType(),
-                    request.amount(),
+                    amount,
                     request.duration(),
                     s3RepresentImageUrl,
                     s3DescriptionPdfUrl

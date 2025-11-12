@@ -268,9 +268,7 @@ public class VendorService {
 
         vendorEntityRepository.save(vendorEntity);
 
-        // stat
         if (request.stats() != null && !request.stats().isEmpty()) {
-            // 기존 StatEntity 삭제
             statRepository.deleteAllByVendor(vendorEntity);
 
             List<StatEntity> statEntities = request.stats().stream()
@@ -281,19 +279,16 @@ public class VendorService {
                             .vendor(vendorEntity)
                             .build())
                     .collect(Collectors.toList());
-            // 저장
+
             statRepository.saveAll(statEntities);
         }
 
 
         if (clientInfos != null && !clientInfos.isEmpty()) {
-            // 기존 client 삭제
             clientRepository.deleteAllByVendor(vendorEntity);
-
 
             List<String> imageUrls = commonService.uploadJPGFileList(clientInfos);
 
-            // 갱신
             List<ClientEntity> clientEntities = imageUrls.stream()
                     .map(imageUrl -> ClientEntity.builder()
                             .logoImageUrl(imageUrl)
@@ -378,8 +373,6 @@ public class VendorService {
     }
 
     public ResetLinkResponse resetLink(ResetLinkRequest request) {
-
-        // 이메일 검증
         VendorEntity vendorEntity = vendorEntityRepository.findByEmail(request.email())
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
@@ -387,7 +380,6 @@ public class VendorService {
                         getCode("존재하지 않는 이메일 입니다.", ExceptionType.NOT_FOUND
                         )));
 
-        // Vendor Name 검증
         if (!request.vendorName().equals(vendorEntity.getVendorName())) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
@@ -396,7 +388,6 @@ public class VendorService {
             );
         }
 
-        // 토큰 생성
         String token = generateToken(1_800_000L, vendorEntity.getVendorSeq());
 
         String resetUrl = resetLink + "/forget/reset?user=vendor&token=ey";
