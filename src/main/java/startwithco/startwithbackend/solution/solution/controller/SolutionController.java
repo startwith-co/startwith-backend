@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import startwithco.startwithbackend.base.BaseResponse;
 import startwithco.startwithbackend.exception.BadRequestException;
+import startwithco.startwithbackend.exception.ServerException;
 import startwithco.startwithbackend.exception.code.ExceptionCodeMapper;
 import startwithco.startwithbackend.exception.handler.GlobalExceptionHandler;
 import startwithco.startwithbackend.solution.solution.service.SolutionService;
@@ -55,6 +56,7 @@ public class SolutionController {
             @ApiResponse(responseCode = "CONFLICT_EXCEPTION_002", description = "동시성 저장은 불가능합니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "SERVER_EXCEPTION_002", description = "S3 UPLOAD 실패", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_016", description = "솔루션 금액이 천만원을 넘으면 안됩니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_017", description = "금액은 정수만 입력 가능합니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
     ResponseEntity<BaseResponse<SaveSolutionEntityResponse>> saveSolutionEntity(
             @Valid
@@ -96,6 +98,7 @@ public class SolutionController {
             @ApiResponse(responseCode = "CONFLICT_EXCEPTION_002", description = "동시성 저장은 불가능합니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "SERVER_EXCEPTION_002", description = "S3 UPLOAD 실패", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
             @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_016", description = "솔루션 금액이 천만원을 넘으면 안됩니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
+            @ApiResponse(responseCode = "BAD_REQUEST_EXCEPTION_017", description = "금액은 정수만 입력 가능합니다.", content = @Content(schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
     })
     ResponseEntity<BaseResponse<String>> modifySolutionEntity(
             @Valid
@@ -146,8 +149,14 @@ public class SolutionController {
         } catch (IllegalArgumentException e) {
             throw new BadRequestException(
                     HttpStatus.BAD_REQUEST.value(),
-                    "요청 데이터 오류입니다.",
-                    getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                    e.getMessage(),
+                    getCode(e.getMessage(), ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+            );
+        } catch (Exception e) {
+            throw new ServerException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    e.getMessage(),
+                    getCode(e.getMessage(), ExceptionCodeMapper.ExceptionType.SERVER)
             );
         }
 
@@ -188,8 +197,14 @@ public class SolutionController {
             } catch (IllegalArgumentException e) {
                 throw new BadRequestException(
                         HttpStatus.BAD_REQUEST.value(),
-                        "요청 데이터 오류입니다.",
-                        getCode("요청 데이터 오류입니다.", ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                        e.getMessage(),
+                        getCode(e.getMessage(), ExceptionCodeMapper.ExceptionType.BAD_REQUEST)
+                );
+            } catch (Exception e) {
+                throw new ServerException(
+                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                        e.getMessage(),
+                        getCode(e.getMessage(), ExceptionCodeMapper.ExceptionType.SERVER)
                 );
             }
         }

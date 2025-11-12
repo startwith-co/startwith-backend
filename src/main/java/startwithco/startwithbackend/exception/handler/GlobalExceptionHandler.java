@@ -99,12 +99,14 @@ public class GlobalExceptionHandler {
                 Map<String, String[]> paramMap = request.getParameterMap();
                 if (paramMap.isEmpty()) return EMPTY_BODY;
 
-                Map<String, Object> resultMap = new LinkedHashMap<>();
-                for (Map.Entry<String, String[]> entry : paramMap.entrySet()) {
-                    String key = entry.getKey();
-                    String[] values = entry.getValue();
-                    resultMap.put(key, values.length == 1 ? values[0] : Arrays.asList(values));
-                }
+                Map<String, Object> resultMap = paramMap.entrySet().stream()
+                        .collect(LinkedHashMap::new,
+                                (map, entry) -> map.put(
+                                        entry.getKey(),
+                                        entry.getValue().length == 1 ? entry.getValue()[0] : Arrays.asList(entry.getValue())
+                                ),
+                                LinkedHashMap::putAll
+                        );
 
                 return OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(resultMap);
             }

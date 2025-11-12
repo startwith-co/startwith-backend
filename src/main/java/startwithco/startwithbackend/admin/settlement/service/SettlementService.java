@@ -15,7 +15,6 @@ import startwithco.startwithbackend.payment.snapshot.entity.TossPaymentDailySnap
 import startwithco.startwithbackend.payment.snapshot.repository.TossPaymentDailySnapshotEntityRepository;
 import startwithco.startwithbackend.solution.solution.domain.SolutionEntity;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static startwithco.startwithbackend.exception.code.ExceptionCodeMapper.ExceptionType;
@@ -31,37 +30,34 @@ public class SettlementService {
     public List<SettlementDto> getAllSettlementPayments(int start, int end) {
         List<PaymentEntity> paymentEntities = paymentEntityRepository.findAll(start, end);
 
-        List<SettlementDto> response = new ArrayList<>();
-        for (PaymentEntity paymentEntity : paymentEntities) {
-            TossPaymentDailySnapshotEntity tossPaymentDailySnapshotEntity = tossPaymentDailySnapshotEntityRepository.findByOrderId(paymentEntity.getOrderId())
-                    .orElseThrow(() -> new ServerException(
-                            HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                            "내부 서버 오류가 발생했습니다.",
-                            getCode("내부 서버 오류가 발생했습니다.", ExceptionType.SERVER)
-                    ));
-            ConsumerEntity consumerEntity = paymentEntity.getPaymentEventEntity().getConsumerEntity();
-            VendorEntity vendorEntity = paymentEntity.getPaymentEventEntity().getVendorEntity();
-            SolutionEntity solutionEntity = paymentEntity.getPaymentEventEntity().getSolutionEntity();
+        return paymentEntities.stream()
+                .map(paymentEntity -> {
+                    TossPaymentDailySnapshotEntity tossPaymentDailySnapshotEntity = tossPaymentDailySnapshotEntityRepository.findByOrderId(paymentEntity.getOrderId())
+                            .orElseThrow(() -> new ServerException(
+                                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                                    "내부 서버 오류가 발생했습니다.",
+                                    getCode("내부 서버 오류가 발생했습니다.", ExceptionType.SERVER)
+                            ));
+                    ConsumerEntity consumerEntity = paymentEntity.getPaymentEventEntity().getConsumerEntity();
+                    VendorEntity vendorEntity = paymentEntity.getPaymentEventEntity().getVendorEntity();
+                    SolutionEntity solutionEntity = paymentEntity.getPaymentEventEntity().getSolutionEntity();
 
-            SettlementDto settlementDto = new SettlementDto(
-                    paymentEntity.getPaymentCompletedAt(),
-                    paymentEntity.getOrderId(),
-                    paymentEntity.getPaymentStatus().toString(),
-                    paymentEntity.getMethod(),
-                    tossPaymentDailySnapshotEntity.getAmount(),
-                    tossPaymentDailySnapshotEntity.getPayOutAmount(),
-                    tossPaymentDailySnapshotEntity.getSettlementAmount(),
-                    consumerEntity.getConsumerName(),
-                    vendorEntity.getVendorName(),
-                    vendorEntity.getAccountNumber(),
-                    vendorEntity.getBank(),
-                    solutionEntity.getSolutionName()
-            );
-
-            response.add(settlementDto);
-        }
-
-        return response;
+                    return new SettlementDto(
+                            paymentEntity.getPaymentCompletedAt(),
+                            paymentEntity.getOrderId(),
+                            paymentEntity.getPaymentStatus().toString(),
+                            paymentEntity.getMethod(),
+                            tossPaymentDailySnapshotEntity.getAmount(),
+                            tossPaymentDailySnapshotEntity.getPayOutAmount(),
+                            tossPaymentDailySnapshotEntity.getSettlementAmount(),
+                            consumerEntity.getConsumerName(),
+                            vendorEntity.getVendorName(),
+                            vendorEntity.getAccountNumber(),
+                            vendorEntity.getBank() != null ? vendorEntity.getBank().toString() : null,
+                            solutionEntity.getSolutionName()
+                    );
+                })
+                .toList();
     }
 
     @Transactional

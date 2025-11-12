@@ -79,8 +79,8 @@ public class ConsumerRequest {
             String consumerName
     ) {
 
-        public void validateResetLinkRequest(ResetLinkRequest request) {
-            if (request.email == null) {
+        public void validateResetLinkRequest() {
+            if (email == null) {
                 throw new BadRequestException(
                         HttpStatus.BAD_REQUEST.value(),
                         "요청 데이터 오류입니다.",
@@ -95,8 +95,8 @@ public class ConsumerRequest {
             String confirmPassword
     ) {
 
-        public void validateResetPasswordRequest(ResetPasswordRequest request) {
-            if (request.newPassword == null || request.confirmPassword == null) {
+        public void validateResetPasswordRequest() {
+            if (newPassword == null || confirmPassword == null) {
                 throw new BadRequestException(
                         HttpStatus.BAD_REQUEST.value(),
                         "요청 데이터 오류입니다.",
@@ -104,7 +104,7 @@ public class ConsumerRequest {
                 );
             }
 
-            if (!request.confirmPassword.equals(request.newPassword)) {
+            if (!confirmPassword.equals(newPassword)) {
                 throw new BadRequestException(
                         HttpStatus.BAD_REQUEST.value(),
                         "요청 데이터 오류입니다.",

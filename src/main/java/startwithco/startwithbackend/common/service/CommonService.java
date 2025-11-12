@@ -5,6 +5,8 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -50,6 +53,9 @@ public class CommonService {
     @Value("${toss.payment.secret-key}")
     private String tossPaymentSecretKey;
 
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+
     @Qualifier("tossPaymentWebClient")
     private final WebClient tossPaymentWebClient;
 
@@ -60,6 +66,8 @@ public class CommonService {
     private final RedisTemplate<String, String> redisTemplate;
 
     private final ObjectMapper objectMapper;
+
+    private final BCryptPasswordEncoder encoder;
 
     public String uploadJPGFile(MultipartFile multipartFile) {
         try {
@@ -83,28 +91,32 @@ public class CommonService {
 
     public List<String> uploadJPGFileList(List<MultipartFile> multipartFiles) {
         try {
-            String fileName = randomUUID().toString() + ".jpg";
+            return multipartFiles.stream()
+                    .map(multipartFile -> {
+                        try {
+                            String fileName = randomUUID().toString() + ".jpg";
+                            InputStream inputStream = multipartFile.getInputStream();
 
-            List<String> imageUrls = new ArrayList<>();
+                            ObjectMetadata metadata = new ObjectMetadata();
+                            metadata.setContentLength(multipartFile.getSize());
+                            metadata.setContentType(multipartFile.getContentType());
 
-            for (MultipartFile multipartFile : multipartFiles) {
-                InputStream inputStream = multipartFile.getInputStream();
-
-                ObjectMetadata metadata = new ObjectMetadata();
-                metadata.setContentLength(multipartFile.getSize());
-                metadata.setContentType(multipartFile.getContentType());
-
-                s3client.putObject(new PutObjectRequest(bucketName, fileName, inputStream, metadata));
-
-                imageUrls.add(s3client.getUrl(bucketName, fileName).toString());
-            }
-
-            return imageUrls;
-        } catch (IOException e) {
+                            s3client.putObject(new PutObjectRequest(bucketName, fileName, inputStream, metadata));
+                            return s3client.getUrl(bucketName, fileName).toString();
+                        } catch (IOException e) {
+                            throw new ServerException(
+                                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                                    e.getMessage(),
+                                    getCode(e.getMessage(), ExceptionType.SERVER)
+                            );
+                        }
+                    })
+                    .toList();
+        } catch (Exception e) {
             throw new ServerException(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "S3 UPLOAD 실패",
-                    getCode("S3 UPLOAD 실패", ExceptionType.SERVER)
+                    e.getMessage(),
+                    getCode(e.getMessage(), ExceptionType.SERVER)
             );
         }
     }
@@ -123,8 +135,8 @@ public class CommonService {
         } catch (IOException e) {
             throw new ServerException(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "S3 UPLOAD 실패",
-                    getCode("S3 UPLOAD 실패", ExceptionType.SERVER)
+                    e.getMessage(),
+                    getCode(e.getMessage(), ExceptionType.SERVER)
             );
         }
     }
@@ -151,50 +163,31 @@ public class CommonService {
                     } catch (Exception e) {
                         sink.error(new ServerException(
                                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                                "결제 응답 파싱 중 오류가 발생했습니다.",
-                                getCode("결제 응답 파싱 중 오류가 발생했습니다.", ExceptionType.SERVER)
+                                e.getMessage(),
+                                getCode(e.getMessage(), ExceptionType.SERVER)
                         ));
                     }
                 })
-                .doOnSuccess(json -> log.info("✅ 결제 승인 성공"))
                 .doOnError(WebClientResponseException.class, err -> {
-                    String responseBody = err.getResponseBodyAsString();
-                    String errorMessage = "TOSS 결제 승인 실패";
-                    
-                    log.error("❌ 토스페이먼츠 API 오류 응답: HTTP {}, Body: {}", err.getStatusCode(), responseBody);
-
-                    try {
-                        JsonNode errorJson = objectMapper.readTree(responseBody);
-                        if (errorJson.has("message")) {
-                            errorMessage = errorJson.get("message").asText();
-                        }
-                        if (errorJson.has("code")) {
-                            log.error("토스페이먼츠 에러 코드: {}", errorJson.get("code").asText());
-                        }
-                    } catch (Exception parseError) {
-                        log.warn("⚠️ Toss 오류 응답 파싱 실패: {}", responseBody);
-                    }
-
                     throw new ServerException(
                             HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                            errorMessage,
-                            getCode(errorMessage, ExceptionType.SERVER)
+                            err.getMessage(),
+                            getCode(err.getMessage(), ExceptionType.SERVER)
                     );
                 })
                 .doOnError(err -> {
-                    if (!(err instanceof WebClientResponseException)) {
-                        log.error("❌ 토스페이먼츠 API 호출 실패: {}", err.getMessage(), err);
-                    }
+                    throw new ServerException(
+                            HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                            err.getMessage(),
+                            getCode(err.getMessage(), ExceptionType.SERVER)
+                    );
                 })
                 .onErrorResume(err -> {
-                    if (err instanceof ServerException) {
-                        return Mono.error(err);
-                    }
-                    return Mono.error(new ServerException(
+                    throw new ServerException(
                             HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                            "토스페이먼츠 API 호출 실패: " + err.getMessage(),
-                            getCode("토스페이먼츠 API 호출 실패", ExceptionType.SERVER)
-                    ));
+                            err.getMessage(),
+                            getCode(err.getMessage(), ExceptionType.SERVER)
+                    );
                 });
     }
 
@@ -227,8 +220,8 @@ public class CommonService {
                     } catch (Exception e) {
                         sink.error(new ServerException(
                                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                                "결제 응답 파싱 중 오류가 발생했습니다.",
-                                getCode("결제 응답 파싱 중 오류가 발생했습니다.", ExceptionType.SERVER)
+                                e.getMessage(),
+                                getCode(e.getMessage(), ExceptionType.SERVER)
                         ));
                     }
                 })
@@ -363,8 +356,8 @@ public class CommonService {
         } catch (Exception e) {
             throw new ServerException(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "Redis 서버 오류가 발생했습니다.",
-                    getCode("Redis 서버 오류가 발생했습니다.", ExceptionType.SERVER)
+                    e.getMessage(),
+                    getCode(e.getMessage(), ExceptionType.SERVER)
             );
         }
 
@@ -392,5 +385,76 @@ public class CommonService {
 
         redisTemplate.delete(request.email());
 
+    }
+
+    /**
+     * 비밀번호 검증
+     *
+     * @param requestPassword 요청된 비밀번호
+     * @param encodedPassword 암호화된 비밀번호
+     * @throws BadRequestException 비밀번호가 일치하지 않을 경우
+     */
+    public void validatePassword(String requestPassword, String encodedPassword) {
+        if (!encoder.matches(requestPassword, encodedPassword)) {
+            throw new BadRequestException(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "비밀번호가 일치하지 않습니다.",
+                    getCode("비밀번호가 일치하지 않습니다.", ExceptionType.BAD_REQUEST)
+            );
+        }
+    }
+
+    /**
+     * 비밀번호 암호화
+     *
+     * @param password 평문 비밀번호
+     * @return 암호화된 비밀번호
+     */
+    public String encodePassword(String password) {
+        return encoder.encode(password);
+    }
+
+    /**
+     * 비밀번호 리셋용 토큰 생성
+     *
+     * @param tokenExpiration 토큰 만료 시간 (밀리초)
+     * @param userSeq         사용자 시퀀스
+     * @return JWT 토큰
+     */
+    public String generatePasswordResetToken(long tokenExpiration, Long userSeq) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + tokenExpiration);
+        return Jwts.builder()
+                .setSubject(String.valueOf(userSeq))
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .claim("type", "password_reset")
+                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .compact();
+    }
+
+    /**
+     * 리프레시 토큰 저장
+     *
+     * @param userSeq      사용자 시퀀스
+     * @param refreshToken 리프레시 토큰
+     * @param expiration   만료 시간 (밀리초)
+     * @throws ServerException Redis 저장 실패 시
+     */
+    public void saveRefreshToken(Long userSeq, String refreshToken, long expiration) {
+        try {
+            redisTemplate.opsForValue().set(
+                    String.valueOf(userSeq),
+                    refreshToken,
+                    expiration,
+                    TimeUnit.MILLISECONDS
+            );
+        } catch (Exception e) {
+            throw new ServerException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    e.getMessage(),
+                    getCode(e.getMessage(), ExceptionType.SERVER)
+            );
+        }
     }
 }

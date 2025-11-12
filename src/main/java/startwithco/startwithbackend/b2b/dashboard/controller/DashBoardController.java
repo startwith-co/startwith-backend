@@ -17,6 +17,7 @@ import startwithco.startwithbackend.b2b.consumer.service.ConsumerService;
 import startwithco.startwithbackend.b2b.vendor.service.VendorService;
 import startwithco.startwithbackend.base.BaseResponse;
 import startwithco.startwithbackend.exception.BadRequestException;
+import startwithco.startwithbackend.exception.ServerException;
 import startwithco.startwithbackend.exception.handler.GlobalExceptionHandler;
 import startwithco.startwithbackend.payment.payment.util.PAYMENT_STATUS;
 
@@ -107,8 +108,14 @@ public class DashBoardController {
             } catch (IllegalArgumentException e) {
                 throw new BadRequestException(
                         HttpStatus.BAD_REQUEST.value(),
-                        "요청 데이터 오류입니다.",
-                        getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
+                        e.getMessage(),
+                        getCode(e.getMessage(), ExceptionType.BAD_REQUEST)
+                );
+            } catch (Exception e) {
+                throw new ServerException(
+                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                        e.getMessage(),
+                        getCode(e.getMessage(), ExceptionType.SERVER)
                 );
             }
         }
@@ -156,8 +163,14 @@ public class DashBoardController {
             } catch (IllegalArgumentException e) {
                 throw new BadRequestException(
                         HttpStatus.BAD_REQUEST.value(),
-                        "요청 데이터 오류입니다.",
-                        getCode("요청 데이터 오류입니다.", ExceptionType.BAD_REQUEST)
+                        e.getMessage(),
+                        getCode(e.getMessage(), ExceptionType.BAD_REQUEST)
+                );
+            } catch (Exception e) {
+                throw new ServerException(
+                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                        e.getMessage(),
+                        getCode(e.getMessage(), ExceptionType.SERVER)
                 );
             }
         }
